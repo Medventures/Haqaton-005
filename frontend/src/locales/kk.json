@@ -69,5 +69,8 @@
     "contact_operator": "Оператормен байланысу",
     "urgent_operator": "Акушер-гинекологтың шұғыл кеңесі"
   },
-  "newChat": "Жаңа чат"
+  "newChat": "Жаңа чат",
+  "attach": "Сурет не PDF тіркеу",
+  "attachmentError": "JPG, PNG, WEBP суретін немесе 10 МБ-қа дейінгі PDF тіркеуге болады",
+  "attachments": "Тіркемелер"
 }

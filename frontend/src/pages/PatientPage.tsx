@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
-import { ArrowUp, PhoneCall, SquarePen } from 'lucide-react'
+import { ArrowUp, Paperclip, PhoneCall, SquarePen } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { api } from '../api/client'
 import type { Dialog, DialogResponse, Language, Message } from '../api/types'
+import { ATTACHMENT_TYPES, AttachmentList, attachmentsOf, isAllowedAttachment } from '../components/Attachments'
 
 export default function PatientPage() {
   const { t, i18n } = useTranslation()
@@ -11,6 +12,7 @@ export default function PatientPage() {
   const [language, setLanguage] = useState<Language>('ru')
   const [input, setInput] = useState('')
   const [typing, setTyping] = useState(false)
+  const [uploading, setUploading] = useState(false)
   const [error, setError] = useState('')
   const [toast, setToast] = useState('')
   const [ready, setReady] = useState(false)
@@ -18,6 +20,8 @@ export default function PatientPage() {
   // operator-message count at the moment of an urgent handoff; null = not waiting for a specialist
   const [waitingFrom, setWaitingFrom] = useState<number | null>(null)
   const bottom = useRef<HTMLDivElement>(null)
+  const fileInput = useRef<HTMLInputElement>(null)
+  const busy = typing || uploading
   const selectLanguage = (next: Language) => { setLanguage(next); void i18n.changeLanguage(next) }
   // keyed by content: the local reply has no id, the polled copy of the same message does
   const redKey = (message: Message) => message.content
@@ -49,7 +53,7 @@ export default function PatientPage() {
     setDialog(data.dialog); setMessages(data.messages || []); selectLanguage(data.dialog.language || 'ru')
   }
   // scroll only the message list: scrollIntoView would also scroll the window and hide the header on mobile
-  useEffect(() => { const list = bottom.current?.parentElement; list?.scrollTo({ top: list.scrollHeight, behavior: 'smooth' }) }, [messages, typing, waitingSpecialist])
+  useEffect(() => { const list = bottom.current?.parentElement; list?.scrollTo({ top: list.scrollHeight, behavior: 'smooth' }) }, [messages, busy, waitingSpecialist])
   useEffect(() => {
     if (!dialog?.id || dialog.status !== 'operator') return
     const timer = window.setInterval(() => api.dialog(dialog.id).then(applyDialog).catch(() => {}), 3000)
@@ -58,7 +62,7 @@ export default function PatientPage() {
 
   async function sendMessage(rawMessage: string) {
     const message = rawMessage.trim()
-    if (!message || typing) return
+    if (!message || busy) return
     setInput(''); setError(''); setMessages(current => [...current, { role: 'patient', content: message }]); setTyping(true)
     try {
       const result = await api.chat(message, dialog?.id)
@@ -72,9 +76,23 @@ export default function PatientPage() {
     } catch (e) { setError(e instanceof Error ? e.message : t('network')) }
     finally { setTyping(false) }
   }
+  async function attachFile(file: File) {
+    if (busy) return
+    if (!isAllowedAttachment(file)) { setError(t('attachmentError')); return }
+    setError(''); setUploading(true)
+    try {
+      const result = await api.upload(file, dialog?.id)
+      localStorage.setItem('clinic_dialog_id', result.dialog_id)
+      setMessages(current => [...current, result.message, result.reply])
+      if (dialog) setDialog({ ...dialog, id: result.dialog_id, status: result.status })
+      // a first upload opens the dialog: take its urgency/language from the server instead of guessing
+      else api.dialog(result.dialog_id).then(data => setDialog({ ...data.dialog, status: result.status })).catch(() => {})
+    } catch (e) { setError(e instanceof Error ? e.message : t('network')) }
+    finally { setUploading(false) }
+  }
   // «Новый чат»: new patient session, the previous dialog stays with the clinic
   async function newChat() {
-    if (typing) return
+    if (busy) return
     localStorage.removeItem('clinic_dialog_id')
     setMessages([]); setDialog(null); setError(''); setWaitingFrom(null); setDismissedRed('')
     try { const session = await api.patient(); localStorage.setItem('patient_jwt', session.token) } catch { /* keep the old token */ }
@@ -98,14 +116,14 @@ export default function PatientPage() {
   return <main className="patient-page">
     <header className="site-header patient-site-header"><a className="clinic-brand" href="/"><img src="/logo-mark.svg" alt="" width="28" height="28" />Ana<span>Care</span></a><div className="header-tools">{dialog?.urgency && <span className={`urgency-chip urgency-${dialog.urgency}`} aria-label={t(`urgency.${dialog.urgency}`)}><i />{t(`urgency.${dialog.urgency}`)}</span>}<div className="language-switch" role="group" aria-label="Language"><button className={language === 'ru' ? 'active' : ''} onClick={() => selectLanguage('ru')}>Рус</button><button className={language === 'kk' ? 'active' : ''} onClick={() => selectLanguage('kk')}>Қаз</button><button className={language === 'en' ? 'active' : ''} onClick={() => selectLanguage('en')}>Eng</button></div></div></header>
     {showRisk && latestRed ? <section className="risk-screen"><div className="risk-screen-content"><span className="risk-screen-kicker">{t('riskKicker')}</span><h1>{t('riskTitle')}</h1><p className="risk-screen-lead">{t('riskLead')}</p><p className="risk-screen-message">{latestRed.content}</p><p>{t('riskAdvice')}</p><div className="risk-actions">{riskActions.map(action => action === 'call_103' ? <a className="call-button" key={action} href="tel:103"><PhoneCall size={18}/>{t('actions.call_103')}</a> : (action === 'contact_operator' || action === 'urgent_operator') ? <button className="contact-button" key={action} onClick={() => void contactOperator(action)}>{t(`actions.${action}`)}</button> : null)}</div><p className="medical-disclaimer">{t('disclaimer')}</p><button className="risk-return" onClick={() => setDismissedRed(redKey(latestRed))}>{language === 'ru' ? 'Вернуться в чат' : language === 'kk' ? 'Чатқа оралу' : 'Return to chat'}</button></div></section> : <section className="patient-content"><div className="patient-intro"><span className="eyebrow">ANACARE</span><h1>{t('title')}</h1><p>{t('subtitle')}</p></div>
-      <section className="chat-panel" aria-label="Patient chat"><div className="chat-toolbar"><div className="online-indicator"/><span>AnaCare</span><span className="chat-toolbar-sub">· {t('consultation')}</span>{messages.length > 0 && <button type="button" className="new-chat-button" onClick={() => void newChat()} disabled={typing}><SquarePen size={16} strokeWidth={1.75} />{t('newChat')}</button>}</div>
-        <div className="chat-messages">{!messages.length && ready && <div className="welcome-content"><div className="welcome-note">{t('greet')}</div><div className="welcome-examples"><span>{t('examples.title')}</span>{(['item1', 'item2', 'item3'] as const).map(key => <button key={key} type="button" disabled={typing} onClick={() => void sendMessage(t(`examples.${key}`))}>{t(`examples.${key}`)}</button>)}</div></div>}
+      <section className="chat-panel" aria-label="Patient chat"><div className="chat-toolbar"><div className="online-indicator"/><span>AnaCare</span><span className="chat-toolbar-sub">· {t('consultation')}</span>{messages.length > 0 && <button type="button" className="new-chat-button" onClick={() => void newChat()} disabled={busy}><SquarePen size={16} strokeWidth={1.75} />{t('newChat')}</button>}</div>
+        <div className="chat-messages">{!messages.length && ready && <div className="welcome-content"><div className="welcome-note">{t('greet')}</div><div className="welcome-examples"><span>{t('examples.title')}</span>{(['item1', 'item2', 'item3'] as const).map(key => <button key={key} type="button" disabled={busy} onClick={() => void sendMessage(t(`examples.${key}`))}>{t(`examples.${key}`)}</button>)}</div></div>}
           {messages.map((message, index) => <MessageView key={`${index}-${message.id || message.content.slice(0, 8)}`} message={message} language={language} onOperator={action => void contactOperator(action)} onBook={showToast} />)}
           {waitingSpecialist && <div className="chat-message bot-message" role="status"><div className="typing-bubble waiting-bubble"><span className="spinner" aria-hidden="true"/>{t('waitingSpecialist')}</div></div>}
-          {typing && <div className="chat-message bot-message"><div className="typing-bubble"><span className="typing-dots"><i/><i/><i/></span>{t('typing')}</div></div>}
+          {busy && <div className="chat-message bot-message"><div className="typing-bubble"><span className="typing-dots"><i/><i/><i/></span>{t('typing')}</div></div>}
           <div ref={bottom}/>
         </div>
-        <form className="message-form" onSubmit={send}><textarea value={input} onChange={e => setInput(e.target.value)} placeholder={t('placeholder')} rows={1} maxLength={4000} aria-label={t('placeholder')} onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); void send(e) } }} /><button type="submit" disabled={!input.trim() || typing || !ready} aria-label={t('send')}><ArrowUp size={19}/></button><span className="form-hint">{error || 'Enter ↵'}</span></form>
+        <form className={`message-form${error ? ' has-error' : ''}`} onSubmit={send}><button type="button" className="attach-button" onClick={() => fileInput.current?.click()} disabled={busy || !ready} aria-label={t('attach')} title={t('attach')}><Paperclip size={20} strokeWidth={1.75}/></button><input ref={fileInput} type="file" hidden accept={ATTACHMENT_TYPES.join(',')} onChange={e => { const file = e.target.files?.[0]; e.target.value = ''; if (file) void attachFile(file) }} /><textarea value={input} disabled={uploading} onChange={e => setInput(e.target.value)} placeholder={t('placeholder')} rows={1} maxLength={4000} aria-label={t('placeholder')} onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); void send(e) } }} /><button type="submit" className="send-button" disabled={!input.trim() || busy || !ready} aria-label={t('send')}><ArrowUp size={19}/></button><span className="form-hint">{error || 'Enter ↵'}</span></form>
       </section>
       <footer className="patient-footer">{t('patientFooter')} <a href="tel:103">103</a></footer>
     </section>}{toast && <div className="toast" role="status">{toast}</div>}
@@ -118,9 +136,13 @@ function MessageView({ message, language, onOperator, onBook }: { message: Messa
   const actions = message.data?.actions || []
   const services = message.data?.services || []
   const doctors = message.data?.doctors || []
+  const attachments = attachmentsOf(message)
+  // the patient's file message carries only the file name as text: show the file, not the name twice
+  const showText = !(attachments.length && message.role === 'patient')
   return <div className={`chat-message ${message.role === 'patient' ? 'patient-message' : 'bot-message'}`}>
     {message.role === 'operator' && <span className="operator-label">{t('operatorLabel')}</span>}
-    <div className="message-bubble">{message.content}</div>
+    {showText && message.content && <div className="message-bubble">{message.content}</div>}
+    {attachments.length > 0 && <AttachmentList attachments={attachments} />}
     {urgency && urgency !== 'green' && <div className="medical-disclaimer">{t('disclaimer')}</div>}
     {actions.includes('call_103') && <a className="call-button" href="tel:103"><PhoneCall size={18}/>{t('actions.call_103')}</a>}
     {actions.filter(action => action === 'contact_operator' || action === 'urgent_operator').map(action => <button className="contact-button" key={action} onClick={() => onOperator(action)}>{t(`actions.${action}`)}</button>)}

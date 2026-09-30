@@ -69,5 +69,8 @@
     "contact_operator": "Contact an operator",
     "urgent_operator": "Urgent obstetrician-gynecologist consultation"
   },
-  "newChat": "New chat"
+  "newChat": "New chat",
+  "attach": "Attach a photo or PDF",
+  "attachmentError": "You can attach a photo (JPG, PNG, WEBP) or a PDF up to 10 MB",
+  "attachments": "Attachments"
 }

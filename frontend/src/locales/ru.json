@@ -69,5 +69,8 @@
     "contact_operator": "Связаться с оператором",
     "urgent_operator": "Срочная консультация акушера-гинеколога"
   },
-  "newChat": "Новый чат"
+  "newChat": "Новый чат",
+  "attach": "Прикрепить фото или PDF",
+  "attachmentError": "Можно прикрепить фото (JPG, PNG, WEBP) или PDF до 10 МБ",
+  "attachments": "Вложения"
 }
