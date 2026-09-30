@@ -156,7 +156,100 @@ paths:
       summary: Каталог (специальности, услуги, врачи со слотами)
       security: []
       responses:
-        "200": {description: Каталог}
+        "200": {description: Каталог, content: {application/json: {schema: {$ref: "#/components/schemas/Catalog"}}}}
+  /api/appointments:
+    post:
+      summary: Запись к врачу (кнопка «Записаться», роль patient)
+      description: |
+        Слот должен быть среди свободных слотов врача в каталоге, услуга — той же специальности, что и врач.
+        После записи слот исчезает из /api/catalog. Если передан dialog_id (свой диалог), в него добавляется
+        сообщение бота «Вы записаны: <услуга>, <врач>, <дата время>.» на языке диалога (ru/kk/en).
+      requestBody:
+        required: true
+        content: {application/json: {schema: {$ref: "#/components/schemas/AppointmentCreate"}}}
+      responses:
+        "201":
+          description: Запись создана
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  appointment: {$ref: "#/components/schemas/Appointment"}
+                  reply: {$ref: "#/components/schemas/Message"}
+        "400": {description: "Неизвестный врач/услуга, услуга не той специальности, слота нет в расписании, имя не 2–100 символов, телефон не казахстанский", content: {application/json: {schema: {$ref: "#/components/schemas/Error"}}}}
+        "403": {description: Не пациент}
+        "404": {description: dialog_id не найден или чужой}
+        "409": {description: Слот уже занят, content: {application/json: {schema: {$ref: "#/components/schemas/Error"}}}}
+    get:
+      summary: "Записи: пациент — только свои, оператор — все. Сначала новые."
+      responses:
+        "200": {description: Список, content: {application/json: {schema: {type: array, items: {$ref: "#/components/schemas/Appointment"}}}}}
+  /api/appointments/{id}/cancel:
+    post:
+      summary: "Отмена записи (пациент — своей, оператор — любой). Слот возвращается врачу."
+      parameters: [{name: id, in: path, required: true, schema: {type: string, format: uuid}}]
+      responses:
+        "200": {description: Запись отменена, content: {application/json: {schema: {$ref: "#/components/schemas/Appointment"}}}}
+        "404": {description: Запись не найдена или чужая}
+        "409": {description: Запись уже отменена}
+  /api/integration/catalog:
+    put:
+      tags: [integration]
+      summary: "МИС: полная замена каталога (атомарно)"
+      description: |
+        Тело — каталог в формате catalog.json. Проверяется: уникальность id, ссылки услуг и врачей на существующие
+        специальности, формат слотов YYYY-MM-DDTHH:MM (дубликаты слотов убираются, слоты сортируются).
+        Уже занятые записями слоты в каталог не возвращаются.
+      security: [{apiKey: []}]
+      requestBody:
+        required: true
+        content: {application/json: {schema: {$ref: "#/components/schemas/Catalog"}}}
+      responses:
+        "200":
+          description: Каталог заменён
+          content: {application/json: {schema: {type: object, properties: {specialties: {type: integer}, services: {type: integer}, doctors: {type: integer}}}}}
+        "400": {description: Неверный каталог (причина в error), content: {application/json: {schema: {$ref: "#/components/schemas/Error"}}}}
+        "401": {description: Нет или неверный X-API-Key}
+        "503": {description: Интеграция выключена (INTEGRATION_API_KEY не задан)}
+  /api/integration/doctors/{id}/slots:
+    put:
+      tags: [integration]
+      summary: "МИС: замена свободных слотов одного врача"
+      description: Слоты, уже занятые записями (status=booked), отфильтровываются.
+      security: [{apiKey: []}]
+      parameters: [{name: id, in: path, required: true, schema: {type: string}, example: d1}]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [slots]
+              properties: {slots: {type: array, items: {type: string, example: "2026-10-01T09:00"}}}
+      responses:
+        "200":
+          description: Итоговые свободные слоты
+          content: {application/json: {schema: {type: object, properties: {doctor_id: {type: string}, slots: {type: array, items: {type: string}}}}}}
+        "400": {description: Неверный формат слотов}
+        "401": {description: Нет или неверный X-API-Key}
+        "404": {description: Врач не найден}
+        "503": {description: Интеграция выключена}
+  /api/integration/appointments:
+    get:
+      tags: [integration]
+      summary: "МИС: выгрузка записей для импорта"
+      description: |
+        Записи, созданные или изменённые (например, отменённые) начиная с since (включительно), по возрастанию
+        updated_at. Для инкрементальной синхронизации передавайте наибольший полученный updated_at; дубликаты
+        устраняйте по id. Без since — все записи (до 5000).
+      security: [{apiKey: []}]
+      parameters: [{name: since, in: query, required: false, schema: {type: string, format: date-time}, example: "2026-10-01T00:00:00Z"}]
+      responses:
+        "200": {description: Записи, content: {application/json: {schema: {type: array, items: {$ref: "#/components/schemas/Appointment"}}}}}
+        "400": {description: since не в формате RFC3339}
+        "401": {description: Нет или неверный X-API-Key}
+        "503": {description: Интеграция выключена}
   /api/health:
     get:
       security: []
@@ -166,8 +259,51 @@ paths:
 components:
   securitySchemes:
     bearer: {type: http, scheme: bearer, bearerFormat: JWT}
+    apiKey: {type: apiKey, in: header, name: X-API-Key, description: "Ключ МИС для /api/integration/* (env INTEGRATION_API_KEY)"}
   schemas:
     Urgency: {type: string, enum: [green, yellow, red]}
+    Error:
+      type: object
+      properties: {error: {type: string}}
+    Specialty:
+      type: object
+      properties:
+        id: {type: string}
+        name: {type: string}
+        description: {type: string}
+        treats: {type: array, items: {type: string}}
+        i18n: {$ref: "#/components/schemas/I18n"}
+    Catalog:
+      type: object
+      required: [specialties, services, doctors]
+      properties:
+        specialties: {type: array, items: {$ref: "#/components/schemas/Specialty"}}
+        services: {type: array, items: {$ref: "#/components/schemas/Service"}}
+        doctors: {type: array, items: {$ref: "#/components/schemas/Doctor"}, description: slots — только свободные}
+    AppointmentCreate:
+      type: object
+      required: [doctor_id, service_id, slot, patient_name, phone]
+      properties:
+        doctor_id: {type: string, example: d1}
+        service_id: {type: string, example: ther-consult}
+        slot: {type: string, example: "2026-10-01T09:00", description: один из свободных слотов врача}
+        dialog_id: {type: string, format: uuid, description: необязательно; свой диалог — в него придёт подтверждение}
+        patient_name: {type: string, minLength: 2, maxLength: 100}
+        phone: {type: string, example: "+7 701 123-45-67", description: "+7 или 8 и 10 цифр; пробелы, дефисы, скобки допускаются"}
+    Appointment:
+      type: object
+      properties:
+        id: {type: string, format: uuid}
+        dialog_id: {type: string, format: uuid, nullable: true}
+        patient_id: {type: string}
+        doctor_id: {type: string}
+        service_id: {type: string}
+        slot: {type: string, example: "2026-10-01T09:00"}
+        patient_name: {type: string}
+        phone: {type: string}
+        status: {type: string, enum: [booked, cancelled]}
+        created_at: {type: string, format: date-time}
+        updated_at: {type: string, format: date-time}
     Token:
       type: object
       properties: {token: {type: string}, user_id: {type: string}, role: {type: string, enum: [patient, operator]}}

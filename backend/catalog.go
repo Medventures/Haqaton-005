@@ -2,7 +2,9 @@ package main
 
 import (
 	"encoding/json"
+	"net/http"
 	"os"
+	"sync"
 )
 
 // I18n holds translations: {"kk": {"name": ..., "description": ...}, "en": {...}}; base fields are Russian.
@@ -32,7 +34,10 @@ type Doctor struct {
 	Slots       []string `json:"slots"`
 }
 
+// Catalog is shared between requests and can be changed at runtime (bookings, MIS sync): readers take
+// mu.RLock; writers never modify slices in place but swap in new ones under mu.Lock (copy-on-write).
 type Catalog struct {
+	mu          sync.RWMutex
 	Specialties []Specialty `json:"specialties"`
 	Services    []Service   `json:"services"`
 	Doctors     []Doctor    `json:"doctors"`
@@ -48,6 +53,8 @@ func LoadCatalog(path string) (*Catalog, error) {
 }
 
 func (c *Catalog) Specialty(id string) *Specialty {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
 	for i := range c.Specialties {
 		if c.Specialties[i].ID == id {
 			return &c.Specialties[i]
@@ -57,6 +64,8 @@ func (c *Catalog) Specialty(id string) *Specialty {
 }
 
 func (c *Catalog) Service(id string) *Service {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
 	for i := range c.Services {
 		if c.Services[i].ID == id {
 			return &c.Services[i]
@@ -66,6 +75,8 @@ func (c *Catalog) Service(id string) *Service {
 }
 
 func (c *Catalog) ServicesFor(specID string) []Service {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
 	out := []Service{}
 	for _, s := range c.Services {
 		if s.SpecialtyID == specID {
@@ -77,6 +88,8 @@ func (c *Catalog) ServicesFor(specID string) []Service {
 
 // DoctorsFor returns only doctors that have free slots.
 func (c *Catalog) DoctorsFor(specID string) []Doctor {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
 	out := []Doctor{}
 	for _, d := range c.Doctors {
 		if d.SpecialtyID == specID && len(d.Slots) > 0 {
@@ -84,6 +97,18 @@ func (c *Catalog) DoctorsFor(specID string) []Doctor {
 		}
 	}
 	return out
+}
+
+// GET /api/catalog — a consistent snapshot of the catalog.
+func (a *App) catalogHandler(w http.ResponseWriter, r *http.Request) {
+	a.cat.mu.RLock()
+	snap := struct {
+		Specialties []Specialty `json:"specialties"`
+		Services    []Service   `json:"services"`
+		Doctors     []Doctor    `json:"doctors"`
+	}{a.cat.Specialties, a.cat.Services, a.cat.Doctors}
+	a.cat.mu.RUnlock()
+	writeJSON(w, 200, snap)
 }
 
 // Localized returns name/description in lang (ru = base fields).
