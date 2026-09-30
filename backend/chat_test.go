@@ -249,7 +249,7 @@ func TestUnknownSpecialtyIsIgnored(t *testing.T) {
 	}
 }
 
-func TestAfterMaxQuestionsTherapistNotOperator(t *testing.T) {
+func TestAfterMaxQuestionsOperatorTakesOver(t *testing.T) {
 	q := ex("find_service", "", true, "Уточните?", "green")
 	e := setup(t, q, q, q, q)
 	tok := e.patient()
@@ -260,11 +260,8 @@ func TestAfterMaxQuestionsTherapistNotOperator(t *testing.T) {
 		t.Fatalf("third clarification expected: %+v", r)
 	}
 	r = e.chat(tok, r.DialogID, "не знаю")
-	if r.Status != "bot" || len(r.Services) == 0 || r.Services[0].SpecialtyID != "therapist" {
-		t.Fatalf("after %d questions without a specialty: the general practitioner: %+v", maxQuestions, r)
-	}
-	if d, _ := e.a.getDialog(context.Background(), r.DialogID); d.Clarifications != maxQuestions {
-		t.Fatalf("clarifications = %d", d.Clarifications)
+	if r.Status != "operator" || r.TicketID == nil || !strings.Contains(r.Reply.Content, "103") {
+		t.Fatalf("not resolved after %d questions: the operator takes over, with safety advice: %+v", maxQuestions, r)
 	}
 }
 

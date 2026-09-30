@@ -31,9 +31,9 @@ var texts = map[string]map[string]string{
 		"en": "From your description, you do not need urgent help — you can book a regular appointment.",
 	},
 	"handoff": {
-		"ru": "Передаю ваш вопрос оператору — он ответит здесь, в этом чате.",
-		"kk": "Сұрағыңызды операторға жібердім — ол осы чатта жауап береді.",
-		"en": "I am passing your question to an operator — they will reply here in this chat.",
+		"ru": "Передаю ваш вопрос оператору — он ответит здесь, в этом чате. Пока ждёте: если станет хуже, появится сильная боль или трудно дышать — сразу звоните 103.",
+		"kk": "Сұрағыңызды операторға жібердім — ол осы чатта жауап береді. Күтіп тұрғанда жағдайыңыз нашарласа, қатты ауырса немесе тыныс алу қиындаса — дереу 103-ке қоңырау шалыңыз.",
+		"en": "I am passing your question to an operator — they will reply here in this chat. While you wait: if you feel worse, have severe pain or trouble breathing, call 103 right away.",
 	},
 	"ask_pregnancy": {
 		"ru": "Есть ли у вас беременность или её вероятность?",
@@ -418,12 +418,6 @@ func (a *App) process(ctx context.Context, d *Dialog, text string) (*ChatRespons
 		return finish(prefix+q, botData{Actions: actions})
 	}
 
-	// All questions asked and still no specialty: the general practitioner is the first step, not the operator.
-	if ex.SpecialtyID == nil && d.Clarifications >= maxQuestions && isComplaint(ex, text) && a.cat.Specialty("therapist") != nil {
-		th := "therapist"
-		ex.SpecialtyID = &th
-	}
-
 	// 4-5. Specialty found: services + doctors from the catalog, LLM phrases the answer.
 	if ex.SpecialtyID != nil {
 		spec := a.cat.Specialty(*ex.SpecialtyID)
@@ -452,8 +446,9 @@ func (a *App) process(ctx context.Context, d *Dialog, text string) (*ChatRespons
 	}
 
 	// Wanted a service but we could not determine one — hand over.
+	// The bot could not resolve it after its questions: the operator takes over (with the summary).
 	if wantsService {
-		return handoff("Не удалось подобрать специальность (уточнений: "+fmt.Sprint(d.Clarifications)+")", botData{Actions: actions})
+		return handoff("Бот не смог подобрать специалиста после уточняющих вопросов ("+fmt.Sprint(d.Clarifications)+")", botData{Actions: actions})
 	}
 
 	// intent=other: short answer limited to what the clinic offers.
