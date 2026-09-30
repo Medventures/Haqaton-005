@@ -1,0 +1,196 @@
+openapi: 3.0.3
+info:
+  title: Clinic Service Assistant API
+  version: 0.1.0
+  description: |
+    Чат-бот подбора услуг клиники. Порядок обработки сообщения пациента:
+    1) детерминированный триаж red (triage_rules.json) — без LLM;
+    2) LLM-извлечение (language, intent, specialty_id, urgency, ...);
+    3) уточнения (макс. 2 на диалог);
+    4) подбор услуг и врачей из каталога;
+    5) ответ LLM только по данным каталога;
+    6) передача оператору (обращение с summary).
+servers:
+  - url: http://localhost:8088
+security:
+  - bearer: []
+paths:
+  /api/auth/patient:
+    post:
+      summary: Анонимная сессия пациента
+      security: []
+      responses:
+        "200": {description: Токен, content: {application/json: {schema: {$ref: "#/components/schemas/Token"}}}}
+  /api/auth/login:
+    post:
+      summary: Вход оператора
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [username, password]
+              properties: {username: {type: string, example: operator1}, password: {type: string, example: operator1}}
+      responses:
+        "200": {description: Токен, content: {application/json: {schema: {$ref: "#/components/schemas/Token"}}}}
+        "401": {description: Неверный логин/пароль}
+  /api/chat:
+    post:
+      summary: Сообщение пациента (роль patient)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [message]
+              properties:
+                dialog_id: {type: string, format: uuid, description: Пусто — создать новый диалог}
+                message: {type: string, maxLength: 4000}
+      responses:
+        "200": {description: Ответ бота, content: {application/json: {schema: {$ref: "#/components/schemas/ChatResponse"}}}}
+        "400": {description: Пустое сообщение}
+        "401": {description: Нет токена}
+        "404": {description: Диалог не найден или чужой}
+  /api/chat/operator:
+    post:
+      summary: Пациент нажал «Связаться с оператором»
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {type: object, required: [dialog_id], properties: {dialog_id: {type: string, format: uuid}}}
+      responses:
+        "200":
+          description: Обращение создано
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ticket_id: {type: integer}
+                  status: {type: string}
+                  reply: {$ref: "#/components/schemas/Message"}
+  /api/dialogs/{id}:
+    get:
+      summary: Диалог с сообщениями. Пациент — только свой; оператор — только переданные (есть обращение).
+      parameters:
+        - {name: id, in: path, required: true, schema: {type: string, format: uuid}}
+      responses:
+        "200":
+          description: Диалог
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  dialog: {$ref: "#/components/schemas/Dialog"}
+                  messages: {type: array, items: {$ref: "#/components/schemas/Message"}}
+                  tickets: {type: array, items: {$ref: "#/components/schemas/Ticket"}, description: Только для оператора}
+        "404": {description: Не найден}
+  /api/operator/queue:
+    get:
+      summary: Очередь обращений (роль operator), сортировка red → yellow → green, затем по времени
+      parameters:
+        - {name: status, in: query, schema: {type: string, enum: [open, closed, all], default: open}}
+      responses:
+        "200": {description: Очередь, content: {application/json: {schema: {type: array, items: {$ref: "#/components/schemas/Ticket"}}}}}
+        "403": {description: Не оператор}
+  /api/operator/reply:
+    post:
+      summary: Ответ оператора в диалог; close=true закрывает обращение и возвращает диалог боту
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [dialog_id]
+              properties:
+                dialog_id: {type: string, format: uuid}
+                message: {type: string}
+                close: {type: boolean, default: false}
+      responses:
+        "200": {description: OK}
+  /api/catalog:
+    get:
+      summary: Каталог (специальности, услуги, врачи со слотами)
+      security: []
+      responses:
+        "200": {description: Каталог}
+  /api/health:
+    get:
+      security: []
+      summary: Проверка живости
+      responses:
+        "200": {description: OK}
+components:
+  securitySchemes:
+    bearer: {type: http, scheme: bearer, bearerFormat: JWT}
+  schemas:
+    Urgency: {type: string, enum: [green, yellow, red]}
+    Token:
+      type: object
+      properties: {token: {type: string}, user_id: {type: string}, role: {type: string, enum: [patient, operator]}}
+    Service:
+      type: object
+      properties: {id: {type: string}, specialty_id: {type: string}, name: {type: string}, price: {type: integer, description: тенге}, description: {type: string}}
+    Doctor:
+      type: object
+      properties: {id: {type: string}, name: {type: string}, specialty_id: {type: string}, slots: {type: array, items: {type: string, example: "2026-10-01T09:00"}}}
+    Message:
+      type: object
+      properties:
+        id: {type: integer}
+        role: {type: string, enum: [patient, bot, operator]}
+        author: {type: string}
+        content: {type: string}
+        data:
+          type: object
+          description: Для сообщений бота
+          properties:
+            urgency: {$ref: "#/components/schemas/Urgency"}
+            actions: {type: array, items: {type: string, enum: [call_103, contact_operator]}}
+            services: {type: array, items: {$ref: "#/components/schemas/Service"}}
+            doctors: {type: array, items: {$ref: "#/components/schemas/Doctor"}}
+        created_at: {type: string, format: date-time}
+    Dialog:
+      type: object
+      properties:
+        id: {type: string, format: uuid}
+        patient_id: {type: string}
+        status: {type: string, enum: [bot, operator]}
+        language: {type: string, enum: [ru, kk]}
+        urgency: {$ref: "#/components/schemas/Urgency"}
+        urgency_reason: {type: string}
+        clarifications: {type: integer, maximum: 2}
+        summary: {type: string}
+        created_at: {type: string, format: date-time}
+    Ticket:
+      type: object
+      properties:
+        id: {type: integer}
+        dialog_id: {type: string, format: uuid}
+        reason: {type: string, description: Почему передано оператору}
+        summary: {type: string, description: Что хотел пациент и что выяснено}
+        status: {type: string, enum: [open, closed]}
+        urgency: {$ref: "#/components/schemas/Urgency"}
+        language: {type: string}
+        last_message: {type: string}
+        created_at: {type: string, format: date-time}
+        updated_at: {type: string, format: date-time}
+    ChatResponse:
+      type: object
+      properties:
+        dialog_id: {type: string, format: uuid}
+        status: {type: string, enum: [bot, operator]}
+        urgency: {$ref: "#/components/schemas/Urgency"}
+        urgency_reason: {type: string}
+        language: {type: string, enum: [ru, kk]}
+        reply: {allOf: [{$ref: "#/components/schemas/Message"}], nullable: true, description: null — диалог у оператора, бот молчит}
+        actions: {type: array, items: {type: string, enum: [call_103, contact_operator]}}
+        services: {type: array, items: {$ref: "#/components/schemas/Service"}}
+        doctors: {type: array, items: {$ref: "#/components/schemas/Doctor"}}
+        ticket_id: {type: integer, nullable: true}
