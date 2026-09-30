@@ -29,7 +29,7 @@ export const dict: Record<Lang, Dict> = {
     nav: { how: 'Как работает', levels: 'Срочность', operators: 'Операторам', api: 'Интеграция', open: 'Открыть чат' },
     hero: {
       title: 'Подскажет, к какому врачу идти. И заметит, когда ждать нельзя — особенно во время беременности.',
-      lead: 'AnaCare — ассистент для женщин, в первую очередь по акушерству и гинекологии: планирование, беременность, период после родов. Учитывает срок беременности и факторы риска, оценивает срочность — зелёный, жёлтый, красный — и при опасных признаках сразу направляет к 103 и на срочную консультацию акушера-гинеколога. Модель работает локально, отвечает на казахском, русском и английском. Написать может и любой другой пациент.',
+      lead: 'AnaCare подбирает врача любого профиля в клинике, а к женщинам и беременным относится с особым вниманием: планирование, беременность, период после родов. Учитывает срок беременности и факторы риска, оценивает срочность — зелёный, жёлтый, красный — и при опасных признаках сразу направляет к 103 и на срочную консультацию акушера-гинеколога. Модель работает локально, отвечает на казахском, русском и английском.',
       open: 'Открыть чат',
       operator: 'Вход для операторов',
       replay: 'Показать снова',
@@ -108,7 +108,7 @@ export const dict: Record<Lang, Dict> = {
     nav: { how: 'Қалай жұмыс істейді', levels: 'Шұғылдық', operators: 'Операторларға', api: 'Интеграция', open: 'Чатты ашу' },
     hero: {
       title: 'Қай дәрігерге бару керегін айтады. Күтуге болмайтынын да байқайды — әсіресе жүктілік кезінде.',
-      lead: 'AnaCare — әйелдерге арналған көмекші, ең алдымен акушерлік және гинекология бойынша: жүктілікті жоспарлау, жүктілік, босанғаннан кейінгі кезең. Жүктілік мерзімі мен қауіп факторларын ескереді, шұғылдықты бағалайды — жасыл, сары, қызыл — және қауіпті белгілер болса, бірден 103-ке және акушер-гинекологтың шұғыл кеңесіне бағыттайды. Модель жергілікті жұмыс істейді, қазақ, орыс және ағылшын тілдерінде жауап береді. Басқа науқастар да жаза алады.',
+      lead: 'AnaCare клиникадағы кез келген бейіндегі дәрігерді табады, ал әйелдер мен жүкті әйелдерге ерекше назар аударады: жүктілікті жоспарлау, жүктілік, босанғаннан кейінгі кезең. Жүктілік мерзімі мен қауіп факторларын ескереді, шұғылдықты бағалайды — жасыл, сары, қызыл — және қауіпті белгілер болса, бірден 103-ке және акушер-гинекологтың шұғыл кеңесіне бағыттайды. Модель жергілікті жұмыс істейді, қазақ, орыс және ағылшын тілдерінде жауап береді.',
       open: 'Чатты ашу',
       operator: 'Операторларға кіру',
       replay: 'Қайта көрсету',
@@ -187,7 +187,7 @@ export const dict: Record<Lang, Dict> = {
     nav: { how: 'How it works', levels: 'Urgency', operators: 'For operators', api: 'Integration', open: 'Open chat' },
     hero: {
       title: 'Tells you which doctor to see. And notices when it can’t wait — especially during pregnancy.',
-      lead: 'AnaCare is an assistant for women, with obstetrics and gynecology first: planning, pregnancy and the postpartum period. It takes the pregnancy week and risk factors into account, rates urgency as green, yellow or red, and on warning signs sends the patient straight to 103 and to an urgent obstetrician-gynecologist consultation. The model runs locally and answers in Kazakh, Russian and English. Any other patient can write too.',
+      lead: 'AnaCare finds a doctor of any specialty at the clinic and pays special attention to women and pregnancy: planning, pregnancy and the postpartum period. It takes the pregnancy week and risk factors into account, rates urgency as green, yellow or red, and on warning signs sends the patient straight to 103 and to an urgent obstetrician-gynecologist consultation. The model runs locally and answers in Kazakh, Russian and English.',
       open: 'Open chat',
       operator: 'Operator sign-in',
       replay: 'Play again',
