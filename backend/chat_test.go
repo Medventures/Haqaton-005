@@ -1015,3 +1015,25 @@ func TestPlainHeadacheGoesToGP(t *testing.T) {
 		t.Fatal("a plain headache must get a specialty (GP on a tie), not the operator")
 	}
 }
+
+func TestBankSkipsAlreadyAnsweredQuestions(t *testing.T) {
+	qb, _ := LoadQuestions("../questions.json")
+	// throat: q1 fever, q2 cough/runny nose, q3 swallowing; patient already said fever and runny nose + cough
+	_, q := qb.Question("болит горло, температура 37.8, насморк и кашель", 0, "ru")
+	if q != "Больно ли глотать? Есть ли налёт на миндалинах?" {
+		t.Fatalf("answered questions must be skipped, got %q", q)
+	}
+	_, q = qb.Question("болит горло", 0, "ru")
+	if q != "Есть ли температура? Если да — какая?" {
+		t.Fatalf("nothing answered yet: first question, got %q", q)
+	}
+}
+
+func TestBankNextDoesNotSkipAfterTopicAnswer(t *testing.T) {
+	qb, _ := LoadQuestions("../questions.json")
+	asked := []string{"Есть ли температура? Если да — какая?"}
+	_, q := qb.Next("болит горло да, температура 38", asked, "ru")
+	if q != "Есть ли кашель или насморк?" {
+		t.Fatalf("after the fever answer the next question is about cough/runny nose, got %q", q)
+	}
+}

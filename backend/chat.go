@@ -386,7 +386,13 @@ func (a *App) process(ctx context.Context, d *Dialog, text string) (*ChatRespons
 		}
 		defaultQ := t([]string{"ask_first", "ask_second", "ask_third"}[d.Clarifications], d.Language)
 		// Curated questions for known complaint types; the model's question only for ru/en and only if it is sane.
-		if _, bank := a.questions.Question(strings.Join(patientMsgs, " "), d.Clarifications, d.Language); bank != "" {
+		var asked []string
+		for _, m := range hist {
+			if m.Role == "bot" {
+				asked = append(asked, m.Content)
+			}
+		}
+		if _, bank := a.questions.Next(strings.Join(patientMsgs, " "), asked, d.Language); bank != "" {
 			q = bank
 		} else if q == "" || d.Language == "kk" || lastBotSaid(hist, q) || !inLanguage(q, d.Language) {
 			q = defaultQ
