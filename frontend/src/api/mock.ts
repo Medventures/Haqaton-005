@@ -1,8 +1,10 @@
-import type { ChatResponse, DialogResponse, Message, Ticket, UploadResponse } from './types'
+import type { Appointment, AppointmentCreate, AppointmentResponse, Catalog, ChatResponse, DialogResponse, Message, Ticket, UploadResponse } from './types'
+import { ApiError } from './errors'
 const dialogs = new Map<string, DialogResponse>()
 const services = [{ id: 'therapy', specialty_id: 'therapy', name: 'Приём терапевта', price: 8000, description: 'Первичная консультация специалиста.' }]
 const doctors = [{ id: 'doctor-1', specialty_id: 'therapy', name: 'Айдана Сәрсенова', slots: ['2026-10-01T09:00', '2026-10-01T11:30'] }]
 const files = new Map<string, Blob>()
+const appointments: Appointment[] = []
 // shown for attachment ids the mock has never seen (e.g. after a reload)
 const placeholder = () => new Blob(['<svg xmlns="http://www.w3.org/2000/svg" width="440" height="300"><rect width="440" height="300" fill="#EEF1EE"/><text x="220" y="156" font-family="Inter, sans-serif" font-size="20" fill="#5D6963" text-anchor="middle">Файл недоступен в демо-режиме</text></svg>'], { type: 'image/svg+xml' })
 const wait = (ms = 700) => new Promise(resolve => setTimeout(resolve, ms))
@@ -36,4 +38,30 @@ export const mock = {
   },
   async attachmentBlob(id: string) { await wait(150); return files.get(id) || placeholder() },
   async reply(id: string, message?: string, close = false) { const d = dialogs.get(id); if (d && message) d.messages.push({ role: 'operator', content: message }); if (d && close) d.dialog.status = 'bot'; return { ok: true } },
+  async catalog(): Promise<Catalog> { await wait(150); return { services, doctors: doctors.map(doctor => ({ ...doctor, slots: [...doctor.slots] })) } },
+  // fake booking: same rules the server enforces that the UI reacts to (400 phone, 409 taken slot)
+  async book(body: AppointmentCreate): Promise<AppointmentResponse> {
+    await wait(500)
+    if (body.phone.replace(/\D/g, '').length !== 11) throw new ApiError('Телефон должен быть казахстанским: +7 и 10 цифр', 400, 'Телефон должен быть казахстанским: +7 и 10 цифр')
+    const doctor = doctors.find(item => item.id === body.doctor_id)
+    if (!doctor?.slots.includes(body.slot)) throw new ApiError('Слот уже занят', 409, 'Слот уже занят')
+    doctor.slots = doctor.slots.filter(slot => slot !== body.slot)
+    const now = new Date().toISOString()
+    const appointment: Appointment = { id: crypto.randomUUID(), dialog_id: body.dialog_id ?? null, patient_id: 'demo-patient', doctor_id: body.doctor_id, service_id: body.service_id, slot: body.slot, patient_name: body.patient_name, phone: body.phone, status: 'booked', created_at: now, updated_at: now }
+    appointments.unshift(appointment)
+    const service = services.find(item => item.id === body.service_id)
+    const reply: Message = { role: 'bot', content: `Вы записаны: ${service?.name ?? body.service_id}, ${doctor.name}, ${body.slot.replace('T', ' ')}.`, created_at: now }
+    return { appointment, reply }
+  },
+  async appointments() { await wait(150); return appointments.map(item => ({ ...item })) },
+  async cancelAppointment(id: string) {
+    await wait(300)
+    const appointment = appointments.find(item => item.id === id)
+    if (!appointment) throw new ApiError('Запись не найдена', 404, 'Запись не найдена')
+    if (appointment.status === 'cancelled') throw new ApiError('Запись уже отменена', 409, 'Запись уже отменена')
+    appointment.status = 'cancelled'; appointment.updated_at = new Date().toISOString()
+    const doctor = doctors.find(item => item.id === appointment.doctor_id)
+    if (doctor && !doctor.slots.includes(appointment.slot)) doctor.slots = [...doctor.slots, appointment.slot].sort()
+    return { ...appointment }
+  },
 }

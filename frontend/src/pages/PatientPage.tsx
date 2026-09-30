@@ -3,6 +3,7 @@ import { ArrowUp, Paperclip, PhoneCall, SquarePen } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { api } from '../api/client'
 import type { Dialog, DialogResponse, Language, Message } from '../api/types'
+import { ServiceOffers } from '../components/Booking'
 import { ATTACHMENT_TYPES, AttachmentList, attachmentsOf, isAllowedAttachment } from '../components/Attachments'
 
 export default function PatientPage() {
@@ -14,7 +15,6 @@ export default function PatientPage() {
   const [typing, setTyping] = useState(false)
   const [uploading, setUploading] = useState(false)
   const [error, setError] = useState('')
-  const [toast, setToast] = useState('')
   const [ready, setReady] = useState(false)
   const [dismissedRed, setDismissedRed] = useState('')
   // operator-message count at the moment of an urgent handoff; null = not waiting for a specialist
@@ -110,7 +110,6 @@ export default function PatientPage() {
       }
     } catch (e) { setError(e instanceof Error ? e.message : t('network')) }
   }
-  function showToast() { setToast(t('accepted')); window.setTimeout(() => setToast(''), 2400) }
 
   const riskActions = latestRed?.data?.actions || []
   return <main className="patient-page">
@@ -118,7 +117,7 @@ export default function PatientPage() {
     {showRisk && latestRed ? <section className="risk-screen"><div className="risk-screen-content"><span className="risk-screen-kicker">{t('riskKicker')}</span><h1>{t('riskTitle')}</h1><p className="risk-screen-lead">{t('riskLead')}</p><p className="risk-screen-message">{latestRed.content}</p><p>{t('riskAdvice')}</p><div className="risk-actions">{riskActions.map(action => action === 'call_103' ? <a className="call-button" key={action} href="tel:103"><PhoneCall size={18}/>{t('actions.call_103')}</a> : (action === 'contact_operator' || action === 'urgent_operator') ? <button className="contact-button" key={action} onClick={() => void contactOperator(action)}>{t(`actions.${action}`)}</button> : null)}</div><p className="medical-disclaimer">{t('disclaimer')}</p><button className="risk-return" onClick={() => setDismissedRed(redKey(latestRed))}>{language === 'ru' ? 'Вернуться в чат' : language === 'kk' ? 'Чатқа оралу' : 'Return to chat'}</button></div></section> : <section className="patient-content"><div className="patient-intro"><span className="eyebrow">ANACARE</span><h1>{t('title')}</h1><p>{t('subtitle')}</p></div>
       <section className="chat-panel" aria-label="Patient chat"><div className="chat-toolbar"><div className="online-indicator"/><span>AnaCare</span><span className="chat-toolbar-sub">· {t('consultation')}</span>{messages.length > 0 && <button type="button" className="new-chat-button" onClick={() => void newChat()} disabled={busy}><SquarePen size={16} strokeWidth={1.75} />{t('newChat')}</button>}</div>
         <div className="chat-messages">{!messages.length && ready && <div className="welcome-content"><div className="welcome-note">{t('greet')}</div><div className="welcome-examples"><span>{t('examples.title')}</span>{(['item1', 'item2', 'item3'] as const).map(key => <button key={key} type="button" disabled={busy} onClick={() => void sendMessage(t(`examples.${key}`))}>{t(`examples.${key}`)}</button>)}</div></div>}
-          {messages.map((message, index) => <MessageView key={`${index}-${message.id || message.content.slice(0, 8)}`} message={message} language={language} onOperator={action => void contactOperator(action)} onBook={showToast} />)}
+          {messages.map((message, index) => <MessageView key={`${index}-${message.id || message.content.slice(0, 8)}`} message={message} language={language} dialogId={dialog?.id} onOperator={action => void contactOperator(action)} onReply={reply => setMessages(current => [...current, reply])} />)}
           {waitingSpecialist && <div className="chat-message bot-message" role="status"><div className="typing-bubble waiting-bubble"><span className="spinner" aria-hidden="true"/>{t('waitingSpecialist')}</div></div>}
           {busy && <div className="chat-message bot-message"><div className="typing-bubble"><span className="typing-dots"><i/><i/><i/></span>{t('typing')}</div></div>}
           <div ref={bottom}/>
@@ -126,11 +125,11 @@ export default function PatientPage() {
         <form className={`message-form${error ? ' has-error' : ''}`} onSubmit={send}><button type="button" className="attach-button" onClick={() => fileInput.current?.click()} disabled={busy || !ready} aria-label={t('attach')} title={t('attach')}><Paperclip size={20} strokeWidth={1.75}/></button><input ref={fileInput} type="file" hidden accept={ATTACHMENT_TYPES.join(',')} onChange={e => { const file = e.target.files?.[0]; e.target.value = ''; if (file) void attachFile(file) }} /><textarea value={input} disabled={uploading} onChange={e => setInput(e.target.value)} placeholder={t('placeholder')} rows={1} maxLength={4000} aria-label={t('placeholder')} onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); void send(e) } }} /><button type="submit" className="send-button" disabled={!input.trim() || busy || !ready} aria-label={t('send')}><ArrowUp size={19}/></button><span className="form-hint">{error || 'Enter ↵'}</span></form>
       </section>
       <footer className="patient-footer">{t('patientFooter')} <a href="tel:103">103</a></footer>
-    </section>}{toast && <div className="toast" role="status">{toast}</div>}
+    </section>}
   </main>
 }
 
-function MessageView({ message, language, onOperator, onBook }: { message: Message; language: Language; onOperator: (action: string) => void; onBook: () => void }) {
+function MessageView({ message, language, dialogId, onOperator, onReply }: { message: Message; language: Language; dialogId?: string; onOperator: (action: string) => void; onReply: (message: Message) => void }) {
   const { t } = useTranslation()
   const urgency = message.data?.urgency
   const actions = message.data?.actions || []
@@ -146,11 +145,6 @@ function MessageView({ message, language, onOperator, onBook }: { message: Messa
     {urgency && urgency !== 'green' && <div className="medical-disclaimer">{t('disclaimer')}</div>}
     {actions.includes('call_103') && <a className="call-button" href="tel:103"><PhoneCall size={18}/>{t('actions.call_103')}</a>}
     {actions.filter(action => action === 'contact_operator' || action === 'urgent_operator').map(action => <button className="contact-button" key={action} onClick={() => onOperator(action)}>{t(`actions.${action}`)}</button>)}
-    {services.length > 0 && <div className="services-list">{services.map(service => { const specialty = typeof service.specialty === 'string' ? service.specialty : service.specialty?.i18n?.[language]?.name ?? service.specialty?.name; return <article className="service-card" key={service.id}><h3>{service.i18n?.[language]?.name ?? service.name}</h3>{(service.i18n?.[language]?.specialty ?? specialty) && <span className="service-specialty">{service.i18n?.[language]?.specialty ?? specialty}</span>}<p>{service.i18n?.[language]?.description ?? service.description}</p><div className="service-bottom"><strong>{service.price.toLocaleString(locale(language))} ₸</strong><button onClick={onBook}>{t('book')}</button></div></article>})}</div>}
-    {doctors.length > 0 && <section className="doctors-block"><h4>{t('doctors')}</h4>{doctors.map(doctor => <div className="doctor-row" key={doctor.id}><b>{doctor.name}</b><div className="slots">{doctor.slots.map(slot => <span key={slot}>{formatSlot(slot, language)}</span>)}</div></div>)}</section>}
+    {(services.length > 0 || doctors.length > 0) && <ServiceOffers services={services} doctors={doctors} language={language} dialogId={dialogId} onReply={onReply} />}
   </div>
-}
-function locale(language: Language) { return language === 'kk' ? 'kk-KZ' : language === 'en' ? 'en-US' : 'ru-RU' }
-function formatSlot(value: string, language: Language) {
-  return new Intl.DateTimeFormat(locale(language), { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }).format(new Date(value))
 }

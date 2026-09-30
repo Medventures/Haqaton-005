@@ -42,7 +42,17 @@
     "errorDialog": "Диалогты жүктеу мүмкін болмады",
     "errorReply": "Жауап жіберілмеді",
     "errorClose": "Өтініш жабылмады",
-    "pregnancy": "Жүктілік, {{weeks}} апта"
+    "pregnancy": "Жүктілік, {{weeks}} апта",
+    "appointments": "Жазылулар",
+    "appointmentsHint": "Пациенттердің дәрігерге жазылуы",
+    "emptyAppointments": "Әзірге жазылу жоқ",
+    "cancelAppointment": "Болдырмау",
+    "cancellingAppointment": "Болдырмай жатырмыз…",
+    "statusBooked": "Жазылған",
+    "statusCancelled": "Жойылған",
+    "errorAppointments": "Жазылуларды жүктеу мүмкін болмады",
+    "errorCancelAppointment": "Жазылуды болдырмау мүмкін болмады",
+    "sections": "Бөлімдер"
   },
   "urgentOperator": "Акушер-гинекологтың шұғыл кеңесі",
   "waitingSpecialist": "Бос маманды іздеп жатырмыз…",
@@ -72,5 +82,24 @@
   "newChat": "Жаңа чат",
   "attach": "Сурет не PDF тіркеу",
   "attachmentError": "JPG, PNG, WEBP суретін немесе 10 МБ-қа дейінгі PDF тіркеуге болады",
-  "attachments": "Тіркемелер"
+  "attachments": "Тіркемелер",
+  "booking": {
+    "title": "Жазылу: {{service}}",
+    "doctor": "Дәрігер",
+    "slot": "Уақыт",
+    "name": "Аты-жөніңіз",
+    "phone": "Телефон",
+    "submit": "Жазылуды растау",
+    "sending": "Жазып жатырмыз…",
+    "hide": "Жасыру",
+    "noSlots": "Бос уақыт жоқ",
+    "noDoctors": "Бұл мамандық бойынша дәрігер қазір тізімде жоқ",
+    "done": "Сіз жазылдыңыз: {{service}}, {{doctor}}, {{slot}}",
+    "cancel": "Жазылудан бас тарту",
+    "cancelling": "Бас тартып жатырмыз…",
+    "cancelled": "Жазылу жойылды",
+    "taken": "Бұл уақытты біреу алып қойды, басқасын таңдаңыз",
+    "error": "Жазылу мүмкін болмады. Қайталап көріңіз.",
+    "cancelError": "Жазылудан бас тарту мүмкін болмады. Қайталап көріңіз."
+  }
 }

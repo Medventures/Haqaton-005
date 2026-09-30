@@ -42,7 +42,17 @@
     "errorDialog": "Could not load conversation",
     "errorReply": "Could not send reply",
     "errorClose": "Could not close request",
-    "pregnancy": "Pregnancy, week {{weeks}}"
+    "pregnancy": "Pregnancy, week {{weeks}}",
+    "appointments": "Appointments",
+    "appointmentsHint": "Patient bookings with doctors",
+    "emptyAppointments": "No appointments yet",
+    "cancelAppointment": "Cancel",
+    "cancellingAppointment": "Cancelling…",
+    "statusBooked": "Booked",
+    "statusCancelled": "Cancelled",
+    "errorAppointments": "Could not load appointments",
+    "errorCancelAppointment": "Could not cancel the appointment",
+    "sections": "Sections"
   },
   "urgentOperator": "Urgent obstetrician-gynecologist consultation",
   "waitingSpecialist": "Looking for an available specialist…",
@@ -72,5 +82,24 @@
   "newChat": "New chat",
   "attach": "Attach a photo or PDF",
   "attachmentError": "You can attach a photo (JPG, PNG, WEBP) or a PDF up to 10 MB",
-  "attachments": "Attachments"
+  "attachments": "Attachments",
+  "booking": {
+    "title": "Booking: {{service}}",
+    "doctor": "Doctor",
+    "slot": "Time",
+    "name": "Full name",
+    "phone": "Phone",
+    "submit": "Confirm booking",
+    "sending": "Booking…",
+    "hide": "Hide",
+    "noSlots": "No free time",
+    "noDoctors": "No doctors of this specialty in this list right now",
+    "done": "You are booked: {{service}}, {{doctor}}, {{slot}}",
+    "cancel": "Cancel booking",
+    "cancelling": "Cancelling…",
+    "cancelled": "Booking cancelled",
+    "taken": "This time has just been taken, please choose another",
+    "error": "Could not book. Please try again.",
+    "cancelError": "Could not cancel the booking. Please try again."
+  }
 }
