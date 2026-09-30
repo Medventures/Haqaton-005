@@ -43,6 +43,11 @@ var texts = map[string]map[string]string{
 		"kk": "Тағы бірдеңе бар ма: қызу, жүрек айну, әлсіздік? Кеңес кімге керек — өзіңізге ме, балаңызға ма?",
 		"en": "Anything else, such as fever, nausea or weakness? And is the appointment for you or for a child?",
 	},
+	"ask_third": {
+		"ru": "Есть ли у вас хронические заболевания, аллергия или беременность? Принимали ли вы что-то от этих симптомов?",
+		"kk": "Созылмалы ауру, аллергия немесе жүктілік бар ма? Осы белгілерге қарсы бірдеңе қабылдадыңыз ба?",
+		"en": "Do you have any chronic conditions, allergies or a pregnancy? Have you taken anything for these symptoms?",
+	},
 	"clarify": {
 		"ru": "Уточните, пожалуйста: что именно беспокоит, где и как давно?",
 		"kk": "Нақтылап жазыңызшы: не мазалайды, қай жерде және қашаннан бері?",
@@ -218,7 +223,7 @@ func (a *App) process(ctx context.Context, d *Dialog, text string) (*ChatRespons
 		fmt.Fprintf(&transcript, "%s: %s\n", who, string(content))
 	}
 	ex, ok := a.llm.Extract(ctx, []chatMsg{
-		{"system", extractionPrompt(a.cat, a.triage, 2-d.Clarifications, d, promptLang(text, d))},
+		{"system", extractionPrompt(a.cat, a.triage, maxQuestions-d.Clarifications, d, promptLang(text, d))},
 		{"user", "Диалог:\n" + transcript.String()},
 	}, a.cat)
 	if !ok && d.Summary == "" {
@@ -229,8 +234,8 @@ func (a *App) process(ctx context.Context, d *Dialog, text string) (*ChatRespons
 	// ("басым ауырады" has no special letters): the model misjudges this too often.
 	if l := detectLanguage(text); l != "" {
 		ex.Language = l
-	} else if ex.Language == "kk" && d.Language == "kk" {
-		ex.Language = "kk"
+	} else if ex.Language == "kk" && (d.Language == "kk" || !hasRussianWords(text)) {
+		ex.Language = "kk" // "Басым ауырып жатыр" has no Kazakh-only letters but no Russian words either
 	} else {
 		ex.Language = "ru"
 	}
@@ -324,17 +329,14 @@ func (a *App) process(ctx context.Context, d *Dialog, text string) (*ChatRespons
 		return finish(t("ask_pregnancy", d.Language), botData{})
 	}
 
-	// Ask first: for a complaint, two clarifying questions before any urgency level or services are shown
-	// (red is still decided immediately above). They use the 2-clarification limit.
-	if a.askFirst && !d.Assessed && ex.Intent == "find_service" && d.Clarifications < 2 {
+	// Ask first: for a complaint, up to maxQuestions symptom-specific questions (from the model; generic ones
+	// only as a fallback) before any urgency level or services are shown. Red is decided immediately above.
+	if a.askFirst && !d.Assessed && isComplaint(ex, text) && d.Clarifications < maxQuestions {
 		q := ""
 		if ex.ClarifyingQuestion != nil {
 			q = strings.TrimSpace(*ex.ClarifyingQuestion)
 		}
-		defaultQ := t("ask_first", d.Language)
-		if d.Clarifications == 1 {
-			defaultQ = t("ask_second", d.Language)
-		}
+		defaultQ := t([]string{"ask_first", "ask_second", "ask_third"}[d.Clarifications], d.Language)
 		if q == "" || lastBotSaid(hist, q) {
 			q = defaultQ
 		}
@@ -360,10 +362,10 @@ func (a *App) process(ctx context.Context, d *Dialog, text string) (*ChatRespons
 		q = strings.TrimSpace(*ex.ClarifyingQuestion)
 	}
 	wantsService := ex.Intent == "find_service" || ex.Intent == "service_info"
-	if q == "" && d.Clarifications < 2 && ex.SpecialtyID == nil && (ex.NeedClarification || wantsService) {
+	if q == "" && d.Clarifications < maxQuestions && ex.SpecialtyID == nil && (ex.NeedClarification || wantsService) {
 		q = t("clarify", d.Language) // model asked for clarification but gave no question
 	}
-	if (ex.NeedClarification || ex.SpecialtyID == nil && wantsService) && q != "" && d.Clarifications < 2 {
+	if (ex.NeedClarification || ex.SpecialtyID == nil && wantsService) && q != "" && d.Clarifications < maxQuestions {
 		d.Clarifications++
 		return finish(prefix+q, botData{Actions: actions})
 	}
@@ -636,6 +638,41 @@ func lastBotSaid(hist []Message, q string) bool {
 	for i := len(hist) - 1; i >= 0; i-- {
 		if hist[i].Role == "bot" {
 			return strings.EqualFold(strings.TrimSpace(hist[i].Content), q)
+		}
+	}
+	return false
+}
+
+// maxQuestions: clarifying questions per dialog before the bot matches a doctor or hands over.
+const maxQuestions = 3
+
+var directRequestWords = []string{"сколько стоит", "цена", "стоимость", "свобод", "записат", "запись", "бағасы", "қанша тұрады",
+	"бос уақыт", "бос ба", "жазыл", "price", "cost", "how much", "free slot", "book"}
+
+// isComplaint: questions are asked for complaints — also when the model labels them service_info
+// ("тіс ауырып жатыр") — but not for direct price/slot/booking requests.
+func isComplaint(ex Extraction, text string) bool {
+	if ex.Intent != "find_service" && ex.Intent != "service_info" {
+		return false
+	}
+	n := normalize(text)
+	for _, w := range directRequestWords {
+		if strings.Contains(n, w) {
+			return false
+		}
+	}
+	return true
+}
+
+var russianWords = map[string]bool{"и": true, "в": true, "не": true, "на": true, "у": true, "меня": true, "мне": true, "что": true,
+	"как": true, "уже": true, "очень": true, "есть": true, "нет": true, "болит": true, "болят": true, "боль": true, "день": true,
+	"дня": true, "дней": true, "сильно": true, "можно": true, "где": true, "когда": true, "хочу": true, "я": true, "с": true,
+	"по": true, "для": true, "это": true, "да": true, "температура": true, "голова": true, "живот": true, "горло": true}
+
+func hasRussianWords(text string) bool {
+	for _, w := range strings.Fields(normalize(text)) {
+		if russianWords[w] {
+			return true
 		}
 	}
 	return false

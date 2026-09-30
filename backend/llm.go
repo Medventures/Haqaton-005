@@ -115,7 +115,7 @@ func extractionSchema(c *Catalog) map[string]any {
 
 // promptTreats: complaint keywords per specialty in the prompt. The prompt must fit a 4096-token context
 // together with the dialog (see TestExtractionPromptFitsContext).
-const promptTreats = 3 // per language: 3 Russian + 3 Kazakh complaint keywords
+const promptTreats = 2 // per language: 2 Russian + 2 Kazakh complaint keywords
 
 // promptTreatsOf keeps both languages: Kazakh keywords sit at the end of the list, and a plain
 // cut dropped them ("тамағым ауырады" went to the gastroenterologist).
@@ -140,7 +140,7 @@ func extractionPrompt(c *Catalog, t *TriageRules, clarLeft int, d *Dialog, lang 
 - intent: find_service (жалоба, подобрать врача), service_info (вопрос об услуге/цене/враче/подготовке), operator (просит человека), other (приветствие, не по теме).
 - specialty_id: id строго из списка ниже или null.
 - need_clarification: true только если жалоба слишком общая («мне плохо»).
-- clarifying_question: один короткий вопрос о симптомах (где, как давно, насколько сильно) на языке пациента или null. Не про диагноз, не то, что уже известно.
+- clarifying_question: один короткий вопрос на языке пациента о СОПУТСТВУЮЩИХ симптомах именно для этой жалобы, которого ещё не было в диалоге. Примеры: головная боль → есть ли температура, давление, тошнота, травма головы; горло → температура, кашель, трудно глотать; живот → где именно болит, тошнота, стул; кашель → температура, одышка, мокрота; сыпь → зуд, где, после чего появилась. Не про диагноз. null, только если всё уже выяснено.
 - urgency: yellow — нужна помощь в ближайшие 1–2 дня (сильная/нарастающая боль, высокая температура, кровь, травма, беременность, ребёнок с температурой), иначе green. urgency_reason: коротко, по-русски.
 - pregnant: true/false, если сказано; иначе null. gestation_weeks: срок в неделях или null.
 - ask_pregnancy: true, если женщина описывает боль внизу живота, кровянистые выделения, тошноту или задержку, а о беременности не сказано.
@@ -173,13 +173,14 @@ func extractionPrompt(c *Catalog, t *TriageRules, clarLeft int, d *Dialog, lang 
 	return sb.String()
 }
 
-const answerSystemPrompt = `Ты — вежливый администратор медицинской клиники в чате. Отвечай кратко (2-4 предложения), на языке пациента (%s: ru = русский, kk = қазақ тілі, en = English).
+const answerSystemPrompt = `Ты — вежливый администратор медицинской клиники в чате. Отвечай кратко (3-5 предложений), на языке пациента (%s: ru = русский, kk = қазақ тілі, en = English).
 Строгие правила:
 - НЕ ставь диагноз и не называй возможные болезни.
 - НЕ назначай лечение, лекарства, дозировки, процедуры.
 - Используй ТОЛЬКО услуги, цены, врачей и слоты из переданных ДАННЫХ. Ничего не придумывай. Если нужного нет в данных — так и скажи и предложи связаться с оператором.
 - Цены пиши в тенге (₸).
-- Карточки услуг пациент увидит отдельно, поэтому просто кратко подведи: к какому специалисту стоит обратиться и ближайшие свободные слоты.`
+- Карточки услуг пациент увидит отдельно, поэтому кратко подведи: к какому специалисту стоит обратиться и ближайшие свободные слоты.
+- Добавь 1–2 общих безопасных совета до приёма (отдых, больше пить воды, не терпеть сильную боль, при каких признаках сразу звонить 103) — без названий лекарств, дозировок и диагнозов.`
 
 // Extract runs the extraction with one retry on unparsable output; after that it returns
 // the safe fallback (urgency=yellow, intent=operator) and ok=false.

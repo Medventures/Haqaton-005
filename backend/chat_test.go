@@ -249,21 +249,21 @@ func TestUnknownSpecialtyIsIgnored(t *testing.T) {
 	}
 }
 
-func TestMaxTwoClarificationsThenHandoff(t *testing.T) {
+func TestMaxQuestionsThenHandoff(t *testing.T) {
 	q := ex("find_service", "", true, "Уточните?", "green")
-	e := setup(t, q, q, q)
+	e := setup(t, q, q, q, q)
 	tok := e.patient()
 	r := e.chat(tok, "", "плохо")
 	r = e.chat(tok, r.DialogID, "очень плохо")
+	r = e.chat(tok, r.DialogID, "совсем плохо")
 	if r.Reply.Content != "Уточните?" || r.Status != "bot" {
-		t.Fatalf("second clarification expected: %+v", r)
+		t.Fatalf("third clarification expected: %+v", r)
 	}
 	r = e.chat(tok, r.DialogID, "не знаю")
 	if r.Status != "operator" || r.TicketID == nil {
-		t.Fatalf("after 2 clarifications without specialty must hand off: %+v", r)
+		t.Fatalf("after %d clarifications without specialty must hand off: %+v", maxQuestions, r)
 	}
-	d, _ := e.a.getDialog(context.Background(), r.DialogID)
-	if d.Clarifications != 2 {
+	if d, _ := e.a.getDialog(context.Background(), r.DialogID); d.Clarifications != maxQuestions {
 		t.Fatalf("clarifications = %d", d.Clarifications)
 	}
 }
@@ -272,13 +272,15 @@ func TestClarificationLimitThenPicksSpecialty(t *testing.T) {
 	e := setup(t,
 		ex("find_service", "", true, "Где болит?", "green"),
 		ex("find_service", "", true, "Как давно?", "green"),
+		ex("find_service", "", true, "Тошнота есть?", "green"),
 		ex("find_service", "gastroenterologist", true, "Ещё вопрос?", "green"))
 	tok := e.patient()
 	r := e.chat(tok, "", "болит")
 	r = e.chat(tok, r.DialogID, "живот")
 	r = e.chat(tok, r.DialogID, "неделю")
+	r = e.chat(tok, r.DialogID, "нет")
 	if r.Status != "bot" || len(r.Services) == 0 || r.Services[0].SpecialtyID != "gastroenterologist" {
-		t.Fatalf("third turn must pick specialty, not ask again: %+v", r)
+		t.Fatalf("after the limit the specialty is picked, no more questions: %+v", r)
 	}
 }
 
@@ -621,7 +623,7 @@ func TestKazakhAnswersUseKazakhModel(t *testing.T) {
 
 func TestAskFirstBeforeUrgencyAndServices(t *testing.T) {
 	y := ex("find_service", "therapist", false, "", "yellow")
-	e := setup(t, y, y, y)
+	e := setup(t, y, y, y, y)
 	e.a.askFirst = true
 	tok := e.patient()
 	r := e.chat(tok, "", "температура 39")
@@ -640,8 +642,12 @@ func TestAskFirstBeforeUrgencyAndServices(t *testing.T) {
 		t.Fatalf("second turn: second question: %+v", r)
 	}
 	r = e.chat(tok, r.DialogID, "слабость, для меня")
+	if r.Urgency != "" || r.Reply.Content != texts["ask_third"]["ru"] {
+		t.Fatalf("third turn: third question: %+v", r)
+	}
+	r = e.chat(tok, r.DialogID, "нет, ничего не принимала")
 	if r.Urgency != "yellow" || len(r.Services) == 0 || !has(r.Actions, "contact_operator") {
-		t.Fatalf("after two answers: level and services: %+v", r)
+		t.Fatalf("after three answers: level and services: %+v", r)
 	}
 }
 
@@ -829,5 +835,26 @@ func TestPregnantVagueQuestionDoesNotReofferGynecologist(t *testing.T) {
 	r := e.chat(e.patient(), "", "я беременна, у меня ещё вопрос")
 	if len(r.Services) != 0 {
 		t.Fatalf("a vague question must not bring the gynecologist cards: %+v", r.Services)
+	}
+}
+
+func TestAskFirstAlsoForComplaintLabelledServiceInfo(t *testing.T) {
+	e := setup(t, ex("service_info", "dentist", false, "Зуб реагирует на холодное?", "green"), ex("service_info", "dentist", false, "", "green"))
+	e.a.askFirst = true
+	r := e.chat(e.patient(), "", "Тіс ауырып жатыр")
+	if r.Reply.Content != "Зуб реагирует на холодное?" || len(r.Services) != 0 {
+		t.Fatalf("a complaint labelled service_info still gets questions: %+v", r)
+	}
+	r = e.chat(e.patient(), "", "Сколько стоит консультация стоматолога?")
+	if len(r.Services) == 0 {
+		t.Fatalf("a direct price question is answered at once: %+v", r)
+	}
+}
+
+func TestKazakhWithoutSpecialLettersTrustsModel(t *testing.T) {
+	e := setup(t, exWith(ex("find_service", "neurologist", false, "", "green"), map[string]any{"language": "kk"}))
+	r := e.chat(e.patient(), "", "Басым ауырып жатыр")
+	if r.Language != "kk" {
+		t.Fatalf("Kazakh text without Kazakh-only letters and without Russian words: %q", r.Language)
 	}
 }
