@@ -19,6 +19,9 @@ services:
       LLM_BASE_URL: ${LLM_BASE_URL:-http://host.docker.internal:1234/v1}
       LLM_MODEL: ${LLM_MODEL:-}
       JWT_SECRET: ${JWT_SECRET:-change-me-hackathon}
+      OPERATORS: ${OPERATORS:-}
+      APP_ENV: ${APP_ENV:-}
+      TRUST_PROXY: ${TRUST_PROXY:-}
       CATALOG_PATH: /app/catalog.json
       TRIAGE_PATH: /app/triage_rules.json
       KNOWLEDGE_PATH: /app/knowledge.json
