@@ -272,6 +272,12 @@ func (a *App) process(ctx context.Context, d *Dialog, text string) (*ChatRespons
 		ex.Language = "ru"
 	}
 	d.Language = ex.Language
+	// «сәлем басым ауырып тұр»: KazLLM calls it a greeting (other); a complaint recognised by the question bank wins.
+	if ok && ex.Intent == "other" {
+		if c, _ := a.questions.Question(text, 0, "ru"); c != "" {
+			ex.Intent = "find_service"
+		}
+	}
 	// The model labels greetings as "operator" ("привет" -> operator). Only an explicit request for a person counts.
 	if ok && ex.Intent == "operator" && !asksForHuman(text) {
 		ex.Intent = "other"
@@ -714,7 +720,7 @@ var directRequestWords = []string{"сколько стоит", "цена", "ст
 // isComplaint: questions are asked for complaints — also when the model labels them service_info
 // ("тіс ауырып жатыр") — but not for direct price/slot/booking requests.
 func isComplaint(ex Extraction, text string) bool {
-	if ex.Intent != "find_service" && ex.Intent != "service_info" {
+	if ex.Intent != "find_service" && ex.Intent != "service_info" && ex.Intent != "complaint" {
 		return false
 	}
 	n := normalize(text)

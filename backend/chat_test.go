@@ -979,3 +979,14 @@ func TestOperatorCannotWriteIntoDialogNotHandedOff(t *testing.T) {
 		t.Fatalf("operator reply into a dialog without a ticket: %d", code)
 	}
 }
+
+func TestGreetingWithComplaintGetsQuestions(t *testing.T) {
+	qb, _ := LoadQuestions("../questions.json")
+	e := setup(t, exWith(ex("other", "", false, "", "green"), map[string]any{"language": "kk"}))
+	e.a.questions = qb
+	e.a.askFirst = true
+	r := e.chat(e.patient(), "", "сәлем басым ауырып тұр")
+	if r.Reply.Content != "Қызуыңыз бар ма? Қан қысымыңызды өлшедіңіз бе?" {
+		t.Fatalf("a greeting with a complaint must get the curated question: %q", r.Reply.Content)
+	}
+}
