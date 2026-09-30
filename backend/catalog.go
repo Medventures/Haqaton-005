@@ -5,11 +5,15 @@ import (
 	"os"
 )
 
+// I18n holds translations: {"kk": {"name": ..., "description": ...}, "en": {...}}; base fields are Russian.
+type I18n map[string]map[string]string
+
 type Specialty struct {
 	ID          string   `json:"id"`
 	Name        string   `json:"name"`
 	Description string   `json:"description"`
 	Treats      []string `json:"treats"`
+	I18n        I18n     `json:"i18n,omitempty"`
 }
 
 type Service struct {
@@ -18,6 +22,7 @@ type Service struct {
 	Name        string `json:"name"`
 	Price       int    `json:"price"`
 	Description string `json:"description"`
+	I18n        I18n   `json:"i18n,omitempty"`
 }
 
 type Doctor struct {
@@ -70,4 +75,19 @@ func (c *Catalog) DoctorsFor(specID string) []Doctor {
 		}
 	}
 	return out
+}
+
+// Localized returns name/description in lang (ru = base fields).
+func (s Service) Localized(lang string) (string, string) {
+	if tr, ok := s.I18n[lang]; ok && tr["name"] != "" {
+		return tr["name"], tr["description"]
+	}
+	return s.Name, s.Description
+}
+
+func (s Specialty) Localized(lang string) (string, string) {
+	if tr, ok := s.I18n[lang]; ok && tr["name"] != "" {
+		return tr["name"], tr["description"]
+	}
+	return s.Name, s.Description
 }

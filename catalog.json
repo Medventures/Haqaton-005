@@ -17,7 +17,17 @@
         "жөтел",
         "әлсіздік",
         "бас ауруы"
-      ]
+      ],
+      "i18n": {
+        "kk": {
+          "name": "Терапевт",
+          "description": "Ересектерді алғашқы қабылдау, жалпы шағымдар, тар мамандарға жолдама"
+        },
+        "en": {
+          "name": "General practitioner",
+          "description": "Primary care for adults, general complaints, referrals to specialists"
+        }
+      }
     },
     {
       "id": "cardiologist",
@@ -32,7 +42,17 @@
         "қан қысымы",
         "жүрек соғуы жиілеген",
         "аяқ ісінуі"
-      ]
+      ],
+      "i18n": {
+        "kk": {
+          "name": "Кардиолог",
+          "description": "Жүрек және қан тамырлары"
+        },
+        "en": {
+          "name": "Cardiologist",
+          "description": "Heart and blood vessels"
+        }
+      }
     },
     {
       "id": "neurologist",
@@ -49,7 +69,17 @@
         "бел ауруы",
         "мойын ауруы",
         "ұйқысыздық"
-      ]
+      ],
+      "i18n": {
+        "kk": {
+          "name": "Невролог",
+          "description": "Жүйке жүйесі, бас ауруы, бел ауруы"
+        },
+        "en": {
+          "name": "Neurologist",
+          "description": "Nervous system, headaches, back pain"
+        }
+      }
     },
     {
       "id": "gastroenterologist",
@@ -68,7 +98,17 @@
         "іш кебу",
         "іш қату",
         "іш өту"
-      ]
+      ],
+      "i18n": {
+        "kk": {
+          "name": "Гастроэнтеролог",
+          "description": "Асқазан, ішек, бауыр"
+        },
+        "en": {
+          "name": "Gastroenterologist",
+          "description": "Stomach, intestines, liver"
+        }
+      }
     },
     {
       "id": "dermatologist",
@@ -86,7 +126,17 @@
         "безеу",
         "мең",
         "шаш түсу"
-      ]
+      ],
+      "i18n": {
+        "kk": {
+          "name": "Дерматолог",
+          "description": "Тері, шаш, тырнақ"
+        },
+        "en": {
+          "name": "Dermatologist",
+          "description": "Skin, hair, nails"
+        }
+      }
     },
     {
       "id": "ent",
@@ -104,7 +154,17 @@
         "тұмау",
         "құлақ ауырады",
         "қорылдау"
-      ]
+      ],
+      "i18n": {
+        "kk": {
+          "name": "ЛОР (оториноларинголог)",
+          "description": "Құлақ, тамақ, мұрын"
+        },
+        "en": {
+          "name": "ENT (otolaryngologist)",
+          "description": "Ear, nose and throat"
+        }
+      }
     },
     {
       "id": "gynecologist",
@@ -117,7 +177,17 @@
         "профилактический осмотр",
         "етеккір бұзылуы",
         "жүктілікті жоспарлау"
-      ]
+      ],
+      "i18n": {
+        "kk": {
+          "name": "Гинеколог",
+          "description": "Әйелдер денсаулығы"
+        },
+        "en": {
+          "name": "Gynecologist",
+          "description": "Women's health"
+        }
+      }
     },
     {
       "id": "pediatrician",
@@ -131,7 +201,17 @@
         "бала ауырады",
         "баланың қызуы",
         "екпе"
-      ]
+      ],
+      "i18n": {
+        "kk": {
+          "name": "Педиатр",
+          "description": "18 жасқа дейінгі балаларды қабылдау"
+        },
+        "en": {
+          "name": "Pediatrician",
+          "description": "Children under 18"
+        }
+      }
     },
     {
       "id": "ophthalmologist",
@@ -145,7 +225,17 @@
         "көру нашарлады",
         "көз қызарды",
         "көзілдірік"
-      ]
+      ],
+      "i18n": {
+        "kk": {
+          "name": "Офтальмолог",
+          "description": "Көру және көз"
+        },
+        "en": {
+          "name": "Ophthalmologist",
+          "description": "Eyes and vision"
+        }
+      }
     }
   ],
   "services": [
@@ -154,119 +244,289 @@
       "specialty_id": "therapist",
       "name": "Консультация терапевта",
       "price": 8000,
-      "description": "Первичный приём, осмотр, рекомендации по обследованию"
+      "description": "Первичный приём, осмотр, рекомендации по обследованию",
+      "i18n": {
+        "kk": {
+          "name": "Терапевт кеңесі",
+          "description": "Алғашқы қабылдау, тексеру, зерттеу бойынша ұсыныстар"
+        },
+        "en": {
+          "name": "General practitioner consultation",
+          "description": "First visit, examination, recommendations for tests"
+        }
+      }
     },
     {
       "id": "ther-cbc",
       "specialty_id": "therapist",
       "name": "Общий анализ крови",
       "price": 3500,
-      "description": "Забор крови и результат в течение дня"
+      "description": "Забор крови и результат в течение дня",
+      "i18n": {
+        "kk": {
+          "name": "Жалпы қан анализі",
+          "description": "Қан алу, нәтижесі сол күні"
+        },
+        "en": {
+          "name": "Complete blood count",
+          "description": "Blood draw, results the same day"
+        }
+      }
     },
     {
       "id": "card-consult",
       "specialty_id": "cardiologist",
       "name": "Консультация кардиолога",
       "price": 12000,
-      "description": "Приём, сбор анамнеза, интерпретация ЭКГ"
+      "description": "Приём, сбор анамнеза, интерпретация ЭКГ",
+      "i18n": {
+        "kk": {
+          "name": "Кардиолог кеңесі",
+          "description": "Қабылдау, анамнез жинау, ЭКГ түсіндіру"
+        },
+        "en": {
+          "name": "Cardiologist consultation",
+          "description": "Visit, medical history, ECG interpretation"
+        }
+      }
     },
     {
       "id": "card-ecg",
       "specialty_id": "cardiologist",
       "name": "ЭКГ с расшифровкой",
       "price": 5000,
-      "description": "Электрокардиограмма в покое"
+      "description": "Электрокардиограмма в покое",
+      "i18n": {
+        "kk": {
+          "name": "ЭКГ және түсіндірме",
+          "description": "Тыныштық күйдегі электрокардиограмма"
+        },
+        "en": {
+          "name": "ECG with interpretation",
+          "description": "Resting electrocardiogram"
+        }
+      }
     },
     {
       "id": "card-echo",
       "specialty_id": "cardiologist",
       "name": "ЭхоКГ (УЗИ сердца)",
       "price": 15000,
-      "description": "Ультразвуковое исследование сердца"
+      "description": "Ультразвуковое исследование сердца",
+      "i18n": {
+        "kk": {
+          "name": "ЭхоКГ (жүрек УДЗ)",
+          "description": "Жүректі ультрадыбыстық зерттеу"
+        },
+        "en": {
+          "name": "Echocardiography (heart ultrasound)",
+          "description": "Ultrasound examination of the heart"
+        }
+      }
     },
     {
       "id": "neuro-consult",
       "specialty_id": "neurologist",
       "name": "Консультация невролога",
       "price": 11000,
-      "description": "Неврологический осмотр"
+      "description": "Неврологический осмотр",
+      "i18n": {
+        "kk": {
+          "name": "Невролог кеңесі",
+          "description": "Неврологиялық тексеру"
+        },
+        "en": {
+          "name": "Neurologist consultation",
+          "description": "Neurological examination"
+        }
+      }
     },
     {
       "id": "neuro-mri",
       "specialty_id": "neurologist",
       "name": "МРТ шейного отдела",
       "price": 25000,
-      "description": "Магнитно-резонансная томография, по направлению врача"
+      "description": "Магнитно-резонансная томография, по направлению врача",
+      "i18n": {
+        "kk": {
+          "name": "Мойын бөлімінің МРТ",
+          "description": "Магнитті-резонанстық томография, дәрігер жолдамасымен"
+        },
+        "en": {
+          "name": "Cervical spine MRI",
+          "description": "Magnetic resonance imaging, with a doctor's referral"
+        }
+      }
     },
     {
       "id": "gastro-consult",
       "specialty_id": "gastroenterologist",
       "name": "Консультация гастроэнтеролога",
       "price": 11000,
-      "description": "Приём и план обследования"
+      "description": "Приём и план обследования",
+      "i18n": {
+        "kk": {
+          "name": "Гастроэнтеролог кеңесі",
+          "description": "Қабылдау және тексеру жоспары"
+        },
+        "en": {
+          "name": "Gastroenterologist consultation",
+          "description": "Visit and examination plan"
+        }
+      }
     },
     {
       "id": "gastro-us",
       "specialty_id": "gastroenterologist",
       "name": "УЗИ брюшной полости",
       "price": 9000,
-      "description": "Печень, желчный пузырь, поджелудочная, селезёнка"
+      "description": "Печень, желчный пузырь, поджелудочная, селезёнка",
+      "i18n": {
+        "kk": {
+          "name": "Іш қуысының УДЗ",
+          "description": "Бауыр, өт қабы, ұйқы безі, көкбауыр"
+        },
+        "en": {
+          "name": "Abdominal ultrasound",
+          "description": "Liver, gallbladder, pancreas, spleen"
+        }
+      }
     },
     {
       "id": "derm-consult",
       "specialty_id": "dermatologist",
       "name": "Консультация дерматолога",
       "price": 10000,
-      "description": "Осмотр кожи"
+      "description": "Осмотр кожи",
+      "i18n": {
+        "kk": {
+          "name": "Дерматолог кеңесі",
+          "description": "Теріні тексеру"
+        },
+        "en": {
+          "name": "Dermatologist consultation",
+          "description": "Skin examination"
+        }
+      }
     },
     {
       "id": "derm-dermatoscopy",
       "specialty_id": "dermatologist",
       "name": "Дерматоскопия родинок",
       "price": 7000,
-      "description": "Осмотр новообразований под увеличением"
+      "description": "Осмотр новообразований под увеличением",
+      "i18n": {
+        "kk": {
+          "name": "Меңдердің дерматоскопиясы",
+          "description": "Ісіктерді үлкейтіп қарау"
+        },
+        "en": {
+          "name": "Mole dermatoscopy",
+          "description": "Magnified examination of skin lesions"
+        }
+      }
     },
     {
       "id": "ent-consult",
       "specialty_id": "ent",
       "name": "Консультация ЛОР-врача",
       "price": 9500,
-      "description": "Осмотр уха, горла, носа"
+      "description": "Осмотр уха, горла, носа",
+      "i18n": {
+        "kk": {
+          "name": "ЛОР дәрігер кеңесі",
+          "description": "Құлақ, тамақ, мұрынды тексеру"
+        },
+        "en": {
+          "name": "ENT consultation",
+          "description": "Ear, nose and throat examination"
+        }
+      }
     },
     {
       "id": "ent-wash",
       "specialty_id": "ent",
       "name": "Промывание миндалин",
       "price": 6000,
-      "description": "Процедура по назначению врача"
+      "description": "Процедура по назначению врача",
+      "i18n": {
+        "kk": {
+          "name": "Бадамша безді жуу",
+          "description": "Дәрігердің тағайындауы бойынша процедура"
+        },
+        "en": {
+          "name": "Tonsil lavage",
+          "description": "Procedure prescribed by a doctor"
+        }
+      }
     },
     {
       "id": "gyn-consult",
       "specialty_id": "gynecologist",
       "name": "Консультация гинеколога",
       "price": 11000,
-      "description": "Приём и осмотр"
+      "description": "Приём и осмотр",
+      "i18n": {
+        "kk": {
+          "name": "Гинеколог кеңесі",
+          "description": "Қабылдау және тексеру"
+        },
+        "en": {
+          "name": "Gynecologist consultation",
+          "description": "Visit and examination"
+        }
+      }
     },
     {
       "id": "gyn-us",
       "specialty_id": "gynecologist",
       "name": "УЗИ органов малого таза",
       "price": 9000,
-      "description": "Трансабдоминальное или трансвагинальное"
+      "description": "Трансабдоминальное или трансвагинальное",
+      "i18n": {
+        "kk": {
+          "name": "Кіші жамбас ағзаларының УДЗ",
+          "description": "Трансабдоминальды немесе трансвагинальды"
+        },
+        "en": {
+          "name": "Pelvic ultrasound",
+          "description": "Transabdominal or transvaginal"
+        }
+      }
     },
     {
       "id": "ped-consult",
       "specialty_id": "pediatrician",
       "name": "Консультация педиатра",
       "price": 8500,
-      "description": "Приём ребёнка"
+      "description": "Приём ребёнка",
+      "i18n": {
+        "kk": {
+          "name": "Педиатр кеңесі",
+          "description": "Баланы қабылдау"
+        },
+        "en": {
+          "name": "Pediatrician consultation",
+          "description": "Child visit"
+        }
+      }
     },
     {
       "id": "oph-consult",
       "specialty_id": "ophthalmologist",
       "name": "Консультация офтальмолога",
       "price": 9000,
-      "description": "Проверка остроты зрения, осмотр глазного дна"
+      "description": "Проверка остроты зрения, осмотр глазного дна",
+      "i18n": {
+        "kk": {
+          "name": "Офтальмолог кеңесі",
+          "description": "Көру өткірлігін тексеру, көз түбін қарау"
+        },
+        "en": {
+          "name": "Ophthalmologist consultation",
+          "description": "Visual acuity test, fundus examination"
+        }
+      }
     }
   ],
   "doctors": [
