@@ -987,3 +987,31 @@ func TestGreetingWithComplaintGetsQuestions(t *testing.T) {
 		t.Fatalf("a greeting with a complaint must get the curated question: %q", r.Reply.Content)
 	}
 }
+
+func TestNamedSpecialtyBeatsModel(t *testing.T) {
+	c, _ := LoadCatalog("../catalog.json")
+	for text, want := range map[string]string{
+		"Хочу к кардиологу, сколько стоит?": "cardiologist",
+		"гинекологқа жазылғым келеді":       "gynecologist",
+		"нужен ЛОР":                     "ent",
+		"I want to see a dermatologist": "dermatologist",
+		"болит горло":                   "",
+		"к кардиологу или к неврологу?": "",
+	} {
+		if got := c.NamedSpecialty(text); got != want {
+			t.Errorf("%q -> %q, want %q", text, got, want)
+		}
+	}
+	e := setup(t, ex("find_service", "urologist", false, "", "green"))
+	r := e.chat(e.patient(), "", "Хочу к кардиологу, сколько стоит?")
+	if len(r.Services) == 0 || r.Services[0].SpecialtyID != "cardiologist" {
+		t.Fatalf("named specialist must win over the model: %+v", r.Services)
+	}
+}
+
+func TestPlainHeadacheGoesToGP(t *testing.T) {
+	c, _ := LoadCatalog("../catalog.json")
+	if got := c.GuessSpecialty("болит голова со вчерашнего дня"); got == "" {
+		t.Fatal("a plain headache must get a specialty (GP on a tie), not the operator")
+	}
+}

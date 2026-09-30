@@ -158,9 +158,53 @@ func (c *Catalog) GuessSpecialty(text string) string {
 		}
 	}
 	if tie {
+		// a plain complaint often matches the GP and a specialist equally (headache: therapist/neurologist)
+		for _, s := range c.Specialties {
+			if s.ID == "therapist" {
+				return "therapist"
+			}
+		}
 		return ""
 	}
 	return best
+}
+
+// NamedSpecialty: the patient names the specialist («хочу к кардиологу», «ЛОРға», «гинекологқа»).
+// Matches the first letters of the specialty name (any language) at a word start; "" if none or several.
+func (c *Catalog) NamedSpecialty(text string) string {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+	words := " " + normalize(text)
+	found := ""
+	for _, s := range c.Specialties {
+		names := []string{s.Name}
+		for _, tr := range s.I18n {
+			names = append(names, tr["name"])
+		}
+		hit := false
+		for _, n := range names {
+			for _, part := range strings.FieldsFunc(normalize(n), func(r rune) bool { return r == ' ' || r == '-' || r == '(' || r == ')' || r == '/' }) {
+				r := []rune(part)
+				if len(r) < 3 {
+					continue
+				}
+				stem := part
+				if len(r) > 6 {
+					stem = string(r[:len(r)-1]) // кардиолог -> кардиоло (кардиологу, кардиологқа)
+				}
+				if strings.Contains(words, " "+stem) {
+					hit = true
+				}
+			}
+		}
+		if hit {
+			if found != "" && found != s.ID {
+				return "" // several specialists named
+			}
+			found = s.ID
+		}
+	}
+	return found
 }
 
 func wordStems(text string) []string {

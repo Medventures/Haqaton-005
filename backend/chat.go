@@ -285,6 +285,10 @@ func (a *App) process(ctx context.Context, d *Dialog, text string) (*ChatRespons
 	if ex.SpecialtyID != nil && a.cat.Specialty(*ex.SpecialtyID) == nil {
 		ex.SpecialtyID = nil // only ids from the catalog
 	}
+	// A specialist named by the patient beats the model ("хочу к кардиологу" once went to the urologist).
+	if named := a.cat.NamedSpecialty(text); named != "" {
+		ex.SpecialtyID = &named
+	}
 	// The model found no specialty (KazLLM misses often): match the patient's words against the catalog's complaints.
 	if ex.SpecialtyID == nil && isComplaint(ex, text) && !d.Pregnant { // KazLLM labels complaints service_info
 		if g := a.cat.GuessSpecialty(strings.Join(patientMsgs, " ")); g != "" {
