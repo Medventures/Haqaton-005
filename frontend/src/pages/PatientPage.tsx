@@ -73,8 +73,23 @@ export default function PatientPage() {
         const reply = { ...result.reply, data: { ...result.reply.data, urgency: result.reply.data?.urgency || result.urgency, actions: result.reply.data?.actions || result.actions, services: result.reply.data?.services || result.services, doctors: result.reply.data?.doctors || result.doctors } }
         setMessages(current => [...current, reply])
       }
-    } catch (e) { setError(e instanceof Error ? e.message : t('network')) }
+    } catch (e) {
+      // The connection may drop while the server still answers (flaky Wi-Fi, tunnel): the backend
+      // finishes and saves the reply, so fetch it from the dialog before showing an error.
+      if (!(e instanceof TypeError) || !dialog?.id || !(await recoverReply(dialog.id))) setError(e instanceof Error ? e.message : t('network'))
+    }
     finally { setTyping(false) }
+  }
+  async function recoverReply(id: string) {
+    const botBefore = messages.filter(m => m.role === 'bot').length
+    for (let i = 0; i < 20; i++) {
+      await new Promise(r => setTimeout(r, 3000))
+      try {
+        const data = await api.dialog(id)
+        if ((data.messages || []).filter(m => m.role === 'bot').length > botBefore) { applyDialog(data); return true }
+      } catch { /* still offline */ }
+    }
+    return false
   }
   async function attachFile(file: File) {
     if (busy) return

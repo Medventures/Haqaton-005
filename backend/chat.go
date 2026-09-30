@@ -103,7 +103,10 @@ type botData struct {
 
 // POST /api/chat
 func (a *App) chat(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
+	// A dropped client connection (flaky Wi-Fi, tunnel) must not abort the answer halfway: finish it and
+	// save it to the dialog, the page picks it up from GET /api/dialogs/{id}.
+	ctx, cancel := context.WithTimeout(context.WithoutCancel(r.Context()), 150*time.Second)
+	defer cancel()
 	u := userFrom(r)
 	var in ChatRequest
 	if json.NewDecoder(r.Body).Decode(&in) != nil || strings.TrimSpace(in.Message) == "" {
