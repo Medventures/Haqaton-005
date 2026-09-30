@@ -76,6 +76,7 @@ func main() {
 	r.With(a.auth("operator")).Get("/api/operator/queue", a.queue)
 	r.With(a.auth("operator")).Post("/api/operator/reply", a.operatorReply)
 
-	log.Println("listening on :8080")
-	log.Fatal(http.ListenAndServe(":8080", r))
+	addr := ":" + env("PORT", "8080")
+	log.Println("listening on", addr)
+	log.Fatal(http.ListenAndServe(addr, r))
 }
