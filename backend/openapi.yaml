@@ -187,6 +187,7 @@ components:
         pregnant: {type: boolean, description: "Флаг беременности: ставится кодом по фразам или LLM, никогда не снимается"}
         gestation_weeks: {type: integer, nullable: true}
         pregnancy_asked: {type: boolean, description: Вопрос о беременности уже задан}
+        assessed: {type: boolean, description: "Срочность оценена и показана пациенту. До этого пациент получает urgency: \"\" (бот сначала задаёт уточняющий вопрос); red оценивается сразу"}
         created_at: {type: string, format: date-time}
     Ticket:
       type: object
@@ -208,7 +209,7 @@ components:
       properties:
         dialog_id: {type: string, format: uuid}
         status: {type: string, enum: [bot, operator]}
-        urgency: {$ref: "#/components/schemas/Urgency"}
+        urgency: {type: string, enum: [green, yellow, red, ""], description: "Пусто, пока срочность не оценена (первый ответ бота на жалобу — уточняющий вопрос)"}
         urgency_reason: {type: string}
         language: {type: string, enum: [ru, kk, en]}
         reply: {allOf: [{$ref: "#/components/schemas/Message"}], nullable: true, description: null — диалог у оператора, бот молчит}

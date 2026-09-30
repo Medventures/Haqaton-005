@@ -24,6 +24,7 @@ create table if not exists dialogs (
 alter table dialogs add column if not exists pregnant boolean not null default false;  -- set once, never cleared
 alter table dialogs add column if not exists gestation_weeks int;
 alter table dialogs add column if not exists pregnancy_asked boolean not null default false;
+alter table dialogs add column if not exists assessed boolean not null default false;  -- urgency shown to the patient
 create table if not exists messages (
   id bigserial primary key,
   dialog_id uuid not null references dialogs(id) on delete cascade,
@@ -73,6 +74,7 @@ type Dialog struct {
 	Pregnant       bool      `json:"pregnant"`
 	GestationWeeks *int      `json:"gestation_weeks"`
 	PregnancyAsked bool      `json:"pregnancy_asked"`
+	Assessed       bool      `json:"assessed"`
 	CreatedAt      time.Time `json:"created_at"`
 }
 
@@ -102,16 +104,17 @@ type Ticket struct {
 
 func (a *App) getDialog(ctx context.Context, id string) (*Dialog, error) {
 	d := &Dialog{}
-	err := a.db.QueryRow(ctx, `select id, patient_id, status, language, urgency, urgency_reason, clarifications, summary, pregnant, gestation_weeks, pregnancy_asked, created_at
+	err := a.db.QueryRow(ctx, `select id, patient_id, status, language, urgency, urgency_reason, clarifications, summary, pregnant, gestation_weeks, pregnancy_asked, assessed, created_at
 		from dialogs where id=$1`, id).Scan(&d.ID, &d.PatientID, &d.Status, &d.Language, &d.Urgency, &d.UrgencyReason, &d.Clarifications, &d.Summary,
-		&d.Pregnant, &d.GestationWeeks, &d.PregnancyAsked, &d.CreatedAt)
+		&d.Pregnant, &d.GestationWeeks, &d.PregnancyAsked, &d.Assessed, &d.CreatedAt)
 	return d, err
 }
 
 func (a *App) saveDialog(ctx context.Context, d *Dialog) error {
 	_, err := a.db.Exec(ctx, `update dialogs set status=$2, language=$3, urgency=$4, urgency_reason=$5, clarifications=$6, summary=$7,
-		pregnant = pregnant or $8, gestation_weeks=coalesce($9, gestation_weeks), pregnancy_asked = pregnancy_asked or $10, updated_at=now()
-		where id=$1`, d.ID, d.Status, d.Language, d.Urgency, d.UrgencyReason, d.Clarifications, d.Summary, d.Pregnant, d.GestationWeeks, d.PregnancyAsked)
+		pregnant = pregnant or $8, gestation_weeks=coalesce($9, gestation_weeks), pregnancy_asked = pregnancy_asked or $10,
+		assessed = assessed or $11, updated_at=now()
+		where id=$1`, d.ID, d.Status, d.Language, d.Urgency, d.UrgencyReason, d.Clarifications, d.Summary, d.Pregnant, d.GestationWeeks, d.PregnancyAsked, d.Assessed)
 	return err
 }
 
@@ -146,6 +149,7 @@ func (a *App) messages(ctx context.Context, dialogID string) ([]Message, error) 
 // handoff puts the dialog into the operator queue (one open ticket per dialog).
 func (a *App) handoff(ctx context.Context, d *Dialog, reason string) (int64, error) {
 	d.Status = "operator"
+	d.Assessed = true // no more bot questions: show the level
 	if err := a.saveDialog(ctx, d); err != nil {
 		return 0, err
 	}
@@ -182,4 +186,12 @@ func scanTickets(rows interface {
 		out = append(out, t)
 	}
 	return out, rows.Err()
+}
+
+// VisibleUrgency is what the patient sees: empty until the dialog is assessed (red is assessed at once).
+func (d *Dialog) VisibleUrgency() string {
+	if !d.Assessed {
+		return ""
+	}
+	return d.Urgency
 }

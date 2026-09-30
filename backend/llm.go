@@ -14,6 +14,7 @@ import (
 // LLM is a client for an OpenAI-compatible API (LM Studio).
 type LLM struct {
 	BaseURL, Model string
+	ModelKK        string // optional: model that writes free-text answers in Kazakh (e.g. KazLLM)
 	hc             *http.Client
 }
 
@@ -28,7 +29,19 @@ func NewLLM(baseURL, model string) *LLM {
 
 // Chat calls POST {base}/chat/completions. If schema != nil, uses response_format json_schema (strict).
 func (l *LLM) Chat(ctx context.Context, msgs []chatMsg, schema map[string]any) (string, error) {
-	body := map[string]any{"model": l.Model, "messages": msgs, "temperature": 0, "stream": false}
+	return l.chatWith(ctx, l.Model, msgs, schema)
+}
+
+// Answer writes a free-text reply; for Kazakh it uses ModelKK when configured.
+func (l *LLM) Answer(ctx context.Context, lang string, msgs []chatMsg) (string, error) {
+	if lang == "kk" && l.ModelKK != "" {
+		return l.chatWith(ctx, l.ModelKK, msgs, nil)
+	}
+	return l.chatWith(ctx, l.Model, msgs, nil)
+}
+
+func (l *LLM) chatWith(ctx context.Context, model string, msgs []chatMsg, schema map[string]any) (string, error) {
+	body := map[string]any{"model": model, "messages": msgs, "temperature": 0, "stream": false}
 	if schema != nil {
 		body["response_format"] = map[string]any{
 			"type":        "json_schema",

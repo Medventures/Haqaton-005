@@ -33,6 +33,11 @@ var texts = map[string]map[string]string{
 		"kk": "Сізде жүктілік бар ма немесе болуы мүмкін бе?",
 		"en": "Are you pregnant, or could you be pregnant?",
 	},
+	"ask_first": {
+		"ru": "Уточните, пожалуйста: как давно это началось и насколько сильно беспокоит по шкале от 1 до 10?",
+		"kk": "Нақтылаңызшы: бұл қашаннан бері басталды және 1-ден 10-ға дейінгі шкала бойынша қаншалықты қатты мазалайды?",
+		"en": "Could you tell me when it started and how bad it is on a scale from 1 to 10?",
+	},
 	"clarify": {
 		"ru": "Уточните, пожалуйста: что именно беспокоит, где и как давно?",
 		"kk": "Нақтылап жазыңызшы: не мазалайды, қай жерде және қашаннан бері?",
@@ -130,7 +135,7 @@ func (a *App) chat(w http.ResponseWriter, r *http.Request) {
 func (a *App) process(ctx context.Context, d *Dialog, text string) (*ChatResponse, error) {
 	res := &ChatResponse{DialogID: d.ID, Actions: []string{}, Services: []Service{}, Doctors: []Doctor{}}
 	finish := func(reply string, data botData) (*ChatResponse, error) {
-		data.Urgency = d.Urgency
+		data.Urgency = d.VisibleUrgency()
 		if data.Actions == nil {
 			data.Actions = []string{}
 		}
@@ -144,7 +149,10 @@ func (a *App) process(ctx context.Context, d *Dialog, text string) (*ChatRespons
 			}
 			res.Reply = m
 		}
-		res.Status, res.Urgency, res.UrgencyReason, res.Language = d.Status, d.Urgency, d.UrgencyReason, d.Language
+		res.Status, res.Urgency, res.Language = d.Status, d.VisibleUrgency(), d.Language
+		if d.Assessed {
+			res.UrgencyReason = d.UrgencyReason
+		}
 		res.Actions = data.Actions
 		if data.Services != nil {
 			res.Services, res.Doctors = data.Services, data.Doctors
@@ -241,19 +249,12 @@ func (a *App) process(ctx context.Context, d *Dialog, text string) (*ChatRespons
 		d.Urgency = maxUrgency(d.Urgency, "yellow") // never goes down
 	}
 
-	var actions []string
-	prefix := ""
-	if d.Urgency == "yellow" {
-		actions = []string{"contact_operator"}
-		prefix = t("yellow", d.Language) + "\n\n"
-	}
-
 	// 6a. Explicit request for a human.
 	if !ok {
-		return handoff("Бот не справился: ИИ не вернул корректный JSON (2 попытки)", botData{Actions: actions})
+		return handoff("Бот не справился: ИИ не вернул корректный JSON (2 попытки)", botData{})
 	}
 	if ex.Intent == "operator" {
-		return handoff("Пациент попросил оператора", botData{Actions: actions})
+		return handoff("Пациент попросил оператора", botData{})
 	}
 
 	// 4 (ob/gyn). Pregnancy question: asked once, does not count toward the clarification limit.
@@ -262,7 +263,30 @@ func (a *App) process(ctx context.Context, d *Dialog, text string) (*ChatRespons
 	llmAsk := ex.AskPregnancy && ex.SpecialtyID != nil && (*ex.SpecialtyID == "gynecologist" || *ex.SpecialtyID == "gastroenterologist")
 	if (llmAsk || a.triage.NeedsPregnancyQuestion(text)) && !d.Pregnant && !d.PregnancyAsked && !(ex.Pregnant != nil && !*ex.Pregnant) {
 		d.PregnancyAsked = true
-		return finish(prefix+t("ask_pregnancy", d.Language), botData{Actions: actions})
+		return finish(t("ask_pregnancy", d.Language), botData{})
+	}
+
+	// Ask first: for a complaint, one clarifying question before any urgency level or services are shown
+	// (red is still decided immediately above). Counts toward the 2-clarification limit.
+	if a.askFirst && !d.Assessed && ex.Intent == "find_service" && d.Clarifications == 0 {
+		q := ""
+		if ex.ClarifyingQuestion != nil {
+			q = strings.TrimSpace(*ex.ClarifyingQuestion)
+		}
+		if q == "" {
+			q = t("ask_first", d.Language)
+		}
+		d.Clarifications++
+		return finish(q, botData{})
+	}
+
+	// From here the urgency level is shown to the patient.
+	d.Assessed = true
+	var actions []string
+	prefix := ""
+	if d.Urgency == "yellow" {
+		actions = []string{"contact_operator"}
+		prefix = t("yellow", d.Language) + "\n\n"
 	}
 
 	// 3. Clarification (max 2 per dialog).
@@ -291,10 +315,10 @@ func (a *App) process(ctx context.Context, d *Dialog, text string) (*ChatRespons
 		}
 		data, _ := json.Marshal(map[string]any{"specialty": map[string]string{"name": specName, "description": specDesc},
 			"services": llmSvcs, "doctors_with_free_slots": humanSlots(docs)})
-		reply, err := a.llm.Chat(ctx, []chatMsg{
+		reply, err := a.llm.Answer(ctx, d.Language, []chatMsg{
 			{"system", fmt.Sprintf(answerSystemPrompt, d.Language)},
 			{"user", fmt.Sprintf("Запрос пациента: %s\nПоследнее сообщение: %s\n\nДАННЫЕ КАТАЛОГА:\n%s\n\n%s", d.Summary, text, data, langInstr[d.Language])},
-		}, nil)
+		})
 		if err != nil || strings.TrimSpace(reply) == "" {
 			log.Printf("compose failed: %v", err)
 			reply = fmt.Sprintf(t("fallback", d.Language), specName)
@@ -312,10 +336,10 @@ func (a *App) process(ctx context.Context, d *Dialog, text string) (*ChatRespons
 	for _, s := range a.cat.Specialties {
 		names = append(names, s.Name)
 	}
-	reply, err := a.llm.Chat(ctx, []chatMsg{
+	reply, err := a.llm.Answer(ctx, d.Language, []chatMsg{
 		{"system", fmt.Sprintf(answerSystemPrompt, d.Language) + "\nЕсли вопрос не про запись к врачу — вежливо скажи, что ты помогаешь подобрать врача и услугу, и попроси описать жалобу."},
 		{"user", fmt.Sprintf("Сообщение пациента: %s\n\nДАННЫЕ: специалисты клиники: %s\n\n%s", text, strings.Join(names, ", "), langInstr[d.Language])},
-	}, nil)
+	})
 	if err != nil {
 		return handoff("Бот не справился: ошибка ИИ", botData{Actions: actions})
 	}
@@ -345,6 +369,7 @@ func (a *App) redCheck(ctx context.Context, d *Dialog, text string, patientMsgs 
 	}
 	d.Language = lang
 	d.Urgency = "red"
+	d.Assessed = true
 	d.UrgencyReason = "красный флаг: " + phrase
 	preg := ""
 	if d.Pregnant {
@@ -391,7 +416,7 @@ func (a *App) requestOperator(w http.ResponseWriter, r *http.Request) {
 		writeErr(w, 500, "db error")
 		return
 	}
-	m, _ := a.addMessage(ctx, d.ID, "bot", "bot", t("handoff", d.Language), botData{Urgency: d.Urgency, Actions: []string{}})
+	m, _ := a.addMessage(ctx, d.ID, "bot", "bot", t("handoff", d.Language), botData{Urgency: d.VisibleUrgency(), Actions: []string{}})
 	writeJSON(w, 200, map[string]any{"ticket_id": id, "status": d.Status, "urgent": urgent, "reply": m})
 }
 
@@ -426,6 +451,12 @@ func (a *App) getDialogHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		writeErr(w, 500, "db error")
 		return
+	}
+	if u.Role == "patient" {
+		d.Urgency = d.VisibleUrgency()
+		if !d.Assessed {
+			d.UrgencyReason = ""
+		}
 	}
 	resp := map[string]any{"dialog": d, "messages": msgs}
 	if u.Role == "operator" {

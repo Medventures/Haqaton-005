@@ -24,6 +24,8 @@ type App struct {
 	triage *TriageRules
 	llm    *LLM
 	secret []byte
+	// askFirst: one clarifying question before showing urgency/services (ASK_FIRST=false disables)
+	askFirst bool
 }
 
 func env(k, def string) string {
@@ -56,11 +58,13 @@ func main() {
 	if err != nil {
 		log.Fatalf("db: %v", err)
 	}
+	llm := NewLLM(env("LLM_BASE_URL", "http://host.docker.internal:1234/v1"), env("LLM_MODEL", ""))
+	llm.ModelKK = os.Getenv("LLM_MODEL_KK")
 	a := &App{db: db, cat: cat, triage: tr,
-		llm:    NewLLM(env("LLM_BASE_URL", "http://host.docker.internal:1234/v1"), env("LLM_MODEL", "")),
+		llm: llm, askFirst: env("ASK_FIRST", "true") != "false",
 		secret: []byte(env("JWT_SECRET", "change-me-hackathon"))}
-	log.Printf("catalog: %d specialties, %d services, %d doctors; %d red rules; model %s",
-		len(cat.Specialties), len(cat.Services), len(cat.Doctors), len(tr.Red), a.llm.Model)
+	log.Printf("catalog: %d specialties, %d services, %d doctors; %d red rules; model %s, kk answers %q",
+		len(cat.Specialties), len(cat.Services), len(cat.Doctors), len(tr.Red), a.llm.Model, a.llm.ModelKK)
 
 	r := a.routes()
 	addr := ":" + env("PORT", "8080")

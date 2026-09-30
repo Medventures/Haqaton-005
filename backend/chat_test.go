@@ -26,6 +26,7 @@ type fakeLLM struct {
 	extractions []string
 	extractN    int
 	answerN     int
+	models      []string // model per request: "extract:<m>" / "answer:<m>"
 }
 
 func (f *fakeLLM) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -34,13 +35,16 @@ func (f *fakeLLM) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	f.mu.Lock()
 	defer f.mu.Unlock()
 	content := "Рекомендуем обратиться к специалисту."
+	m, _ := body["model"].(string)
 	if _, ok := body["response_format"]; ok {
+		f.models = append(f.models, "extract:"+m)
 		f.extractN++
 		content = "not json"
 		if len(f.extractions) > 0 {
 			content, f.extractions = f.extractions[0], f.extractions[1:]
 		}
 	} else {
+		f.models = append(f.models, "answer:"+m)
 		f.answerN++
 	}
 	json.NewEncoder(w).Encode(map[string]any{"choices": []any{map[string]any{"message": map[string]string{"role": "assistant", "content": content}}}})
@@ -600,5 +604,47 @@ func TestLLMPregnancyQuestionIgnoredWithoutGynSpecialty(t *testing.T) {
 	r := e.chat(e.patient(), "", "Тамағым ауырады, қызуым бар")
 	if r.Reply.Content == texts["ask_pregnancy"]["kk"] {
 		t.Fatal("no gyn specialty and no ob/gyn phrase: must not ask about pregnancy")
+	}
+}
+
+func TestKazakhAnswersUseKazakhModel(t *testing.T) {
+	kk := exWith(ex("find_service", "ent", false, "", "green"), map[string]any{"language": "kk"})
+	e := setup(t, kk, ex("find_service", "ent", false, "", "green"))
+	e.a.llm.ModelKK = "kazllm"
+	e.chat(e.patient(), "", "Тамағым ауырады")
+	e.chat(e.patient(), "", "Болит горло")
+	got := strings.Join(e.llm.models, ",")
+	if got != "extract:fake,answer:kazllm,extract:fake,answer:fake" {
+		t.Fatalf("model routing = %s", got)
+	}
+}
+
+func TestAskFirstBeforeUrgencyAndServices(t *testing.T) {
+	e := setup(t, ex("find_service", "therapist", false, "", "yellow"), ex("find_service", "therapist", false, "", "yellow"))
+	e.a.askFirst = true
+	tok := e.patient()
+	r := e.chat(tok, "", "температура 39")
+	if r.Urgency != "" || len(r.Services) != 0 || r.Reply.Content != texts["ask_first"]["ru"] || len(r.Actions) != 0 {
+		t.Fatalf("first turn must only ask, without level or services: %+v", r)
+	}
+	var d struct {
+		Dialog Dialog `json:"dialog"`
+	}
+	e.do("GET", "/api/dialogs/"+r.DialogID, tok, nil, &d)
+	if d.Dialog.Urgency != "" {
+		t.Fatalf("patient must not see the level before assessment: %q", d.Dialog.Urgency)
+	}
+	r = e.chat(tok, r.DialogID, "второй день, на 7 из 10")
+	if r.Urgency != "yellow" || len(r.Services) == 0 || !has(r.Actions, "contact_operator") {
+		t.Fatalf("after the answer: level and services: %+v", r)
+	}
+}
+
+func TestAskFirstDoesNotDelayRed(t *testing.T) {
+	e := setup(t)
+	e.a.askFirst = true
+	r := e.chat(e.patient(), "", "сильная боль в груди")
+	if r.Urgency != "red" || !has(r.Actions, "call_103") {
+		t.Fatalf("red must stay immediate: %+v", r)
 	}
 }
