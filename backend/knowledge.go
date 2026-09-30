@@ -44,21 +44,29 @@ func LoadKnowledge(path string) (*Knowledge, error) {
 }
 
 // Search returns the entry with the most keyword hits (keywords of all languages) and the hit count, or nil.
-func (k *Knowledge) Search(text string) (*KBEntry, int) {
+// Ties go to the entry whose matched keywords are longer (more specific). allow filters entries (nil = all).
+func (k *Knowledge) Search(text string, allow ...func(*KBEntry) bool) (*KBEntry, int) {
 	n := normalize(text)
 	var best *KBEntry
-	bestScore := 0
+	bestScore, bestLen := 0, 0
+next:
 	for i := range k.Entries {
-		score := 0
+		for _, ok := range allow {
+			if !ok(&k.Entries[i]) {
+				continue next
+			}
+		}
+		score, length := 0, 0
 		for _, list := range k.Entries[i].Keywords {
 			for _, kw := range list {
 				if kw != "" && strings.Contains(n, kw) {
 					score++
+					length += len([]rune(kw))
 				}
 			}
 		}
-		if score > bestScore {
-			best, bestScore = &k.Entries[i], score
+		if score > bestScore || score == bestScore && score > 0 && length > bestLen {
+			best, bestScore, bestLen = &k.Entries[i], score, length
 		}
 	}
 	return best, bestScore

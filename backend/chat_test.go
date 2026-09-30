@@ -758,3 +758,20 @@ func TestRiskFactorsOnlyAdded(t *testing.T) {
 		t.Fatalf("risk factors must persist: %+v", d.RiskFactors)
 	}
 }
+
+func TestPregnancyKnowledgeOnlyForPregnant(t *testing.T) {
+	e := setup(t, ex("find_service", "neurologist", false, "", "green"), ex("service_info", "gynecologist", false, "", "green"))
+	kb, err := LoadKnowledge("../knowledge.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	e.a.kb = kb
+	r := e.chat(e.patient(), "", "болит спина и поясница")
+	if strings.Contains(r.Reply.Content, "беремен") {
+		t.Fatalf("a non-pregnant patient got a pregnancy answer: %q", r.Reply.Content)
+	}
+	r = e.chat(e.patient(), "", "Опасен ли гастрит при беременности?")
+	if !strings.Contains(strings.ToLower(r.Reply.Content), "гастрит") {
+		t.Fatalf("pregnant question must get the pregnancy entry: %q", r.Reply.Content)
+	}
+}

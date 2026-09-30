@@ -271,7 +271,9 @@ func (a *App) process(ctx context.Context, d *Dialog, text string) (*ChatRespons
 	// Knowledge base: practical questions (address, hours, test preparation, ...) get the curated answer
 	// from knowledge.json as is — no LLM rewriting, so Kazakh stays correct. A complaint needs 2+ keyword hits.
 	// Checked before the operator intent: the model labelled "Где вы находитесь?" as operator.
-	if kb, score := a.kb.Search(text); kb != nil && !asksForHuman(text) && (ex.Intent != "find_service" || score >= 2) {
+	// Pregnancy entries (preg_*) only for a dialog with the pregnancy flag: "болит спина и поясница" is not about pregnancy.
+	pregOK := func(e *KBEntry) bool { return d.Pregnant || !strings.HasPrefix(e.ID, "preg_") }
+	if kb, score := a.kb.Search(text, pregOK); kb != nil && !asksForHuman(text) && (ex.Intent != "find_service" || score >= 2) {
 		data := botData{}
 		seen := map[string]bool{}
 		for _, id := range kb.ServiceIDs {
