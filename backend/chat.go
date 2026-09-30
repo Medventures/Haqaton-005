@@ -25,6 +25,10 @@ var texts = map[string]map[string]string{
 		"ru": "Передаю ваш вопрос оператору — он ответит здесь, в этом чате.",
 		"kk": "Сұрағыңызды операторға жібердім — ол осы чатта жауап береді.",
 	},
+	"ask_pregnancy": {
+		"ru": "Есть ли у вас беременность или её вероятность?",
+		"kk": "Сізде жүктілік бар ма немесе болуы мүмкін бе?",
+	},
 	"clarify": {
 		"ru": "Уточните, пожалуйста: что именно беспокоит, где и как давно?",
 		"kk": "Нақтылап жазыңызшы: не мазалайды, қай жерде және қашаннан бері?",
@@ -149,21 +153,30 @@ func (a *App) process(ctx context.Context, d *Dialog, text string) (*ChatRespons
 		return finish(t("handoff", d.Language), data)
 	}
 
+	hist, err := a.messages(ctx, d.ID)
+	if err != nil {
+		return nil, err
+	}
+	patientMsgs := []string{}
+	for _, m := range hist {
+		if m.Role == "patient" {
+			patientMsgs = append(patientMsgs, m.Content)
+		}
+	}
+
+	// Pregnancy flag: set by code from any message, never cleared.
+	for _, m := range patientMsgs {
+		if ok, weeks := DetectPregnancy(m); ok {
+			d.Pregnant = true
+			if weeks != nil {
+				d.GestationWeeks = weeks
+			}
+		}
+	}
+
 	// 1. Red flags: deterministic, before any LLM call, on every message.
-	if phrase, lang, ok := a.triage.CheckRed(text); ok {
-		if hasKazakhLetters(text) {
-			lang = "kk"
-		}
-		d.Language = lang
-		d.Urgency = "red"
-		d.UrgencyReason = "красный флаг: " + phrase
-		d.Summary = strings.TrimSpace(fmt.Sprintf("КРАСНЫЙ ФЛАГ («%s»). Сообщение пациента: «%s». %s", phrase, text, d.Summary))
-		id, err := a.handoff(ctx, d, "Красный флаг: "+phrase+" — пациенту рекомендовано звонить 103")
-		if err != nil {
-			return nil, err
-		}
-		res.TicketID = &id
-		return finish(t("red", lang), botData{Actions: []string{"call_103"}})
+	if r, done, err := a.redCheck(ctx, d, text, patientMsgs, res, finish); done {
+		return r, err
 	}
 
 	// Dialog already with an operator: bot stays silent, operator sees the message.
@@ -172,10 +185,6 @@ func (a *App) process(ctx context.Context, d *Dialog, text string) (*ChatRespons
 	}
 
 	// 2. LLM extraction.
-	hist, err := a.messages(ctx, d.ID)
-	if err != nil {
-		return nil, err
-	}
 	var transcript strings.Builder
 	if len(hist) > 12 {
 		hist = hist[len(hist)-12:]
@@ -185,7 +194,7 @@ func (a *App) process(ctx context.Context, d *Dialog, text string) (*ChatRespons
 		fmt.Fprintf(&transcript, "%s: %s\n", who, m.Content)
 	}
 	ex, ok := a.llm.Extract(ctx, []chatMsg{
-		{"system", extractionPrompt(a.cat, a.triage, 2-d.Clarifications)},
+		{"system", extractionPrompt(a.cat, a.triage, 2-d.Clarifications, d)},
 		{"user", "Диалог:\n" + transcript.String()},
 	}, a.cat)
 	if !ok && d.Summary == "" {
@@ -203,6 +212,16 @@ func (a *App) process(ctx context.Context, d *Dialog, text string) (*ChatRespons
 	}
 	if ex.Summary != "" {
 		d.Summary = ex.Summary
+	}
+	if ok && ex.Pregnant != nil && *ex.Pregnant && !d.Pregnant {
+		// LLM found a pregnancy the phrase rules missed: re-run the deterministic red check with it.
+		d.Pregnant = true
+		if d.GestationWeeks == nil && ex.GestationWeeks != nil && *ex.GestationWeeks >= 1 && *ex.GestationWeeks <= 42 {
+			d.GestationWeeks = ex.GestationWeeks
+		}
+		if r, done, err := a.redCheck(ctx, d, text, patientMsgs, res, finish); done {
+			return r, err
+		}
 	}
 	if ex.Urgency == "yellow" && d.Urgency == "green" {
 		d.UrgencyReason = ex.UrgencyReason
@@ -224,6 +243,12 @@ func (a *App) process(ctx context.Context, d *Dialog, text string) (*ChatRespons
 	}
 	if ex.Intent == "operator" {
 		return handoff("Пациент попросил оператора", botData{Actions: actions})
+	}
+
+	// 4 (ob/gyn). Pregnancy question: asked once, does not count toward the clarification limit.
+	if (ex.AskPregnancy || a.triage.NeedsPregnancyQuestion(text)) && !d.Pregnant && !d.PregnancyAsked && !(ex.Pregnant != nil && !*ex.Pregnant) {
+		d.PregnancyAsked = true
+		return finish(prefix+t("ask_pregnancy", d.Language), botData{Actions: actions})
 	}
 
 	// 3. Clarification (max 2 per dialog).
@@ -276,6 +301,52 @@ func (a *App) process(ctx context.Context, d *Dialog, text string) (*ChatRespons
 	return finish(prefix+strings.TrimSpace(reply), botData{Actions: actions})
 }
 
+// redCheck runs red (+ red_if_pregnant when the flag is set) over ALL patient messages.
+// It fires when the current message matches, or when an older one matches and the dialog is not red yet
+// (e.g. pain first, "I'm at week 32" later). done=true means the response is ready.
+func (a *App) redCheck(ctx context.Context, d *Dialog, text string, patientMsgs []string, res *ChatResponse,
+	finish func(string, botData) (*ChatResponse, error)) (*ChatResponse, bool, error) {
+	phrase, lang, hit := a.triage.CheckRed(text, d.Pregnant)
+	matched := text
+	if !hit && d.Urgency != "red" {
+		for _, m := range patientMsgs {
+			if phrase, lang, hit = a.triage.CheckRed(m, d.Pregnant); hit {
+				matched = m
+				break
+			}
+		}
+	}
+	if !hit {
+		return nil, false, nil
+	}
+	if hasKazakhLetters(text) || hasKazakhLetters(matched) {
+		lang = "kk"
+	}
+	d.Language = lang
+	d.Urgency = "red"
+	d.UrgencyReason = "красный флаг: " + phrase
+	preg := ""
+	if d.Pregnant {
+		preg = " Беременность: да"
+		if d.GestationWeeks != nil {
+			preg += fmt.Sprintf(", срок %d нед.", *d.GestationWeeks)
+		}
+		preg += "."
+	}
+	d.Summary = strings.TrimSpace(fmt.Sprintf("КРАСНЫЙ ФЛАГ («%s»). Сообщение пациента: «%s».%s %s", phrase, matched, preg, d.Summary))
+	id, err := a.handoff(ctx, d, "Красный флаг: "+phrase+" — пациенту рекомендовано звонить 103")
+	if err != nil {
+		return nil, true, err
+	}
+	res.TicketID = &id
+	actions := []string{"call_103"}
+	if d.Pregnant {
+		actions = append(actions, "urgent_operator")
+	}
+	r, err := finish(t("red", lang), botData{Actions: actions})
+	return r, true, err
+}
+
 // POST /api/chat/operator — patient pressed «Связаться с оператором».
 func (a *App) requestOperator(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
@@ -288,13 +359,19 @@ func (a *App) requestOperator(w http.ResponseWriter, r *http.Request) {
 		writeErr(w, 404, "dialog not found")
 		return
 	}
-	id, err := a.handoff(ctx, d, "Пациент нажал «Связаться с оператором»")
+	var urgent bool
+	reason := "Пациент нажал «Связаться с оператором»"
+	if d.Urgency == "red" {
+		urgent = true
+		reason = "СРОЧНО: пациент нажал «Срочно связаться с оператором» после красного флага"
+	}
+	id, err := a.handoff(ctx, d, reason)
 	if err != nil {
 		writeErr(w, 500, "db error")
 		return
 	}
 	m, _ := a.addMessage(ctx, d.ID, "bot", "bot", t("handoff", d.Language), botData{Urgency: d.Urgency, Actions: []string{}})
-	writeJSON(w, 200, map[string]any{"ticket_id": id, "status": d.Status, "reply": m})
+	writeJSON(w, 200, map[string]any{"ticket_id": id, "status": d.Status, "urgent": urgent, "reply": m})
 }
 
 // GET /api/dialogs/{id} — patient: only own dialog; operator: dialogs that were handed off.
