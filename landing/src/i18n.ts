@@ -56,7 +56,7 @@ export const dict: Record<Lang, Dict> = {
       steps: [
         { title: 'Проверка опасных симптомов', text: 'Сообщение сверяется со списком фраз на трёх языках — без ИИ. Боль в груди, онемение лица, у беременной — подтекание вод. Если совпало, пациент сразу видит кнопку 103, а диалог уходит оператору.' },
         { title: 'Разбор жалобы', text: 'Локальная модель определяет язык, специальность из каталога клиники и срочность. Ответ строго по схеме: придумать специальность, которой нет в каталоге, она не может.' },
-        { title: 'Уточнение', text: 'Если жалоба слишком общая, бот задаёт не больше двух вопросов. При боли внизу живота — один раз спрашивает о беременности.' },
+        { title: 'Уточнение', text: 'Если жалоба слишком общая, бот задаёт до трёх вопросов о сопутствующих симптомах. При боли внизу живота — один раз спрашивает о беременности.' },
         { title: 'Подбор', text: 'Услуги, цены и врачи со свободными слотами берутся из каталога клиники кодом, а не генерируются.' },
         { title: 'Ответ или оператор', text: 'Бот отвечает только по данным клиники и не ставит диагнозов. Если помочь не вышло — диалог уходит оператору с кратким описанием.' },
       ],
@@ -135,7 +135,7 @@ export const dict: Record<Lang, Dict> = {
       steps: [
         { title: 'Қауіпті белгілерді тексеру', text: 'Хабарлама үш тілдегі тіркестер тізімімен салыстырылады — ЖИ-сіз. Кеуде ауыруы, беттің ұюы, жүкті әйелде — қағанақ суының ағуы. Сәйкес келсе, пациент бірден 103 батырмасын көреді, диалог операторға кетеді.' },
         { title: 'Шағымды талдау', text: 'Жергілікті модель тілді, клиника каталогындағы мамандықты және шұғылдықты анықтайды. Жауап қатаң схема бойынша: каталогта жоқ мамандықты ойдан шығара алмайды.' },
-        { title: 'Нақтылау', text: 'Шағым тым жалпы болса, бот ең көбі екі сұрақ қояды. Іштің төменгі жағы ауырса — жүктілік туралы бір рет сұрайды.' },
+        { title: 'Нақтылау', text: 'Шағым тым жалпы болса, бот ілеспе белгілер туралы ең көбі үш сұрақ қояды. Іштің төменгі жағы ауырса — жүктілік туралы бір рет сұрайды.' },
         { title: 'Таңдау', text: 'Қызметтер, бағалар және бос уақыты бар дәрігерлер клиника каталогынан кодпен алынады, ойдан шығарылмайды.' },
         { title: 'Жауап немесе оператор', text: 'Бот тек клиника деректері бойынша жауап береді, диагноз қоймайды. Көмектесе алмаса — диалог қысқа сипаттамамен операторға беріледі.' },
       ],
@@ -214,7 +214,7 @@ export const dict: Record<Lang, Dict> = {
       steps: [
         { title: 'Danger check', text: 'The message is matched against a phrase list in three languages — no AI involved. Chest pain, a numb face, leaking fluid in pregnancy. On a match the patient gets a 103 button and the chat goes to an operator.' },
         { title: 'Understanding the complaint', text: 'A local model detects the language, the specialty from the clinic catalog and the urgency. The answer follows a strict schema, so it cannot invent a specialty the clinic doesn’t have.' },
-        { title: 'Clarifying', text: 'If the complaint is too vague, the bot asks at most two questions. With lower abdominal pain it asks about pregnancy once.' },
+        { title: 'Clarifying', text: 'If the complaint is too vague, the bot asks up to three questions about related symptoms. With lower abdominal pain it asks about pregnancy once.' },
         { title: 'Matching', text: 'Services, prices and doctors with free slots are taken from the clinic catalog by code, not generated.' },
         { title: 'Answer or operator', text: 'The bot answers only from clinic data and never diagnoses. If it can’t help, the chat goes to an operator with a short summary.' },
       ],
