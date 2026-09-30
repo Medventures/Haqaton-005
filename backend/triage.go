@@ -52,9 +52,13 @@ func LoadTriage(path string) (*TriageRules, error) {
 	return &t, nil
 }
 
-// normalize: lower case, ё→е, punctuation → space, collapse spaces.
+// kkFold maps Kazakh-specific letters to the Russian look-alikes patients type on a Russian keyboard
+// ("есинен танып калды" = "есінен танып қалды"). Rules, keywords and input are all folded, so both spellings match.
+var kkFold = strings.NewReplacer("ә", "а", "ғ", "г", "қ", "к", "ң", "н", "ө", "о", "ұ", "у", "ү", "у", "һ", "х", "і", "и")
+
+// normalize: lower case, ё→е, Kazakh letters folded (kkFold), punctuation → space, collapse spaces.
 func normalize(s string) string {
-	s = strings.ReplaceAll(strings.ToLower(s), "ё", "е")
+	s = kkFold.Replace(strings.ReplaceAll(strings.ToLower(s), "ё", "е"))
 	s = strings.Map(func(r rune) rune {
 		if unicode.IsPunct(r) || unicode.IsSymbol(r) {
 			return ' '
@@ -93,7 +97,7 @@ func (t *TriageRules) CheckRed(text string, pregnant bool) (phrase, lang string,
 					break
 				}
 			}
-			if all && !t.excluded(n) {
+			if all && !t.excluded(n, r.All) {
 				return strings.Join(r.All, " + "), r.Lang, true
 			}
 		}
@@ -103,8 +107,9 @@ func (t *TriageRules) CheckRed(text string, pregnant bool) (phrase, lang string,
 
 // excluded: an exclusion phrase occurs in the part. Phrases match from a word start; a last word shorter
 // than 5 letters must match whole. A trailing "$" means "at the end of the part": "боли в груди нет" is
-// excluded, "нет воздуха" is not.
-func (t *TriageRules) excluded(part string) bool {
+// excluded, "нет воздуха" is not. A "$" phrase is skipped when the matched rule itself ends with it:
+// in "мама упала сознания нет" / "анам есі жоқ" the "нет"/"жоқ" is the symptom, not a negation.
+func (t *TriageRules) excluded(part string, rule []string) bool {
 	words := " " + part + " "
 	for _, list := range t.RedExclude {
 		for _, p := range list {
@@ -113,7 +118,12 @@ func (t *TriageRules) excluded(part string) bool {
 				last = p[i+1:]
 			}
 			if strings.HasSuffix(p, "$") { // only at the end of the part
-				if strings.HasSuffix(words, " "+strings.TrimSuffix(p, "$")+" ") {
+				e := strings.TrimSuffix(p, "$")
+				own := false
+				for _, f := range rule {
+					own = own || strings.HasSuffix(" "+f, " "+e)
+				}
+				if !own && strings.HasSuffix(words, " "+e+" ") {
 					return true
 				}
 				continue
@@ -140,11 +150,36 @@ func maxUrgency(a, b string) string {
 	return a
 }
 
-// detectLanguage: kk by Kazakh-specific letters, en by Latin script; "" = let the LLM decide.
+// Kazakh words that do not occur in Russian, folded (kkFold): Kazakh typed without the special letters
+// ("басым ауырады", "калай жазылуга болады") or mixed with Russian ("кеудем болит"). Matched as word prefixes.
+var kkWords = []string{"ауыр", "жатыр", "керек", "рахмет", "калай", "кайда", "кашан", "канша", "болады", "келеди",
+	"келмейди", "алмай", "истеймин", "истейсиз", "кеуде", "журег", "тамаг", "дариге", "емхана", "жукти", "аптадамын",
+	"комектес", "салем", "басым"}
+
+// Latin transliteration: Kazakh ("kudem auyrady") -> kk, Russian ("bolit grud") -> "" (the LLM/dialog decides).
+var translitKK = []string{"auyr", "zhatyr", "kerek", "rahmet", "rakhmet", "salem", "kalay", "qalay", "kaida", "qaida",
+	"kudem", "keudem", "dariger", "zhukti", "bolady", "tynys", "esinen", "komektes"}
+var translitRU = []string{"bolit", "grud", "nuzhen", "nuzhno", "vrach", "pozhal", "pomogite", "zdravstv", "spasibo",
+	"menya", "srochno", "dyshat", "soznan", "beremen", "skolko", "stoit", "zapisa", "golova", "zhivot", "gorlo"}
+
+func hasWordPrefix(words []string, stems []string) bool {
+	for _, w := range words {
+		for _, st := range stems {
+			if strings.HasPrefix(w, st) {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+// detectLanguage: kk by Kazakh-specific letters or Kazakh-only words, en by Latin script (unless it is
+// a transliteration of Kazakh/Russian); "" = let the LLM decide.
 func detectLanguage(s string) string {
 	if hasKazakhLetters(s) {
 		return "kk"
 	}
+	words := strings.Fields(normalize(s))
 	latin, cyr := 0, 0
 	for _, r := range s {
 		switch {
@@ -155,7 +190,16 @@ func detectLanguage(s string) string {
 		}
 	}
 	if latin > 0 && latin > cyr*3 {
+		switch {
+		case hasWordPrefix(words, translitKK):
+			return "kk"
+		case hasWordPrefix(words, translitRU):
+			return ""
+		}
 		return "en"
+	}
+	if hasWordPrefix(words, kkWords) {
+		return "kk"
 	}
 	return ""
 }
@@ -164,30 +208,44 @@ func hasKazakhLetters(s string) bool {
 	return strings.ContainsAny(strings.ToLower(s), "әғқңөұүһі")
 }
 
+// kre compiles a pattern written with Kazakh letters against folded (normalized) text.
+func kre(p string) *regexp.Regexp { return regexp.MustCompile(kkFold.Replace(p)) }
+
 // Pregnancy markers (on normalized text). A bare "апта"/"неделя" is NOT enough:
 // "екі апта бойы тамағым ауырады" = "throat hurts for two weeks".
+// Abbreviations: "бер-ть", "берем 25 нед" (a bare "берем" is "we take"), "ж/ты", "preg"; transliteration: "beremenna", "zhuktimin".
 var pregnancyRe = []*regexp.Regexp{
-	regexp.MustCompile(`беремен`),
-	regexp.MustCompile(`в положении`),
-	regexp.MustCompile(`жду ребенка`),
-	regexp.MustCompile(`срок\D{0,20}\d+`),
-	regexp.MustCompile(`\d+\s*(й|я|ой)?\s*недел\S*\s+(срок|беремен)`),
-	regexp.MustCompile(`на\s+\d+\s*(й|ой)?\s*неделе`),
-	regexp.MustCompile(`жүкті`),
-	regexp.MustCompile(`екіқабат|екі қабат`),
-	regexp.MustCompile(`аяғым ауыр|аяғы ауыр`),
-	regexp.MustCompile(`мерзім\D{0,20}\d+\s*апта`),
-	regexp.MustCompile(`\d+\s*(аптадамын|аптасындамын|аптадамыз)`),
-	regexp.MustCompile(`\d+\s*апталық`),
-	regexp.MustCompile(`\bpregnan`),
-	regexp.MustCompile(`\bexpecting a baby`),
-	regexp.MustCompile(`\d+\s*weeks?\s+(pregnant|along)`),
+	kre(`беремен`),
+	kre(`(^|\s)бер ть(\s|$)`),
+	kre(`(^|\s)берем\s+\d{1,2}\s*(н|нед\S*|апт\S*|w)(\s|$)`),
+	kre(`\d{1,2}\s*(нед|апт)\S*\s+берем(\s|$)`),
+	kre(`в положении`),
+	kre(`жду ребенка`),
+	kre(`срок\D{0,20}\d+`),
+	kre(`\d+\s*(й|я|ой)?\s*недел\S*\s+(срок|беремен)`),
+	kre(`на\s+\d+\s*(й|ой)?\s*неделе`),
+	kre(`жүкті`),
+	kre(`(^|\s)ж ты(м|мын)?(\s|$)`),
+	kre(`екіқабат|екі қабат`),
+	kre(`аяғы(м)? ауыр(\s|$)`), // "аяғым ауыр" = pregnant; "аяғым ауырады" = my leg hurts
+	kre(`мерзім\D{0,20}\d+\s*апта`),
+	kre(`\d+\s*(аптадамын|аптасындамын|аптадамыз)`),
+	kre(`\d+\s*апталық`),
+	kre(`\bpregnan`),
+	kre(`(^|\s)preg(\s|$)`),
+	kre(`\bexpecting a baby`),
+	kre(`\d+\s*weeks?\s+(pregnant|along)`),
+	kre(`beremen|zhukti|zhykti|jukti`),
 }
 
-// Negations are removed before matching: "я не беременна" must not set the flag.
-var pregnancyNegRe = regexp.MustCompile(`не\s+беремен\S*|беременност\S*\s+(нет|исключена)|нет\s+беременност\S*|жүкті\s+емес\S*|жүктілік\s+жоқ|жүктілігім\s+жоқ|not\s+pregnant|no\s+pregnancy`)
+// Negations and non-pregnancy uses are removed before matching: "я не беременна", "хочу забеременеть",
+// "планирую беременность", "тест на беременность отрицательный" must not set the (never cleared) flag.
+var pregnancyNegRe = kre(`не\s+беремен\S*|беременност\S*\s+(нет|исключена)|нет\s+беременност\S*|не\s+в\s+положении|` +
+	`\S*забеременет\S*|планир\S*\s+беременн\S*|беременн\S*\s+планир\S*|тест\S*\s+на\s+беременн\S*\s+отриц\S*|` +
+	`жүкті\s+емес\S*|жүктілік\s+жоқ|жүктілігім\s+жоқ|жүкті\s+бол(ғым|ғысы|а\s+алмай)\S*|жүктілікті\s+жоспарла\S*|` +
+	`not\s+pregnant|no\s+pregnancy|(trying|want|wants|planning)\s+to\s+(get|become)\s+pregnant|can\s*t\s+get\s+pregnant`)
 
-var weeksRe = regexp.MustCompile(`(\d{1,2})\s*(й|я|ой|ші|шы|інші|ыншы)?\s*(недел|апта|week)`)
+var weeksRe = kre(`(\d{1,2})\s*(й|я|ой|ші|шы|інші|ыншы)?\s*(нед|апт|week|wk|w(\s|$)|nedel|apta)`)
 
 // DetectPregnancy: does the text say the patient is pregnant, and the gestation week if mentioned.
 func DetectPregnancy(text string) (bool, *int) {

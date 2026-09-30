@@ -33,10 +33,28 @@ func LoadKnowledge(path string) (*Knowledge, error) {
 	if err := json.Unmarshal(b, &k); err != nil {
 		return nil, err
 	}
+	// Keywords are normalized and de-duplicated within an entry: "ребён"/"ребен" or "автобус" in ru and kk
+	// are one keyword after normalization and must not score 2 (a complaint answered from the KB).
 	for i := range k.Entries {
-		for lang, list := range k.Entries[i].Keywords {
-			for j := range list {
-				k.Entries[i].Keywords[lang][j] = normalize(list[j])
+		seen := map[string]bool{}
+		for _, lang := range []string{"ru", "kk", "en"} {
+			list := k.Entries[i].Keywords[lang]
+			out := list[:0]
+			for _, kw := range list {
+				if kw = normalize(kw); kw != "" && !seen[kw] {
+					seen[kw] = true
+					out = append(out, kw)
+				}
+			}
+			if list != nil {
+				k.Entries[i].Keywords[lang] = out
+			}
+		}
+		for lang, list := range k.Entries[i].Keywords { // any other language key: normalize only
+			if lang != "ru" && lang != "kk" && lang != "en" {
+				for j := range list {
+					list[j] = normalize(list[j])
+				}
 			}
 		}
 	}
