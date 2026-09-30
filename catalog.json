@@ -236,6 +236,362 @@
           "description": "Eyes and vision"
         }
       }
+    },
+    {
+      "id": "endocrinologist",
+      "name": "Эндокринолог",
+      "description": "Заболевания щитовидной железы, сахарный диабет, гормональные нарушения, обмен веществ",
+      "treats": [
+        "сахарный диабет",
+        "высокий сахар в крови",
+        "щитовидная железа",
+        "узлы щитовидки",
+        "гормоны",
+        "лишний вес",
+        "постоянная жажда",
+        "гестационный диабет",
+        "қант диабеті",
+        "қандағы қант жоғары",
+        "қалқанша без",
+        "гормондар",
+        "артық салмақ"
+      ],
+      "i18n": {
+        "kk": {
+          "name": "Эндокринолог",
+          "description": "Қалқанша без аурулары, қант диабеті, гормондық бұзылыстар, зат алмасу"
+        },
+        "en": {
+          "name": "Endocrinologist",
+          "description": "Thyroid diseases, diabetes, hormonal disorders and metabolism"
+        }
+      }
+    },
+    {
+      "id": "urologist",
+      "name": "Уролог",
+      "description": "Заболевания мочевыводящих путей, почек и мужской половой системы",
+      "treats": [
+        "простата",
+        "простатит",
+        "почечная колика",
+        "камни в почках",
+        "кровь в моче у мужчин",
+        "частые ночные позывы у мужчин",
+        "эректильная дисфункция",
+        "мужское бесплодие",
+        "простата қабынуы",
+        "бүйрек тасы",
+        "бүйрек шаншуы",
+        "ер адам бедеулігі",
+        "зәрде қан"
+      ],
+      "i18n": {
+        "kk": {
+          "name": "Уролог",
+          "description": "Зәр шығару жолдары, бүйрек және ер адамдардың жыныс жүйесі аурулары"
+        },
+        "en": {
+          "name": "Urologist",
+          "description": "Diseases of the urinary tract, kidneys and male reproductive system"
+        }
+      }
+    },
+    {
+      "id": "surgeon",
+      "name": "Хирург",
+      "description": "Амбулаторная хирургия: грыжи, новообразования кожи и мягких тканей, гнойные воспаления, вросший ноготь",
+      "treats": [
+        "грыжа",
+        "вросший ноготь",
+        "фурункул",
+        "липома",
+        "атерома",
+        "аппендицит",
+        "желчнокаменная болезнь",
+        "нагноение раны",
+        "жарық (грыжа)",
+        "тырнақ етке кірді",
+        "шиқан",
+        "соқыр ішек",
+        "өт тасы"
+      ],
+      "i18n": {
+        "kk": {
+          "name": "Хирург",
+          "description": "Амбулаториялық хирургия: жарықтар, тері мен жұмсақ тіндердің ісіктері, іріңді қабынулар, етке кірген тырнақ"
+        },
+        "en": {
+          "name": "Surgeon",
+          "description": "Outpatient surgery: hernias, skin and soft tissue lumps, abscesses, ingrown nails"
+        }
+      }
+    },
+    {
+      "id": "traumatologist",
+      "name": "Травматолог-ортопед",
+      "description": "Травмы, переломы, вывихи, растяжения, деформации стоп и опорно-двигательного аппарата",
+      "treats": [
+        "перелом",
+        "вывих",
+        "растяжение связок",
+        "ушиб",
+        "травма колена",
+        "травма после падения",
+        "плоскостопие",
+        "косолапость",
+        "сынық",
+        "буын шығып кетті",
+        "байлам созылды",
+        "жарақат",
+        "соғылу",
+        "табан жалпақтығы"
+      ],
+      "i18n": {
+        "kk": {
+          "name": "Травматолог-ортопед",
+          "description": "Жарақаттар, сынықтар, буын шығулары, байлам созылуы, табан мен тірек-қимыл жүйесінің деформациялары"
+        },
+        "en": {
+          "name": "Orthopedic traumatologist",
+          "description": "Injuries, fractures, dislocations, sprains, foot and musculoskeletal deformities"
+        }
+      }
+    },
+    {
+      "id": "mammologist",
+      "name": "Маммолог",
+      "description": "Заболевания молочных желёз, профилактический осмотр груди, проблемы при грудном вскармливании",
+      "treats": [
+        "уплотнение в груди",
+        "боль в молочной железе",
+        "выделения из соска",
+        "мастопатия",
+        "лактостаз",
+        "мастит",
+        "маммография",
+        "кеудеде түйін",
+        "сүт безі ауырады",
+        "емшектен бөлінді",
+        "сүт іркілуі",
+        "емшек қабынуы"
+      ],
+      "i18n": {
+        "kk": {
+          "name": "Маммолог",
+          "description": "Сүт безі аурулары, кеудені алдын ала тексеру, емізу кезіндегі қиындықтар"
+        },
+        "en": {
+          "name": "Breast specialist (mammologist)",
+          "description": "Breast diseases, preventive breast check-ups, breastfeeding problems"
+        }
+      }
+    },
+    {
+      "id": "allergist",
+      "name": "Аллерголог-иммунолог",
+      "description": "Аллергические реакции, поллиноз, пищевая аллергия, крапивница, нарушения иммунитета",
+      "treats": [
+        "аллергия",
+        "аллергия на пыльцу",
+        "поллиноз",
+        "пищевая аллергия",
+        "крапивница",
+        "отёк Квинке",
+        "аллергия на шерсть животных",
+        "частые простуды из-за иммунитета",
+        "гүл тозаңына аллергия",
+        "тағамға аллергия",
+        "есекжем",
+        "жануар жүніне аллергия"
+      ],
+      "i18n": {
+        "kk": {
+          "name": "Аллерголог-иммунолог",
+          "description": "Аллергиялық реакциялар, поллиноз, тағамдық аллергия, есекжем, иммунитет бұзылыстары"
+        },
+        "en": {
+          "name": "Allergist-immunologist",
+          "description": "Allergic reactions, hay fever, food allergy, hives and immune disorders"
+        }
+      }
+    },
+    {
+      "id": "pulmonologist",
+      "name": "Пульмонолог",
+      "description": "Заболевания лёгких и бронхов: астма, хронический бронхит, затяжной кашель, пневмония",
+      "treats": [
+        "бронхиальная астма",
+        "приступы удушья",
+        "свистящее дыхание",
+        "затяжной кашель больше трёх недель",
+        "хронический бронхит",
+        "пневмония",
+        "ХОБЛ",
+        "кашель курильщика",
+        "демікпе",
+        "тұншығу",
+        "ұзаққа созылған жөтел",
+        "бронхит",
+        "өкпе қабынуы"
+      ],
+      "i18n": {
+        "kk": {
+          "name": "Пульмонолог",
+          "description": "Өкпе мен бронх аурулары: демікпе, созылмалы бронхит, ұзаққа созылған жөтел, өкпе қабынуы"
+        },
+        "en": {
+          "name": "Pulmonologist",
+          "description": "Lung and bronchial diseases: asthma, chronic bronchitis, persistent cough, pneumonia"
+        }
+      }
+    },
+    {
+      "id": "psychotherapist",
+      "name": "Психотерапевт",
+      "description": "Тревога, депрессия, стресс, панические атаки, эмоциональное состояние во время беременности и после родов",
+      "treats": [
+        "тревога",
+        "депрессия",
+        "панические атаки",
+        "стресс",
+        "апатия",
+        "навязчивые мысли",
+        "послеродовая депрессия",
+        "эмоциональное выгорание",
+        "мазасыздық",
+        "күйзеліс",
+        "дүрбелең шабуылы",
+        "босанғаннан кейінгі депрессия"
+      ],
+      "i18n": {
+        "kk": {
+          "name": "Психотерапевт",
+          "description": "Мазасыздық, депрессия, күйзеліс, дүрбелең шабуылдары, жүктілік кезіндегі және босанғаннан кейінгі эмоциялық жағдай"
+        },
+        "en": {
+          "name": "Psychotherapist",
+          "description": "Anxiety, depression, stress, panic attacks, emotional wellbeing during pregnancy and after birth"
+        }
+      }
+    },
+    {
+      "id": "dentist",
+      "name": "Стоматолог",
+      "description": "Лечение и профилактика заболеваний зубов и дёсен",
+      "treats": [
+        "зубная боль",
+        "кариес",
+        "кровоточат дёсны",
+        "флюс",
+        "выпала пломба",
+        "удаление зуба",
+        "чистка зубов",
+        "чувствительность зубов",
+        "тіс ауырады",
+        "тіс жегісі",
+        "қызыл иек қанайды",
+        "тіс жұлу",
+        "тіс тазалау",
+        "пломба түсіп қалды"
+      ],
+      "i18n": {
+        "kk": {
+          "name": "Стоматолог",
+          "description": "Тіс пен қызыл иек ауруларын емдеу және алдын алу"
+        },
+        "en": {
+          "name": "Dentist",
+          "description": "Treatment and prevention of tooth and gum diseases"
+        }
+      }
+    },
+    {
+      "id": "rheumatologist",
+      "name": "Ревматолог",
+      "description": "Воспалительные и системные заболевания суставов и соединительной ткани",
+      "treats": [
+        "припухлость суставов",
+        "утренняя скованность в суставах",
+        "подагра",
+        "ревматоидный артрит",
+        "боль в суставах без травмы",
+        "артрит",
+        "системная красная волчанка",
+        "буын ісінуі",
+        "таңертең буындар сіреседі",
+        "буындар ауырады",
+        "буын қабынуы"
+      ],
+      "i18n": {
+        "kk": {
+          "name": "Ревматолог",
+          "description": "Буындар мен дәнекер тіннің қабыну және жүйелік аурулары"
+        },
+        "en": {
+          "name": "Rheumatologist",
+          "description": "Inflammatory and systemic diseases of the joints and connective tissue"
+        }
+      }
+    },
+    {
+      "id": "infectionist",
+      "name": "Инфекционист",
+      "description": "Инфекционные и паразитарные заболевания: гепатиты, кишечные инфекции, укусы клещей, бруцеллёз",
+      "treats": [
+        "гепатит",
+        "кишечная инфекция",
+        "отравление",
+        "глисты",
+        "паразиты",
+        "укус клеща",
+        "бруцеллёз",
+        "анализ на ВИЧ",
+        "ішек инфекциясы",
+        "улану",
+        "кене шақты",
+        "құрт (паразиттер)",
+        "бруцеллез"
+      ],
+      "i18n": {
+        "kk": {
+          "name": "Инфекционист",
+          "description": "Жұқпалы және паразиттік аурулар: гепатиттер, ішек инфекциялары, кене шағуы, бруцеллез"
+        },
+        "en": {
+          "name": "Infectious disease specialist",
+          "description": "Infectious and parasitic diseases: hepatitis, intestinal infections, tick bites, brucellosis"
+        }
+      }
+    },
+    {
+      "id": "physiotherapist",
+      "name": "Физиотерапевт / реабилитолог",
+      "description": "Восстановление после травм, операций, инсульта и родов: ЛФК, массаж, физиотерапия",
+      "treats": [
+        "реабилитация после травмы",
+        "восстановление после операции",
+        "восстановление после инсульта",
+        "лечебная физкультура",
+        "ЛФК",
+        "массаж",
+        "физиотерапия",
+        "восстановление после родов",
+        "оңалту",
+        "отадан кейін қалпына келу",
+        "емдік дене шынықтыру",
+        "физиоем"
+      ],
+      "i18n": {
+        "kk": {
+          "name": "Физиотерапевт / оңалту маманы",
+          "description": "Жарақаттан, отадан, инсульттан және босанғаннан кейін қалпына келу: ЕДШ, массаж, физиоем"
+        },
+        "en": {
+          "name": "Physiotherapist / rehabilitation specialist",
+          "description": "Recovery after injuries, surgery, stroke and childbirth: exercise therapy, massage, physiotherapy"
+        }
+      }
     }
   ],
   "services": [
@@ -527,6 +883,414 @@
           "description": "Visual acuity test, fundus examination"
         }
       }
+    },
+    {
+      "id": "endo-consult",
+      "specialty_id": "endocrinologist",
+      "name": "Консультация эндокринолога",
+      "price": 10000,
+      "description": "Приём, оценка анализов и назначение лечения при гормональных нарушениях",
+      "i18n": {
+        "kk": {
+          "name": "Эндокринолог кеңесі",
+          "description": "Қабылдау, талдауларды бағалау және гормондық бұзылыстарда ем тағайындау"
+        },
+        "en": {
+          "name": "Endocrinologist consultation",
+          "description": "Visit, review of tests and treatment plan for hormonal disorders"
+        }
+      }
+    },
+    {
+      "id": "endo-thyroid-us",
+      "specialty_id": "endocrinologist",
+      "name": "УЗИ щитовидной железы",
+      "price": 7000,
+      "description": "Ультразвуковое исследование щитовидной железы для выявления узлов и изменений размера",
+      "i18n": {
+        "kk": {
+          "name": "Қалқанша безінің УДЗ",
+          "description": "Түйіндер мен көлем өзгерістерін анықтау үшін қалқанша безін ультрадыбыстық зерттеу"
+        },
+        "en": {
+          "name": "Thyroid ultrasound",
+          "description": "Ultrasound of the thyroid gland to detect nodules and size changes"
+        }
+      }
+    },
+    {
+      "id": "uro-consult",
+      "specialty_id": "urologist",
+      "name": "Консультация уролога",
+      "price": 10000,
+      "description": "Приём, осмотр и назначение обследования мочевыводящей системы",
+      "i18n": {
+        "kk": {
+          "name": "Уролог кеңесі",
+          "description": "Қабылдау, тексеру және зәр шығару жүйесін зерттеуге жолдама"
+        },
+        "en": {
+          "name": "Urologist consultation",
+          "description": "Visit, examination and tests for the urinary system"
+        }
+      }
+    },
+    {
+      "id": "uro-prostate-us",
+      "specialty_id": "urologist",
+      "name": "УЗИ предстательной железы",
+      "price": 8000,
+      "description": "Ультразвуковое исследование простаты и мочевого пузыря",
+      "i18n": {
+        "kk": {
+          "name": "Қуықасты безінің УДЗ",
+          "description": "Қуықасты безі мен қуықты ультрадыбыстық зерттеу"
+        },
+        "en": {
+          "name": "Prostate ultrasound",
+          "description": "Ultrasound of the prostate and bladder"
+        }
+      }
+    },
+    {
+      "id": "surg-consult",
+      "specialty_id": "surgeon",
+      "name": "Консультация хирурга",
+      "price": 9000,
+      "description": "Осмотр и решение о необходимости амбулаторного или планового вмешательства",
+      "i18n": {
+        "kk": {
+          "name": "Хирург кеңесі",
+          "description": "Тексеру және амбулаториялық немесе жоспарлы араласу қажеттілігін анықтау"
+        },
+        "en": {
+          "name": "Surgeon consultation",
+          "description": "Examination and decision on outpatient or planned surgery"
+        }
+      }
+    },
+    {
+      "id": "surg-ingrown-nail",
+      "specialty_id": "surgeon",
+      "name": "Удаление вросшего ногтя",
+      "price": 18000,
+      "description": "Амбулаторное удаление вросшего края ногтя под местной анестезией",
+      "i18n": {
+        "kk": {
+          "name": "Етке кірген тырнақты алып тастау",
+          "description": "Жергілікті жансыздандырумен тырнақтың етке кірген шетін амбулаториялық алып тастау"
+        },
+        "en": {
+          "name": "Ingrown toenail removal",
+          "description": "Outpatient removal of the ingrown nail edge under local anaesthesia"
+        }
+      }
+    },
+    {
+      "id": "trauma-consult",
+      "specialty_id": "traumatologist",
+      "name": "Консультация травматолога-ортопеда",
+      "price": 10000,
+      "description": "Осмотр после травмы или при деформации суставов и стоп, назначение лечения",
+      "i18n": {
+        "kk": {
+          "name": "Травматолог-ортопед кеңесі",
+          "description": "Жарақаттан кейін немесе буын мен табан деформациясында тексеру, ем тағайындау"
+        },
+        "en": {
+          "name": "Orthopedic traumatologist consultation",
+          "description": "Examination after an injury or for joint and foot deformities, treatment plan"
+        }
+      }
+    },
+    {
+      "id": "trauma-cast",
+      "specialty_id": "traumatologist",
+      "name": "Наложение гипсовой лонгеты",
+      "price": 12000,
+      "description": "Иммобилизация конечности гипсовой лонгетой при переломе или сильном растяжении",
+      "i18n": {
+        "kk": {
+          "name": "Гипс лонгетін салу",
+          "description": "Сынық немесе қатты созылу кезінде аяқ-қолды гипс лонгетімен бекіту"
+        },
+        "en": {
+          "name": "Plaster splint application",
+          "description": "Immobilisation of a limb with a plaster splint for a fracture or severe sprain"
+        }
+      }
+    },
+    {
+      "id": "mamm-consult",
+      "specialty_id": "mammologist",
+      "name": "Консультация маммолога",
+      "price": 10000,
+      "description": "Осмотр и пальпация молочных желёз, назначение обследования",
+      "i18n": {
+        "kk": {
+          "name": "Маммолог кеңесі",
+          "description": "Сүт бездерін тексеру және пальпациялау, зерттеуге жолдама"
+        },
+        "en": {
+          "name": "Breast specialist consultation",
+          "description": "Clinical breast examination and referral for tests"
+        }
+      }
+    },
+    {
+      "id": "mamm-us",
+      "specialty_id": "mammologist",
+      "name": "УЗИ молочных желёз",
+      "price": 8000,
+      "description": "Ультразвуковое исследование молочных желёз и регионарных лимфоузлов",
+      "i18n": {
+        "kk": {
+          "name": "Сүт бездерінің УДЗ",
+          "description": "Сүт бездері мен аймақтық лимфа түйіндерін ультрадыбыстық зерттеу"
+        },
+        "en": {
+          "name": "Breast ultrasound",
+          "description": "Ultrasound of the breasts and regional lymph nodes"
+        }
+      }
+    },
+    {
+      "id": "allerg-consult",
+      "specialty_id": "allergist",
+      "name": "Консультация аллерголога-иммунолога",
+      "price": 10000,
+      "description": "Приём, сбор аллергоанамнеза и подбор лечения",
+      "i18n": {
+        "kk": {
+          "name": "Аллерголог-иммунолог кеңесі",
+          "description": "Қабылдау, аллергиялық анамнез жинау және ем таңдау"
+        },
+        "en": {
+          "name": "Allergist consultation",
+          "description": "Visit, allergy history and treatment selection"
+        }
+      }
+    },
+    {
+      "id": "allerg-skin-test",
+      "specialty_id": "allergist",
+      "name": "Кожные аллергопробы",
+      "price": 15000,
+      "description": "Прик-тесты на распространённые бытовые, пыльцевые и пищевые аллергены",
+      "i18n": {
+        "kk": {
+          "name": "Терілік аллергия сынамалары",
+          "description": "Кең таралған тұрмыстық, тозаң және тағамдық аллергендерге прик-тесттер"
+        },
+        "en": {
+          "name": "Skin prick allergy tests",
+          "description": "Prick tests for common household, pollen and food allergens"
+        }
+      }
+    },
+    {
+      "id": "pulm-consult",
+      "specialty_id": "pulmonologist",
+      "name": "Консультация пульмонолога",
+      "price": 10000,
+      "description": "Приём, аускультация лёгких и назначение обследования дыхательной системы",
+      "i18n": {
+        "kk": {
+          "name": "Пульмонолог кеңесі",
+          "description": "Қабылдау, өкпені тыңдау және тыныс алу жүйесін зерттеуге жолдама"
+        },
+        "en": {
+          "name": "Pulmonologist consultation",
+          "description": "Visit, lung auscultation and respiratory tests"
+        }
+      }
+    },
+    {
+      "id": "pulm-spirometry",
+      "specialty_id": "pulmonologist",
+      "name": "Спирометрия",
+      "price": 6000,
+      "description": "Исследование функции внешнего дыхания для диагностики астмы и ХОБЛ",
+      "i18n": {
+        "kk": {
+          "name": "Спирометрия",
+          "description": "Демікпе мен ӨСОА анықтау үшін сыртқы тыныс алу қызметін зерттеу"
+        },
+        "en": {
+          "name": "Spirometry",
+          "description": "Lung function test used to diagnose asthma and COPD"
+        }
+      }
+    },
+    {
+      "id": "psy-consult",
+      "specialty_id": "psychotherapist",
+      "name": "Консультация психотерапевта",
+      "price": 15000,
+      "description": "Первичная беседа, оценка эмоционального состояния и план помощи",
+      "i18n": {
+        "kk": {
+          "name": "Психотерапевт кеңесі",
+          "description": "Алғашқы әңгіме, эмоциялық жағдайды бағалау және көмек жоспары"
+        },
+        "en": {
+          "name": "Psychotherapist consultation",
+          "description": "Initial session, assessment of emotional state and care plan"
+        }
+      }
+    },
+    {
+      "id": "psy-session",
+      "specialty_id": "psychotherapist",
+      "name": "Сеанс психотерапии (50 минут)",
+      "price": 18000,
+      "description": "Индивидуальный сеанс психотерапии продолжительностью 50 минут",
+      "i18n": {
+        "kk": {
+          "name": "Психотерапия сеансы (50 минут)",
+          "description": "Ұзақтығы 50 минуттық жеке психотерапия сеансы"
+        },
+        "en": {
+          "name": "Psychotherapy session (50 minutes)",
+          "description": "Individual 50-minute psychotherapy session"
+        }
+      }
+    },
+    {
+      "id": "dent-consult",
+      "specialty_id": "dentist",
+      "name": "Консультация стоматолога",
+      "price": 6000,
+      "description": "Осмотр полости рта и составление плана лечения",
+      "i18n": {
+        "kk": {
+          "name": "Стоматолог кеңесі",
+          "description": "Ауыз қуысын тексеру және ем жоспарын құру"
+        },
+        "en": {
+          "name": "Dentist consultation",
+          "description": "Oral examination and treatment plan"
+        }
+      }
+    },
+    {
+      "id": "dent-cleaning",
+      "specialty_id": "dentist",
+      "name": "Профессиональная чистка зубов",
+      "price": 20000,
+      "description": "Удаление зубного камня и налёта ультразвуком с последующей полировкой",
+      "i18n": {
+        "kk": {
+          "name": "Тісті кәсіби тазалау",
+          "description": "Тіс тасы мен өңезді ультрадыбыспен алып тастау және жылтырату"
+        },
+        "en": {
+          "name": "Professional teeth cleaning",
+          "description": "Ultrasonic removal of tartar and plaque followed by polishing"
+        }
+      }
+    },
+    {
+      "id": "rheum-consult",
+      "specialty_id": "rheumatologist",
+      "name": "Консультация ревматолога",
+      "price": 11000,
+      "description": "Осмотр суставов, оценка анализов и назначение лечения",
+      "i18n": {
+        "kk": {
+          "name": "Ревматолог кеңесі",
+          "description": "Буындарды тексеру, талдауларды бағалау және ем тағайындау"
+        },
+        "en": {
+          "name": "Rheumatologist consultation",
+          "description": "Joint examination, review of tests and treatment plan"
+        }
+      }
+    },
+    {
+      "id": "rheum-tests",
+      "specialty_id": "rheumatologist",
+      "name": "Ревмопробы",
+      "price": 7000,
+      "description": "Анализ крови на ревматоидный фактор, С-реактивный белок и антистрептолизин-О",
+      "i18n": {
+        "kk": {
+          "name": "Ревмосынамалар",
+          "description": "Ревматоидтық факторға, С-реактивті ақуызға және антистрептолизин-О-ға қан талдауы"
+        },
+        "en": {
+          "name": "Rheumatology blood panel",
+          "description": "Blood test for rheumatoid factor, C-reactive protein and antistreptolysin O"
+        }
+      }
+    },
+    {
+      "id": "inf-consult",
+      "specialty_id": "infectionist",
+      "name": "Консультация инфекциониста",
+      "price": 9000,
+      "description": "Приём, осмотр и назначение диагностики при подозрении на инфекцию",
+      "i18n": {
+        "kk": {
+          "name": "Инфекционист кеңесі",
+          "description": "Қабылдау, тексеру және инфекцияға күдік болғанда диагностика тағайындау"
+        },
+        "en": {
+          "name": "Infectious disease consultation",
+          "description": "Visit, examination and diagnostics when an infection is suspected"
+        }
+      }
+    },
+    {
+      "id": "inf-hepatitis-test",
+      "specialty_id": "infectionist",
+      "name": "Анализ на гепатиты B и C",
+      "price": 7000,
+      "description": "Анализ крови на HBsAg и антитела к вирусу гепатита C",
+      "i18n": {
+        "kk": {
+          "name": "B және C гепатиттеріне талдау",
+          "description": "HBsAg пен C гепатиті вирусына антиденелерге қан талдауы"
+        },
+        "en": {
+          "name": "Hepatitis B and C test",
+          "description": "Blood test for HBsAg and hepatitis C virus antibodies"
+        }
+      }
+    },
+    {
+      "id": "physio-consult",
+      "specialty_id": "physiotherapist",
+      "name": "Консультация реабилитолога",
+      "price": 9000,
+      "description": "Оценка состояния и составление индивидуальной программы восстановления",
+      "i18n": {
+        "kk": {
+          "name": "Оңалту маманының кеңесі",
+          "description": "Жағдайды бағалау және жеке қалпына келу бағдарламасын құру"
+        },
+        "en": {
+          "name": "Rehabilitation consultation",
+          "description": "Assessment and an individual recovery programme"
+        }
+      }
+    },
+    {
+      "id": "physio-massage",
+      "specialty_id": "physiotherapist",
+      "name": "Сеанс лечебного массажа",
+      "price": 8000,
+      "description": "Лечебный массаж одной зоны продолжительностью 30 минут",
+      "i18n": {
+        "kk": {
+          "name": "Емдік массаж сеансы",
+          "description": "Бір аймақтың ұзақтығы 30 минуттық емдік массажы"
+        },
+        "en": {
+          "name": "Therapeutic massage session",
+          "description": "30-minute therapeutic massage of one body area"
+        }
+      }
     }
   ],
   "doctors": [
@@ -615,6 +1379,118 @@
       "name": "Сағынтаев Арман Нұрланұлы",
       "specialty_id": "ophthalmologist",
       "slots": []
+    },
+    {
+      "id": "d11",
+      "name": "Жаксылыкова Айжан Ерболқызы",
+      "specialty_id": "endocrinologist",
+      "slots": [
+        "2026-10-01T10:00",
+        "2026-10-02T14:30",
+        "2026-10-03T09:30"
+      ]
+    },
+    {
+      "id": "d12",
+      "name": "Абдрахманов Нурлан Серикович",
+      "specialty_id": "urologist",
+      "slots": [
+        "2026-10-01T12:00",
+        "2026-10-03T11:00"
+      ]
+    },
+    {
+      "id": "d13",
+      "name": "Кравченко Дмитрий Олегович",
+      "specialty_id": "surgeon",
+      "slots": [
+        "2026-10-02T09:00",
+        "2026-10-02T13:00",
+        "2026-10-04T10:00"
+      ]
+    },
+    {
+      "id": "d14",
+      "name": "Тулегенов Ержан Бауыржанұлы",
+      "specialty_id": "traumatologist",
+      "slots": [
+        "2026-10-01T15:00",
+        "2026-10-03T12:30"
+      ]
+    },
+    {
+      "id": "d15",
+      "name": "Мухамедиярова Жанар Кайратқызы",
+      "specialty_id": "mammologist",
+      "slots": [
+        "2026-10-02T10:30",
+        "2026-10-04T11:30"
+      ]
+    },
+    {
+      "id": "d16",
+      "name": "Смагулова Алия Муратқызы",
+      "specialty_id": "allergist",
+      "slots": [
+        "2026-10-01T09:30",
+        "2026-10-03T14:00"
+      ]
+    },
+    {
+      "id": "d17",
+      "name": "Ли Виктор Александрович",
+      "specialty_id": "pulmonologist",
+      "slots": [
+        "2026-10-02T11:00",
+        "2026-10-04T09:00"
+      ]
+    },
+    {
+      "id": "d18",
+      "name": "Есенова Мадина Талгатқызы",
+      "specialty_id": "psychotherapist",
+      "slots": [
+        "2026-10-02T17:00",
+        "2026-10-03T16:00"
+      ]
+    },
+    {
+      "id": "d19",
+      "name": "Касымов Азамат Нурланұлы",
+      "specialty_id": "dentist",
+      "slots": [
+        "2026-10-01T10:30",
+        "2026-10-01T16:00",
+        "2026-10-02T12:00"
+      ]
+    },
+    {
+      "id": "d20",
+      "name": "Федорова Ольга Николаевна",
+      "specialty_id": "rheumatologist",
+      "slots": [
+        "2026-10-03T10:00",
+        "2026-10-04T13:00"
+      ]
+    },
+    {
+      "id": "d21",
+      "name": "Байжанов Руслан Каиргельдыұлы",
+      "specialty_id": "infectionist",
+      "slots": [
+        "2026-10-01T14:00",
+        "2026-10-02T09:30"
+      ]
+    },
+    {
+      "id": "d22",
+      "name": "Искакова Динара Жанболатқызы",
+      "specialty_id": "physiotherapist",
+      "slots": [
+        "2026-10-01T11:00",
+        "2026-10-02T15:30",
+        "2026-10-04T12:00"
+      ]
     }
   ]
 }
