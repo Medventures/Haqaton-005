@@ -21,9 +21,11 @@ services:
       JWT_SECRET: ${JWT_SECRET:-change-me-hackathon}
       CATALOG_PATH: /app/catalog.json
       TRIAGE_PATH: /app/triage_rules.json
+      KNOWLEDGE_PATH: /app/knowledge.json
     volumes:
       - ./catalog.json:/app/catalog.json:ro
       - ./triage_rules.json:/app/triage_rules.json:ro
+      - ./knowledge.json:/app/knowledge.json:ro
     extra_hosts: ["host.docker.internal:host-gateway"]
     ports: ["127.0.0.1:8088:8080"]
     depends_on:

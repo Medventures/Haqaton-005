@@ -56,6 +56,15 @@ func (c *Catalog) Specialty(id string) *Specialty {
 	return nil
 }
 
+func (c *Catalog) Service(id string) *Service {
+	for i := range c.Services {
+		if c.Services[i].ID == id {
+			return &c.Services[i]
+		}
+	}
+	return nil
+}
+
 func (c *Catalog) ServicesFor(specID string) []Service {
 	out := []Service{}
 	for _, s := range c.Services {

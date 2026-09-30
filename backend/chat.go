@@ -266,6 +266,26 @@ func (a *App) process(ctx context.Context, d *Dialog, text string) (*ChatRespons
 		return finish(t("ask_pregnancy", d.Language), botData{})
 	}
 
+	// Knowledge base: practical questions (address, hours, test preparation, ...) get the curated answer
+	// from knowledge.json as is — no LLM rewriting, so Kazakh stays correct. A complaint needs 2+ keyword hits.
+	if kb, score := a.kb.Search(text); kb != nil && (ex.Intent != "find_service" || score >= 2) {
+		data := botData{}
+		seen := map[string]bool{}
+		for _, id := range kb.ServiceIDs {
+			if sv := a.cat.Service(id); sv != nil {
+				data.Services = append(data.Services, *sv)
+				if !seen[sv.SpecialtyID] {
+					seen[sv.SpecialtyID] = true
+					data.Doctors = append(data.Doctors, a.cat.DoctorsFor(sv.SpecialtyID)...)
+				}
+			}
+		}
+		if data.Services != nil && data.Doctors == nil {
+			data.Doctors = []Doctor{}
+		}
+		return finish(kb.AnswerIn(d.Language), data)
+	}
+
 	// Ask first: for a complaint, one clarifying question before any urgency level or services are shown
 	// (red is still decided immediately above). Counts toward the 2-clarification limit.
 	if a.askFirst && !d.Assessed && ex.Intent == "find_service" && d.Clarifications == 0 {

@@ -23,6 +23,7 @@ type App struct {
 	cat    *Catalog
 	triage *TriageRules
 	llm    *LLM
+	kb     *Knowledge
 	secret []byte
 	// askFirst: one clarifying question before showing urgency/services (ASK_FIRST=false disables)
 	askFirst bool
@@ -54,17 +55,22 @@ func main() {
 	if err != nil {
 		log.Fatalf("triage rules: %v", err)
 	}
+	kb, err := LoadKnowledge(env("KNOWLEDGE_PATH", "../knowledge.json"))
+	if err != nil {
+		log.Fatalf("knowledge base: %v", err)
+	}
 	db, err := connectDB(context.Background(), env("DATABASE_URL", "postgres://clinic:clinic@localhost:5432/clinic?sslmode=disable"))
 	if err != nil {
 		log.Fatalf("db: %v", err)
 	}
 	llm := NewLLM(env("LLM_BASE_URL", "http://host.docker.internal:1234/v1"), env("LLM_MODEL", ""))
 	llm.ModelKK = os.Getenv("LLM_MODEL_KK")
-	a := &App{db: db, cat: cat, triage: tr,
+	a := &App{db: db, cat: cat, triage: tr, kb: kb,
 		llm: llm, askFirst: env("ASK_FIRST", "true") != "false",
 		secret: []byte(env("JWT_SECRET", "change-me-hackathon"))}
 	log.Printf("catalog: %d specialties, %d services, %d doctors; %d red rules; model %s, kk answers %q",
 		len(cat.Specialties), len(cat.Services), len(cat.Doctors), len(tr.Red), a.llm.Model, a.llm.ModelKK)
+	log.Printf("knowledge base: %d entries", len(kb.Entries))
 
 	r := a.routes()
 	addr := ":" + env("PORT", "8080")

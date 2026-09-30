@@ -118,7 +118,7 @@ func setup(t *testing.T, extractions ...string) *testEnv {
 	}
 	f := &fakeLLM{extractions: extractions}
 	llmSrv := httptest.NewServer(f)
-	a := &App{db: db, cat: cat, triage: tr, llm: NewLLM(llmSrv.URL, "fake"), secret: []byte("test")}
+	a := &App{db: db, cat: cat, triage: tr, kb: &Knowledge{}, llm: NewLLM(llmSrv.URL, "fake"), secret: []byte("test")}
 	srv := httptest.NewServer(a.routes())
 	t.Cleanup(func() { srv.Close(); llmSrv.Close(); db.Close() })
 	return &testEnv{t, a, f, srv}
@@ -646,5 +646,65 @@ func TestAskFirstDoesNotDelayRed(t *testing.T) {
 	r := e.chat(e.patient(), "", "сильная боль в груди")
 	if r.Urgency != "red" || !has(r.Actions, "call_103") {
 		t.Fatalf("red must stay immediate: %+v", r)
+	}
+}
+
+func testKB() *Knowledge {
+	k := &Knowledge{Entries: []KBEntry{
+		{ID: "hours", Keywords: map[string][]string{"ru": {"режим работы", "во сколько"}, "kk": {"жұмыс уақыты"}},
+			Answer: map[string]string{"ru": "Мы работаем с 8:00 до 20:00.", "kk": "Біз 8:00-ден 20:00-ге дейін жұмыс істейміз."}},
+		{ID: "prep-us", Keywords: map[string][]string{"ru": {"подготов", "узи брюшн"}, "kk": {"дайындал"}},
+			Answer: map[string]string{"ru": "Натощак, 6–8 часов без еды.", "kk": "Аш қарынға, 6–8 сағат тамақ ішпеу керек."}, ServiceIDs: []string{"gastro-us"}},
+	}}
+	for i := range k.Entries {
+		for lang, list := range k.Entries[i].Keywords {
+			for j := range list {
+				k.Entries[i].Keywords[lang][j] = normalize(list[j])
+			}
+		}
+	}
+	return k
+}
+
+func TestKnowledgeAnswerVerbatimWithoutLLMAnswer(t *testing.T) {
+	e := setup(t, exWith(ex("other", "", false, "", "green"), map[string]any{"language": "kk"}))
+	e.a.kb = testKB()
+	r := e.chat(e.patient(), "", "Клиниканың жұмыс уақыты қандай?")
+	if r.Reply.Content != "Біз 8:00-ден 20:00-ге дейін жұмыс істейміз." {
+		t.Fatalf("KB answer expected, got %q", r.Reply.Content)
+	}
+	if _, m := e.llm.calls(); m != 0 {
+		t.Fatalf("KB answer must not be rewritten by the LLM, answer calls = %d", m)
+	}
+	if r.Urgency != "" {
+		t.Fatalf("an info question is not an urgency assessment: %q", r.Urgency)
+	}
+}
+
+func TestKnowledgePreparationAttachesServiceCards(t *testing.T) {
+	e := setup(t, ex("service_info", "gastroenterologist", false, "", "green"))
+	e.a.kb = testKB()
+	e.a.askFirst = true
+	r := e.chat(e.patient(), "", "Как подготовиться к УЗИ брюшной полости?")
+	if r.Reply.Content != "Натощак, 6–8 часов без еды." || len(r.Services) != 1 || r.Services[0].ID != "gastro-us" || len(r.Doctors) == 0 {
+		t.Fatalf("prep answer + card: %+v", r)
+	}
+}
+
+func TestComplaintWithOneKeywordStaysInComplaintFlow(t *testing.T) {
+	e := setup(t, ex("find_service", "ent", false, "", "green"))
+	e.a.kb = testKB()
+	r := e.chat(e.patient(), "", "болит горло, во сколько можно прийти?")
+	if strings.Contains(r.Reply.Content, "8:00") {
+		t.Fatalf("one keyword inside a complaint must not hijack the flow: %q", r.Reply.Content)
+	}
+}
+
+func TestRedBeatsKnowledge(t *testing.T) {
+	e := setup(t)
+	e.a.kb = testKB()
+	r := e.chat(e.patient(), "", "во сколько вы работаете? у меня сильно болит грудь")
+	if r.Urgency != "red" {
+		t.Fatalf("red first: %+v", r)
 	}
 }
