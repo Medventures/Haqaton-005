@@ -14,8 +14,17 @@ export default function PatientPage() {
   const [error, setError] = useState('')
   const [toast, setToast] = useState('')
   const [ready, setReady] = useState(false)
+  const [dismissedRed, setDismissedRed] = useState('')
+  // operator-message count at the moment of an urgent handoff; null = not waiting for a specialist
+  const [waitingFrom, setWaitingFrom] = useState<number | null>(null)
   const bottom = useRef<HTMLDivElement>(null)
   const selectLanguage = (next: Language) => { setLanguage(next); void i18n.changeLanguage(next) }
+  // keyed by content: the local reply has no id, the polled copy of the same message does
+  const redKey = (message: Message) => message.content
+  const latestRed = [...messages].reverse().find(message => message.role === 'bot' && message.data?.urgency === 'red')
+  const showRisk = latestRed && redKey(latestRed) !== dismissedRed
+  const operatorCount = messages.filter(message => message.role === 'operator').length
+  const waitingSpecialist = waitingFrom !== null && dialog?.status === 'operator' && operatorCount <= waitingFrom
 
   useEffect(() => {
     let active = true
@@ -40,7 +49,7 @@ export default function PatientPage() {
     setDialog(data.dialog); setMessages(data.messages || []); selectLanguage(data.dialog.language || 'ru')
   }
   // scroll only the message list: scrollIntoView would also scroll the window and hide the header on mobile
-  useEffect(() => { const list = bottom.current?.parentElement; list?.scrollTo({ top: list.scrollHeight, behavior: 'smooth' }) }, [messages, typing])
+  useEffect(() => { const list = bottom.current?.parentElement; list?.scrollTo({ top: list.scrollHeight, behavior: 'smooth' }) }, [messages, typing, waitingSpecialist])
   useEffect(() => {
     if (!dialog?.id || dialog.status !== 'operator') return
     const timer = window.setInterval(() => api.dialog(dialog.id).then(applyDialog).catch(() => {}), 3000)
@@ -64,24 +73,28 @@ export default function PatientPage() {
     finally { setTyping(false) }
   }
   function send(event: FormEvent) { event.preventDefault(); void sendMessage(input) }
-  async function contactOperator() {
+  async function contactOperator(action = 'contact_operator') {
     if (!dialog?.id) return
     try {
       const result = await api.handoff(dialog.id)
       setDialog(current => current ? { ...current, status: 'operator' } : current)
       setMessages(current => [...current, result.reply])
+      if (action === 'urgent_operator') {
+        setWaitingFrom(operatorCount)
+        if (latestRed) setDismissedRed(redKey(latestRed))
+      }
     } catch (e) { setError(e instanceof Error ? e.message : t('network')) }
   }
   function showToast() { setToast(t('accepted')); window.setTimeout(() => setToast(''), 2400) }
 
-  const latestRed = [...messages].reverse().find(message => message.role === 'bot' && message.data?.urgency === 'red')
   const riskActions = latestRed?.data?.actions || []
   return <main className="patient-page">
-    <header className="site-header patient-site-header"><a className="clinic-brand" href="/">MedHub <span>Clinic</span></a><div className="header-tools">{dialog?.urgency && <span className={`urgency-chip urgency-${dialog.urgency}`} aria-label={t(`urgency.${dialog.urgency}`)}><i />{t(`urgency.${dialog.urgency}`)}</span>}<div className="language-switch" role="group" aria-label="Language"><button className={language === 'ru' ? 'active' : ''} onClick={() => selectLanguage('ru')}>Рус</button><button className={language === 'kk' ? 'active' : ''} onClick={() => selectLanguage('kk')}>Қаз</button><button className={language === 'en' ? 'active' : ''} onClick={() => selectLanguage('en')}>Eng</button></div></div></header>
-    {latestRed ? <section className="risk-screen"><div className="risk-screen-content"><span className="risk-screen-kicker">{t('riskTitle')}</span><h1>{t('riskLead')}</h1><p className="risk-screen-message">{latestRed.content}</p><p>{t('riskAdvice')}</p><div className="risk-actions">{riskActions.map(action => action === 'call_103' ? <a className="call-button" key={action} href="tel:103"><PhoneCall size={18}/>{t('actions.call_103')}</a> : (action === 'contact_operator' || action === 'urgent_operator') ? <button className="contact-button" key={action} onClick={contactOperator}>{t(`actions.${action}`)}</button> : null)}</div><p className="medical-disclaimer">{t('disclaimer')}</p><button className="risk-return" onClick={() => { setMessages(current => current.filter(message => message !== latestRed)); setDialog(current => current ? { ...current, urgency: 'yellow' } : current) }}>{language === 'ru' ? 'Вернуться в чат' : language === 'kk' ? 'Чатқа оралу' : 'Return to chat'}</button></div></section> : <section className="patient-content"><div className="patient-intro"><span className="eyebrow">MEDHUB CLINIC</span><h1>{t('title')}</h1><p>{t('subtitle')}</p></div>
-      <section className="chat-panel" aria-label="Patient chat"><div className="chat-toolbar"><div className="online-indicator"/><span>MedHub Clinic</span><span className="chat-toolbar-sub">· {t('consultation')}</span></div>
+    <header className="site-header patient-site-header"><a className="clinic-brand" href="/">Ana<span>Care</span></a><div className="header-tools">{dialog?.urgency && <span className={`urgency-chip urgency-${dialog.urgency}`} aria-label={t(`urgency.${dialog.urgency}`)}><i />{t(`urgency.${dialog.urgency}`)}</span>}<div className="language-switch" role="group" aria-label="Language"><button className={language === 'ru' ? 'active' : ''} onClick={() => selectLanguage('ru')}>Рус</button><button className={language === 'kk' ? 'active' : ''} onClick={() => selectLanguage('kk')}>Қаз</button><button className={language === 'en' ? 'active' : ''} onClick={() => selectLanguage('en')}>Eng</button></div></div></header>
+    {showRisk && latestRed ? <section className="risk-screen"><div className="risk-screen-content"><span className="risk-screen-kicker">{t('riskKicker')}</span><h1>{t('riskTitle')}</h1><p className="risk-screen-lead">{t('riskLead')}</p><p className="risk-screen-message">{latestRed.content}</p><p>{t('riskAdvice')}</p><div className="risk-actions">{riskActions.map(action => action === 'call_103' ? <a className="call-button" key={action} href="tel:103"><PhoneCall size={18}/>{t('actions.call_103')}</a> : (action === 'contact_operator' || action === 'urgent_operator') ? <button className="contact-button" key={action} onClick={() => void contactOperator(action)}>{t(`actions.${action}`)}</button> : null)}</div><p className="medical-disclaimer">{t('disclaimer')}</p><button className="risk-return" onClick={() => setDismissedRed(redKey(latestRed))}>{language === 'ru' ? 'Вернуться в чат' : language === 'kk' ? 'Чатқа оралу' : 'Return to chat'}</button></div></section> : <section className="patient-content"><div className="patient-intro"><span className="eyebrow">ANACARE</span><h1>{t('title')}</h1><p>{t('subtitle')}</p></div>
+      <section className="chat-panel" aria-label="Patient chat"><div className="chat-toolbar"><div className="online-indicator"/><span>AnaCare</span><span className="chat-toolbar-sub">· {t('consultation')}</span></div>
         <div className="chat-messages">{!messages.length && ready && <div className="welcome-content"><div className="welcome-note">{t('greet')}</div><div className="welcome-examples"><span>{t('examples.title')}</span>{(['item1', 'item2', 'item3'] as const).map(key => <button key={key} type="button" disabled={typing} onClick={() => void sendMessage(t(`examples.${key}`))}>{t(`examples.${key}`)}</button>)}</div></div>}
-          {messages.map((message, index) => <MessageView key={`${index}-${message.id || message.content.slice(0, 8)}`} message={message} language={language} onOperator={contactOperator} onBook={showToast} />)}
+          {messages.map((message, index) => <MessageView key={`${index}-${message.id || message.content.slice(0, 8)}`} message={message} language={language} onOperator={action => void contactOperator(action)} onBook={showToast} />)}
+          {waitingSpecialist && <div className="chat-message bot-message" role="status"><div className="typing-bubble waiting-bubble"><span className="spinner" aria-hidden="true"/>{t('waitingSpecialist')}</div></div>}
           {typing && <div className="chat-message bot-message"><div className="typing-bubble"><span className="typing-dots"><i/><i/><i/></span>{t('typing')}</div></div>}
           <div ref={bottom}/>
         </div>
@@ -92,7 +105,7 @@ export default function PatientPage() {
   </main>
 }
 
-function MessageView({ message, language, onOperator, onBook }: { message: Message; language: Language; onOperator: () => void; onBook: () => void }) {
+function MessageView({ message, language, onOperator, onBook }: { message: Message; language: Language; onOperator: (action: string) => void; onBook: () => void }) {
   const { t } = useTranslation()
   const urgency = message.data?.urgency
   const actions = message.data?.actions || []
@@ -103,7 +116,7 @@ function MessageView({ message, language, onOperator, onBook }: { message: Messa
     <div className="message-bubble">{message.content}</div>
     {urgency && urgency !== 'green' && <div className="medical-disclaimer">{t('disclaimer')}</div>}
     {actions.includes('call_103') && <a className="call-button" href="tel:103"><PhoneCall size={18}/>{t('actions.call_103')}</a>}
-    {actions.filter(action => action === 'contact_operator' || action === 'urgent_operator').map(action => <button className="contact-button" key={action} onClick={onOperator}>{t(`actions.${action}`)}</button>)}
+    {actions.filter(action => action === 'contact_operator' || action === 'urgent_operator').map(action => <button className="contact-button" key={action} onClick={() => onOperator(action)}>{t(`actions.${action}`)}</button>)}
     {services.length > 0 && <div className="services-list">{services.map(service => { const specialty = typeof service.specialty === 'string' ? service.specialty : service.specialty?.i18n?.[language]?.name ?? service.specialty?.name; return <article className="service-card" key={service.id}><h3>{service.i18n?.[language]?.name ?? service.name}</h3>{(service.i18n?.[language]?.specialty ?? specialty) && <span className="service-specialty">{service.i18n?.[language]?.specialty ?? specialty}</span>}<p>{service.i18n?.[language]?.description ?? service.description}</p><div className="service-bottom"><strong>{service.price.toLocaleString(locale(language))} ₸</strong><button onClick={onBook}>{t('book')}</button></div></article>})}</div>}
     {doctors.length > 0 && <section className="doctors-block"><h4>{t('doctors')}</h4>{doctors.map(doctor => <div className="doctor-row" key={doctor.id}><b>{doctor.name}</b><div className="slots">{doctor.slots.map(slot => <span key={slot}>{formatSlot(slot, language)}</span>)}</div></div>)}</section>}
   </div>

@@ -220,6 +220,20 @@
   display: inline-flex;
   gap: 4px;
 }
+.spinner {
+  width: 14px;
+  height: 14px;
+  flex: none;
+  border: 2px solid var(--primary-soft);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: spin 800ms linear infinite;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
 .typing-dots i {
   width: 5px;
   height: 5px;
