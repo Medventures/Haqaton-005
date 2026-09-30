@@ -242,8 +242,8 @@ func TestSpecialtyReturnsCatalogServicesAndDoctorsWithSlots(t *testing.T) {
 }
 
 func TestUnknownSpecialtyIsIgnored(t *testing.T) {
-	e := setup(t, ex("find_service", "surgeon", false, "", "green"))
-	r := e.chat(e.patient(), "", "нужен хирург")
+	e := setup(t, ex("find_service", "cosmetologist", false, "", "green"))
+	r := e.chat(e.patient(), "", "нужен косметолог")
 	if len(r.Services) != 0 {
 		t.Fatalf("specialty outside catalog must not produce services: %+v", r.Services)
 	}
