@@ -208,9 +208,13 @@ func (a *App) process(ctx context.Context, d *Dialog, text string) (*ChatRespons
 		d.Summary = "Сообщение пациента: «" + text + "». ИИ не смог разобрать запрос."
 	}
 
+	// Cyrillic without Kazakh-specific letters is Russian, unless the dialog is already in Kazakh
+	// ("басым ауырады" has no special letters): the model misjudges this too often.
 	if l := detectLanguage(text); l != "" {
 		ex.Language = l
-	} else if ex.Language != "kk" && ex.Language != "en" {
+	} else if ex.Language == "kk" && d.Language == "kk" {
+		ex.Language = "kk"
+	} else {
 		ex.Language = "ru"
 	}
 	d.Language = ex.Language
@@ -253,7 +257,9 @@ func (a *App) process(ctx context.Context, d *Dialog, text string) (*ChatRespons
 	}
 
 	// 4 (ob/gyn). Pregnancy question: asked once, does not count toward the clarification limit.
-	if (ex.AskPregnancy || a.triage.NeedsPregnancyQuestion(text)) && !d.Pregnant && !d.PregnancyAsked && !(ex.Pregnant != nil && !*ex.Pregnant) {
+	// The model's ask_pregnancy is trusted only for ob/gyn-relevant specialties (it asked about pregnancy for a sore throat).
+	llmAsk := ex.AskPregnancy && (ex.SpecialtyID == nil || *ex.SpecialtyID == "gynecologist" || *ex.SpecialtyID == "gastroenterologist" || *ex.SpecialtyID == "therapist")
+	if (llmAsk || a.triage.NeedsPregnancyQuestion(text)) && !d.Pregnant && !d.PregnancyAsked && !(ex.Pregnant != nil && !*ex.Pregnant) {
 		d.PregnancyAsked = true
 		return finish(prefix+t("ask_pregnancy", d.Language), botData{Actions: actions})
 	}

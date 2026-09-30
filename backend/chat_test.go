@@ -566,3 +566,30 @@ func TestEnglishConversation(t *testing.T) {
 		t.Fatalf("en red: %+v", r)
 	}
 }
+
+func TestNoPregnancyQuestionForUnrelatedSpecialty(t *testing.T) {
+	e := setup(t, exWith(ex("find_service", "ent", false, "", "yellow"), map[string]any{"ask_pregnancy": true}))
+	r := e.chat(e.patient(), "", "Тамағым ауырады, қызуым бар")
+	if r.Reply.Content == texts["ask_pregnancy"]["kk"] {
+		t.Fatal("sore throat must not trigger the pregnancy question")
+	}
+}
+
+func TestRussianWithoutKazakhLettersStaysRussian(t *testing.T) {
+	e := setup(t, exWith(ex("find_service", "gastroenterologist", false, "", "green"), map[string]any{"language": "kk"}))
+	r := e.chat(e.patient(), "", "Тянет живот после еды")
+	if r.Language != "ru" {
+		t.Fatalf("model said kk for Russian text: got %q", r.Language)
+	}
+}
+
+func TestKazakhDialogKeepsKazakhWithoutSpecialLetters(t *testing.T) {
+	kk := exWith(ex("find_service", "", true, "Қашаннан бері?", "green"), map[string]any{"language": "kk"})
+	e := setup(t, kk, exWith(ex("find_service", "neurologist", false, "", "green"), map[string]any{"language": "kk"}))
+	tok := e.patient()
+	r := e.chat(tok, "", "Басым қатты айналады")
+	r = e.chat(tok, r.DialogID, "бес кун болды")
+	if r.Language != "kk" {
+		t.Fatalf("Kazakh dialog must stay Kazakh: %q", r.Language)
+	}
+}
