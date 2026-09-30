@@ -20,6 +20,7 @@ type TriageRules struct {
 	RedIfPregnant    []redRule           `json:"red_if_pregnant"`
 	YellowIfPregnant map[string][]string `json:"yellow_if_pregnant"`
 	AskPregnancyIf   map[string][]string `json:"ask_pregnancy_if"`
+	RedExclude       map[string][]string `json:"red_exclude"`
 }
 
 func LoadTriage(path string) (*TriageRules, error) {
@@ -30,6 +31,16 @@ func LoadTriage(path string) (*TriageRules, error) {
 	var t TriageRules
 	if err := json.Unmarshal(b, &t); err != nil {
 		return nil, err
+	}
+	for lang, list := range t.RedExclude {
+		for i, p := range list {
+			end := strings.HasSuffix(p, "$")
+			p = normalize(strings.TrimSuffix(p, "$"))
+			if end {
+				p += "$"
+			}
+			t.RedExclude[lang][i] = p
+		}
 	}
 	for _, rules := range [][]redRule{t.Red, t.RedIfPregnant} { // rules go through the same normalization as input
 		for i := range rules {
@@ -53,27 +64,70 @@ func normalize(s string) string {
 	return strings.Join(strings.Fields(s), " ")
 }
 
+// clauseSplit cuts a message into parts that are checked separately:
+// "боли в груди нет, болит горло" -> the negation belongs only to the first part.
+var clauseSplit = regexp.MustCompile(`[.,!?;:\n]+|\s+(но|а|but|бірақ|алайда)\s+`)
+
+var ellipsis = regexp.MustCompile(`\.{2,}|…`)
+
 // CheckRed returns the matched rule and its language, or ok=false.
 // With pregnant=true the red_if_pregnant rules are checked too.
+// A part with an exclusion (negation, distant past, history, "грудной ребёнок") is not red — the LLM assesses it.
 func (t *TriageRules) CheckRed(text string, pregnant bool) (phrase, lang string, ok bool) {
 	rules := t.Red
 	if pregnant {
 		rules = append(append([]redRule{}, t.Red...), t.RedIfPregnant...)
 	}
-	n := normalize(text)
-	for _, r := range rules {
-		all := len(r.All) > 0
-		for _, p := range r.All {
-			if !strings.Contains(n, p) {
-				all = false
-				break
-			}
+	// an ellipsis is a pause, not a clause boundary: "мне трудно... дышать"
+	text = ellipsis.ReplaceAllString(strings.ToLower(text), " ")
+	for _, part := range clauseSplit.Split(text, -1) {
+		n := normalize(part)
+		if n == "" {
+			continue
 		}
-		if all {
-			return strings.Join(r.All, " + "), r.Lang, true
+		for _, r := range rules {
+			all := len(r.All) > 0
+			for _, p := range r.All {
+				if !strings.Contains(n, p) {
+					all = false
+					break
+				}
+			}
+			if all && !t.excluded(n) {
+				return strings.Join(r.All, " + "), r.Lang, true
+			}
 		}
 	}
 	return "", "", false
+}
+
+// excluded: an exclusion phrase occurs in the part. Phrases match from a word start; a last word shorter
+// than 5 letters must match whole. A trailing "$" means "at the end of the part": "боли в груди нет" is
+// excluded, "нет воздуха" is not.
+func (t *TriageRules) excluded(part string) bool {
+	words := " " + part + " "
+	for _, list := range t.RedExclude {
+		for _, p := range list {
+			last := p
+			if i := strings.LastIndex(p, " "); i >= 0 {
+				last = p[i+1:]
+			}
+			if strings.HasSuffix(p, "$") { // only at the end of the part
+				if strings.HasSuffix(words, " "+strings.TrimSuffix(p, "$")+" ") {
+					return true
+				}
+				continue
+			}
+			needle := " " + p
+			if len([]rune(last)) < 5 {
+				needle += " "
+			}
+			if strings.Contains(words, needle) {
+				return true
+			}
+		}
+	}
+	return false
 }
 
 var urgencyRank = map[string]int{"green": 0, "yellow": 1, "red": 2}
