@@ -60,6 +60,13 @@ func main() {
 	log.Printf("catalog: %d specialties, %d services, %d doctors; %d red rules; model %s",
 		len(cat.Specialties), len(cat.Services), len(cat.Doctors), len(tr.Red), a.llm.Model)
 
+	r := a.routes()
+	addr := ":" + env("PORT", "8080")
+	log.Println("listening on", addr)
+	log.Fatal(http.ListenAndServe(addr, r))
+}
+
+func (a *App) routes() http.Handler {
 	r := chi.NewRouter()
 	r.Use(middleware.Logger, middleware.Recoverer)
 	r.Get("/api/health", func(w http.ResponseWriter, r *http.Request) { writeJSON(w, 200, map[string]string{"status": "ok"}) })
@@ -67,7 +74,7 @@ func main() {
 		w.Header().Set("Content-Type", "application/yaml")
 		w.Write(openapiSpec)
 	})
-	r.Get("/api/catalog", func(w http.ResponseWriter, r *http.Request) { writeJSON(w, 200, cat) })
+	r.Get("/api/catalog", func(w http.ResponseWriter, r *http.Request) { writeJSON(w, 200, a.cat) })
 	r.Post("/api/auth/patient", a.patientToken)
 	r.Post("/api/auth/login", a.login)
 	r.With(a.auth("patient")).Post("/api/chat", a.chat)
@@ -76,7 +83,5 @@ func main() {
 	r.With(a.auth("operator")).Get("/api/operator/queue", a.queue)
 	r.With(a.auth("operator")).Post("/api/operator/reply", a.operatorReply)
 
-	addr := ":" + env("PORT", "8080")
-	log.Println("listening on", addr)
-	log.Fatal(http.ListenAndServe(addr, r))
+	return r
 }
