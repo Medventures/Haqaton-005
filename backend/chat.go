@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/go-chi/chi/v5"
 )
@@ -24,10 +25,19 @@ var texts = map[string]map[string]string{
 		"ru": "Передаю ваш вопрос оператору — он ответит здесь, в этом чате.",
 		"kk": "Сұрағыңызды операторға жібердім — ол осы чатта жауап береді.",
 	},
+	"clarify": {
+		"ru": "Уточните, пожалуйста: что именно беспокоит, где и как давно?",
+		"kk": "Нақтылап жазыңызшы: не мазалайды, қай жерде және қашаннан бері?",
+	},
 	"fallback": {
 		"ru": "Вам подойдёт специалист: %s. Ниже — услуги с ценами и свободные слоты врачей.",
 		"kk": "Сізге қажетті маман: %s. Төменде — қызметтер бағасымен және дәрігерлердің бос уақыттары.",
 	},
+}
+
+var langInstr = map[string]string{
+	"ru": "Ответь на русском языке.",
+	"kk": "Жауапты тек қазақ тілінде жаз. Отвечай ТОЛЬКО на казахском языке.",
 }
 
 func t(key, lang string) string {
@@ -221,7 +231,11 @@ func (a *App) process(ctx context.Context, d *Dialog, text string) (*ChatRespons
 	if ex.ClarifyingQuestion != nil {
 		q = strings.TrimSpace(*ex.ClarifyingQuestion)
 	}
-	if ex.NeedClarification && q != "" && d.Clarifications < 2 {
+	wantsService := ex.Intent == "find_service" || ex.Intent == "service_info"
+	if q == "" && d.Clarifications < 2 && ex.SpecialtyID == nil && (ex.NeedClarification || wantsService) {
+		q = t("clarify", d.Language) // model asked for clarification but gave no question
+	}
+	if (ex.NeedClarification || ex.SpecialtyID == nil && wantsService) && q != "" && d.Clarifications < 2 {
 		d.Clarifications++
 		return finish(prefix+q, botData{Actions: actions})
 	}
@@ -230,10 +244,10 @@ func (a *App) process(ctx context.Context, d *Dialog, text string) (*ChatRespons
 	if ex.SpecialtyID != nil {
 		spec := a.cat.Specialty(*ex.SpecialtyID)
 		svcs, docs := a.cat.ServicesFor(spec.ID), a.cat.DoctorsFor(spec.ID)
-		data, _ := json.Marshal(map[string]any{"specialty": spec, "services": svcs, "doctors_with_free_slots": docs})
+		data, _ := json.Marshal(map[string]any{"specialty": spec, "services": svcs, "doctors_with_free_slots": humanSlots(docs)})
 		reply, err := a.llm.Chat(ctx, []chatMsg{
 			{"system", fmt.Sprintf(answerSystemPrompt, d.Language)},
-			{"user", fmt.Sprintf("Запрос пациента: %s\nПоследнее сообщение: %s\n\nДАННЫЕ КАТАЛОГА:\n%s", d.Summary, text, data)},
+			{"user", fmt.Sprintf("Запрос пациента: %s\nПоследнее сообщение: %s\n\nДАННЫЕ КАТАЛОГА:\n%s\n\n%s", d.Summary, text, data, langInstr[d.Language])},
 		}, nil)
 		if err != nil || strings.TrimSpace(reply) == "" {
 			log.Printf("compose failed: %v", err)
@@ -243,7 +257,7 @@ func (a *App) process(ctx context.Context, d *Dialog, text string) (*ChatRespons
 	}
 
 	// Wanted a service but we could not determine one — hand over.
-	if ex.Intent == "find_service" || ex.Intent == "service_info" {
+	if wantsService {
 		return handoff("Не удалось подобрать специальность (уточнений: "+fmt.Sprint(d.Clarifications)+")", botData{Actions: actions})
 	}
 
@@ -254,7 +268,7 @@ func (a *App) process(ctx context.Context, d *Dialog, text string) (*ChatRespons
 	}
 	reply, err := a.llm.Chat(ctx, []chatMsg{
 		{"system", fmt.Sprintf(answerSystemPrompt, d.Language) + "\nЕсли вопрос не про запись к врачу — вежливо скажи, что ты помогаешь подобрать врача и услугу, и попроси описать жалобу."},
-		{"user", fmt.Sprintf("Сообщение пациента: %s\n\nДАННЫЕ: специалисты клиники: %s", text, strings.Join(names, ", "))},
+		{"user", fmt.Sprintf("Сообщение пациента: %s\n\nДАННЫЕ: специалисты клиники: %s\n\n%s", text, strings.Join(names, ", "), langInstr[d.Language])},
 	}, nil)
 	if err != nil {
 		return handoff("Бот не справился: ошибка ИИ", botData{Actions: actions})
@@ -374,4 +388,20 @@ func (a *App) operatorReply(w http.ResponseWriter, r *http.Request) {
 		a.saveDialog(ctx, d)
 	}
 	writeJSON(w, 200, map[string]any{"message": m, "status": d.Status})
+}
+
+// humanSlots turns "2026-10-01T09:00" into "01.10 09:00" so the LLM reads them correctly.
+func humanSlots(docs []Doctor) []map[string]any {
+	out := []map[string]any{}
+	for _, d := range docs {
+		slots := []string{}
+		for _, s := range d.Slots {
+			if tm, err := time.Parse("2006-01-02T15:04", s); err == nil {
+				s = tm.Format("02.01 15:04")
+			}
+			slots = append(slots, s)
+		}
+		out = append(out, map[string]any{"doctor": d.Name, "free_slots": slots})
+	}
+	return out
 }
