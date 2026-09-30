@@ -62,7 +62,8 @@ func main() {
 	llm.ModelKK = os.Getenv("LLM_MODEL_KK")
 	a := &App{db: db, cat: cat, triage: tr,
 		llm: llm, askFirst: env("ASK_FIRST", "true") != "false",
-		secret: []byte(env("JWT_SECRET", "change-me-hackathon"))}
+		secret: secretFromEnv()}
+	operators = loadOperators()
 	log.Printf("catalog: %d specialties, %d services, %d doctors; %d red rules; model %s, kk answers %q",
 		len(cat.Specialties), len(cat.Services), len(cat.Doctors), len(tr.Red), a.llm.Model, a.llm.ModelKK)
 
