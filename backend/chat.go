@@ -650,8 +650,9 @@ func lastBotSaid(hist []Message, q string) bool {
 // maxQuestions: clarifying questions per dialog before the bot matches a doctor or hands over.
 const maxQuestions = 3
 
-var directRequestWords = []string{"сколько стоит", "цена", "стоимость", "свобод", "записат", "запись", "бағасы", "қанша тұрады",
-	"бос уақыт", "бос ба", "жазыл", "price", "cost", "how much", "free slot", "book"}
+var directRequestWords = []string{"сколько стоит", "цена", "стоимость", "свобод", "записат", "запись", "хочу к ", "хочу на прием",
+	"нужна консультация", "бағасы", "қанша тұрады", "бос уақыт", "бос ба", "жазыл", "барғым келеді", "кеңес алғым",
+	"price", "cost", "how much", "free slot", "book", "appointment with", "want to see"}
 
 // isComplaint: questions are asked for complaints — also when the model labels them service_info
 // ("тіс ауырып жатыр") — but not for direct price/slot/booking requests.

@@ -888,3 +888,12 @@ func TestInLanguage(t *testing.T) {
 		}
 	}
 }
+
+func TestDirectSpecialistRequestSkipsQuestions(t *testing.T) {
+	e := setup(t, ex("find_service", "cardiologist", false, "Как давно?", "green"))
+	e.a.askFirst = true
+	r := e.chat(e.patient(), "", "у папы был инфаркт в прошлом году, хочу к кардиологу")
+	if r.Urgency == "red" || len(r.Services) == 0 || r.Services[0].SpecialtyID != "cardiologist" {
+		t.Fatalf("a direct request for a specialist gets the cards at once: %+v", r)
+	}
+}
