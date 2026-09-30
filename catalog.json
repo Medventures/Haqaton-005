@@ -168,24 +168,42 @@
     },
     {
       "id": "gynecologist",
-      "name": "Гинеколог",
-      "description": "Женское здоровье",
+      "name": "Акушер-гинеколог",
+      "description": "Ведение беременности, женское здоровье, планирование беременности, послеродовый период",
       "treats": [
         "нарушение цикла",
         "боль внизу живота у женщин",
         "планирование беременности",
         "профилактический осмотр",
         "етеккір бұзылуы",
-        "жүктілікті жоспарлау"
+        "жүктілікті жоспарлау",
+        "беременность",
+        "ведение беременности",
+        "токсикоз",
+        "отеки при беременности",
+        "шевеления плода",
+        "выделения при беременности",
+        "боль внизу живота",
+        "задержка месячных",
+        "послеродовой период",
+        "грудное вскармливание",
+        "контрацепция",
+        "менопауза",
+        "жүктілік",
+        "жүктілікті бақылау",
+        "аяқ ісінуі жүктілікте",
+        "баланың қимылы",
+        "босанғаннан кейін",
+        "етеккір кешігуі"
       ],
       "i18n": {
         "kk": {
-          "name": "Гинеколог",
-          "description": "Әйелдер денсаулығы"
+          "name": "Акушер-гинеколог",
+          "description": "Жүктілікті бақылау, әйелдер денсаулығы, жүктілікті жоспарлау, босанғаннан кейінгі кезең"
         },
         "en": {
-          "name": "Gynecologist",
-          "description": "Women's health"
+          "name": "Obstetrician-gynecologist",
+          "description": "Pregnancy care, women's health, pregnancy planning, postpartum period"
         }
       }
     },
@@ -527,6 +545,91 @@
           "description": "Visual acuity test, fundus examination"
         }
       }
+    },
+    {
+      "id": "ob-consult",
+      "specialty_id": "gynecologist",
+      "name": "Консультация акушера-гинеколога по ведению беременности",
+      "price": 12000,
+      "description": "Приём беременной: осмотр, оценка самочувствия и план наблюдения по срокам беременности",
+      "i18n": {
+        "kk": {
+          "name": "Жүктілікті бақылау бойынша акушер-гинеколог кеңесі",
+          "description": "Жүкті әйелді қабылдау: тексеру, жағдайын бағалау және жүктілік мерзіміне сай бақылау жоспары"
+        },
+        "en": {
+          "name": "Obstetrician-gynecologist pregnancy care consultation",
+          "description": "Prenatal visit: examination, well-being assessment and a follow-up plan by gestational age"
+        }
+      }
+    },
+    {
+      "id": "ob-us-fetal",
+      "specialty_id": "gynecologist",
+      "name": "УЗИ плода",
+      "price": 12000,
+      "description": "Ультразвуковое исследование плода с оценкой развития и заключением врача",
+      "i18n": {
+        "kk": {
+          "name": "Ұрықтың УДЗ",
+          "description": "Ұрықтың дамуын бағалайтын ультрадыбыстық зерттеу, дәрігер қорытындысымен"
+        },
+        "en": {
+          "name": "Fetal ultrasound",
+          "description": "Ultrasound scan of the fetus with a development assessment and doctor's report"
+        }
+      }
+    },
+    {
+      "id": "ob-ctg",
+      "specialty_id": "gynecologist",
+      "name": "КТГ плода",
+      "price": 7000,
+      "description": "Запись сердцебиения плода и тонуса матки с расшифровкой врача",
+      "i18n": {
+        "kk": {
+          "name": "Ұрықтың КТГ",
+          "description": "Ұрықтың жүрек соғысы мен жатыр тонусын жазу, дәрігер талдауымен"
+        },
+        "en": {
+          "name": "Fetal CTG",
+          "description": "Recording of fetal heart rate and uterine activity with doctor's interpretation"
+        }
+      }
+    },
+    {
+      "id": "ob-screening",
+      "specialty_id": "gynecologist",
+      "name": "Пренатальный скрининг",
+      "price": 18000,
+      "description": "Комплексное обследование в установленные сроки беременности: УЗИ и анализ крови на биохимические маркеры",
+      "i18n": {
+        "kk": {
+          "name": "Пренаталдық скрининг",
+          "description": "Жүктіліктің белгіленген мерзімдеріндегі кешенді тексеру: УДЗ және биохимиялық маркерлерге қан анализі"
+        },
+        "en": {
+          "name": "Prenatal screening",
+          "description": "Combined check at set weeks of pregnancy: ultrasound and a blood test for biochemical markers"
+        }
+      }
+    },
+    {
+      "id": "ob-online",
+      "specialty_id": "gynecologist",
+      "name": "Онлайн-консультация акушера-гинеколога",
+      "price": 8000,
+      "description": "Видеоконсультация с акушером-гинекологом по вопросам беременности и женского здоровья",
+      "i18n": {
+        "kk": {
+          "name": "Акушер-гинекологтың онлайн кеңесі",
+          "description": "Жүктілік және әйелдер денсаулығы мәселелері бойынша акушер-гинекологпен бейнекеңес"
+        },
+        "en": {
+          "name": "Online obstetrician-gynecologist consultation",
+          "description": "Video consultation with an obstetrician-gynecologist on pregnancy and women's health"
+        }
+      }
     }
   ],
   "doctors": [
@@ -615,6 +718,27 @@
       "name": "Сағынтаев Арман Нұрланұлы",
       "specialty_id": "ophthalmologist",
       "slots": []
+    },
+    {
+      "id": "d11",
+      "name": "Тұрсынова Мадина Ержанқызы",
+      "specialty_id": "gynecologist",
+      "slots": [
+        "2026-10-01T10:00",
+        "2026-10-01T16:30",
+        "2026-10-02T11:00",
+        "2026-10-04T09:30"
+      ]
+    },
+    {
+      "id": "d12",
+      "name": "Соколова Ирина Андреевна",
+      "specialty_id": "gynecologist",
+      "slots": [
+        "2026-10-01T13:00",
+        "2026-10-03T10:30",
+        "2026-10-03T15:00"
+      ]
     }
   ]
 }
