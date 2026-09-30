@@ -1,5 +1,7 @@
-import type { ChatResponse, DialogResponse, Ticket, UploadResponse } from './types'
+import type { Appointment, AppointmentCreate, AppointmentResponse, Catalog, ChatResponse, DialogResponse, Ticket, UploadResponse } from './types'
 import { mock } from './mock'
+import { ApiError } from './errors'
+export { ApiError }
 
 const useMock = import.meta.env.VITE_USE_MOCK === 'true'
 // Patient and operator tokens live under separate keys: both pages share one origin, and an operator
@@ -10,7 +12,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const response = await fetch(`/api${path}`, { ...init, headers: { ...(init?.body instanceof FormData ? {} : { 'Content-Type': 'application/json' }), ...(token ? { Authorization: `Bearer ${token}` } : {}), ...init?.headers } })
   if (!response.ok) {
     const body = await response.json().catch(() => null) as { error?: string; detail?: string } | null
-    throw new Error(body?.detail || body?.error || `Сервер вернул ${response.status}`)
+    throw new ApiError(body?.detail || body?.error || `Сервер вернул ${response.status}`, response.status, body?.detail || body?.error || '')
   }
   return response.json() as Promise<T>
 }
@@ -38,4 +40,8 @@ export const api = {
   upload: (file: File, dialog_id?: string) => useMock ? mock.upload(file, dialog_id) : request<UploadResponse>('/chat/attachments', { method: 'POST', body: uploadForm(file, dialog_id) }),
   attachmentBlob: (id: string) => useMock ? mock.attachmentBlob(id) : blob(`/attachments/${encodeURIComponent(id)}`),
   reply: (dialog_id: string, message?: string, close = false) => useMock ? mock.reply(dialog_id, message, close) : request<{ ok?: boolean }>('/operator/reply', { method: 'POST', body: JSON.stringify({ dialog_id, ...(message ? { message } : {}), ...(close ? { close: true } : {}) }) }),
+  catalog: () => useMock ? mock.catalog() : request<Catalog>('/catalog'),
+  book: (body: AppointmentCreate) => useMock ? mock.book(body) : request<AppointmentResponse>('/appointments', { method: 'POST', body: JSON.stringify(body) }),
+  appointments: () => useMock ? mock.appointments() : request<Appointment[]>('/appointments'),
+  cancelAppointment: (id: string) => useMock ? mock.cancelAppointment(id) : request<Appointment>(`/appointments/${encodeURIComponent(id)}/cancel`, { method: 'POST' }),
 }

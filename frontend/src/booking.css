@@ -1,0 +1,349 @@
+/* Inline booking under a service card (patient) */
+.service-bottom button[aria-expanded="true"] {
+  background: var(--surface);
+  color: var(--primary);
+  border: 1px solid var(--primary);
+}
+.service-bottom button[aria-expanded="true"]:hover {
+  background: var(--primary-soft);
+}
+.service-bottom button {
+  min-height: 44px;
+}
+.slot-chip {
+  min-height: 44px;
+  padding: 0 12px;
+  font-size: 13px;
+  color: var(--text);
+  background: var(--surface-2);
+  border: 1px solid transparent;
+  border-radius: 6px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  transition: background-color 120ms, border-color 120ms;
+}
+.slot-chip:hover {
+  border-color: var(--border);
+}
+.slot-chip[aria-pressed="true"] {
+  background: var(--primary-soft);
+  border-color: var(--primary);
+  color: var(--primary);
+  font-weight: 600;
+}
+.slots-empty {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+.booking-panel {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+  display: grid;
+  gap: 16px;
+  animation: message-in 180ms cubic-bezier(0.2, 0, 0, 1);
+}
+.booking-field {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-width: 0;
+}
+.booking-field legend,
+.booking-contacts label {
+  padding: 0;
+  margin-bottom: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+.booking-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.booking-option {
+  min-height: 44px;
+  padding: 0 14px;
+  font-size: 14px;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  text-align: left;
+  transition: background-color 120ms, border-color 120ms;
+}
+.booking-option:hover {
+  background: var(--surface-2);
+}
+.booking-option[aria-pressed="true"] {
+  border-color: var(--primary);
+  background: var(--primary-soft);
+  color: var(--primary);
+  font-weight: 600;
+}
+.booking-slots {
+  gap: 8px;
+}
+.booking-hint {
+  margin: 0;
+  font-size: 14px;
+  color: var(--text-muted);
+}
+.booking-contacts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+}
+.booking-contacts label {
+  display: block;
+  margin: 0;
+}
+.booking-contacts input {
+  display: block;
+  width: 100%;
+  height: 44px;
+  margin-top: 6px;
+  padding: 0 12px;
+  font-size: 16px;
+  font-weight: 400;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  outline: 0;
+  transition: border-color 120ms;
+}
+.booking-contacts input[type="tel"] {
+  font-variant-numeric: tabular-nums;
+}
+.booking-contacts input:focus {
+  border-color: var(--primary);
+}
+.booking-note {
+  margin: 0;
+  padding: 10px 12px;
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--text);
+  background: var(--surface-2);
+  border-radius: 8px;
+}
+.booking-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.booking-submit {
+  min-height: 44px;
+  padding: 0 18px;
+  background: var(--primary);
+  border: 0;
+  border-radius: 8px;
+  color: white;
+  font-size: 14px;
+  font-weight: 600;
+}
+.booking-submit:not(:disabled):hover {
+  background: var(--primary-hover);
+}
+.booking-close {
+  min-height: 44px;
+  padding: 0 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text-muted);
+  font-size: 14px;
+}
+.booking-close:hover {
+  background: var(--surface-2);
+}
+.booking-result {
+  margin: 14px 0 0;
+  padding: 10px 12px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--green);
+  background: var(--green-bg);
+  border-radius: 8px;
+}
+.booking-result > svg {
+  flex: none;
+}
+.booking-result > span:first-of-type {
+  flex: 1 1 200px;
+  color: var(--text);
+}
+.booking-result.is-cancelled {
+  color: var(--text-muted);
+  background: var(--surface-2);
+}
+.booking-result .booking-note {
+  flex-basis: 100%;
+  padding: 0;
+  background: none;
+}
+.link-button {
+  min-height: 44px;
+  margin: -10px 0;
+  padding: 0 4px;
+  background: none;
+  border: 0;
+  color: var(--primary);
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+@media (max-width: 700px) {
+  .booking-actions {
+    display: grid;
+  }
+}
+
+/* Operator: «Очередь / Записи» toggle and the appointments list */
+.pane-tabs {
+  flex: none;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  padding: 8px;
+  border-bottom: 1px solid var(--border);
+}
+.pane-tabs button {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: var(--surface);
+  border: 1px solid transparent;
+  border-radius: 8px;
+  color: var(--text-muted);
+  font-size: 14px;
+  font-weight: 600;
+  transition: background-color 120ms, border-color 120ms;
+}
+.pane-tabs button:hover {
+  background: var(--surface-2);
+}
+.pane-tabs button[aria-selected="true"] {
+  background: var(--primary-soft);
+  border-color: var(--primary);
+  color: var(--primary);
+}
+.pane-tabs button span {
+  min-width: 22px;
+  padding: 2px 6px;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  background: var(--surface-2);
+  color: var(--text);
+  border-radius: 6px;
+}
+.appointment-list {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+}
+.appointment-row {
+  padding: 12px 13px;
+  border-bottom: 1px solid var(--border);
+  border-left: 3px solid var(--primary);
+  font-size: 13px;
+}
+.appointment-row.is-cancelled {
+  border-left-color: var(--border);
+}
+.appointment-row.is-cancelled strong,
+.appointment-row.is-cancelled .appointment-when {
+  color: var(--text-muted);
+}
+.appointment-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+.appointment-top strong {
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.35;
+}
+.appointment-status {
+  flex: none;
+  padding: 3px 7px;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 6px;
+}
+.status-booked {
+  color: var(--green);
+  background: var(--green-bg);
+}
+.status-cancelled {
+  color: var(--text-muted);
+  background: var(--surface-2);
+}
+.appointment-when {
+  margin: 4px 0 8px;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+.appointment-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.appointment-patient {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  color: var(--text-muted);
+}
+.appointment-patient span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.appointment-patient a {
+  color: var(--primary);
+  text-decoration: none;
+  font-variant-numeric: tabular-nums;
+}
+.appointment-cancel {
+  flex: none;
+  min-height: 44px;
+  padding: 0 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--red);
+  font-size: 13px;
+  font-weight: 600;
+}
+.appointment-cancel:hover {
+  background: var(--red-bg);
+}
+.appointments-error {
+  margin: 12px 13px 0;
+  padding: 10px 12px;
+  font-size: 13px;
+  color: var(--text);
+  background: var(--surface-2);
+  border-radius: 8px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .booking-panel {
+    animation: none;
+  }
+}

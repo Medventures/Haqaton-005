@@ -42,7 +42,17 @@
     "errorDialog": "Не удалось загрузить диалог",
     "errorReply": "Не удалось отправить ответ",
     "errorClose": "Не удалось закрыть обращение",
-    "pregnancy": "Беременность, {{weeks}} нед."
+    "pregnancy": "Беременность, {{weeks}} нед.",
+    "appointments": "Записи",
+    "appointmentsHint": "Записи пациентов к врачам",
+    "emptyAppointments": "Пока нет записей",
+    "cancelAppointment": "Отменить",
+    "cancellingAppointment": "Отменяем…",
+    "statusBooked": "Записан",
+    "statusCancelled": "Отменена",
+    "errorAppointments": "Не удалось загрузить записи",
+    "errorCancelAppointment": "Не удалось отменить запись",
+    "sections": "Разделы"
   },
   "urgentOperator": "Срочная консультация акушера-гинеколога",
   "waitingSpecialist": "Ищем свободного специалиста…",
@@ -72,5 +82,24 @@
   "newChat": "Новый чат",
   "attach": "Прикрепить фото или PDF",
   "attachmentError": "Можно прикрепить фото (JPG, PNG, WEBP) или PDF до 10 МБ",
-  "attachments": "Вложения"
+  "attachments": "Вложения",
+  "booking": {
+    "title": "Запись: {{service}}",
+    "doctor": "Врач",
+    "slot": "Время",
+    "name": "Имя и фамилия",
+    "phone": "Телефон",
+    "submit": "Подтвердить запись",
+    "sending": "Записываем…",
+    "hide": "Свернуть",
+    "noSlots": "Свободного времени нет",
+    "noDoctors": "Врачей этой специальности сейчас нет в подборке",
+    "done": "Вы записаны: {{service}}, {{doctor}}, {{slot}}",
+    "cancel": "Отменить запись",
+    "cancelling": "Отменяем…",
+    "cancelled": "Запись отменена",
+    "taken": "Это время уже заняли, выберите другое",
+    "error": "Не удалось записаться. Попробуйте ещё раз.",
+    "cancelError": "Не удалось отменить запись. Попробуйте ещё раз."
+  }
 }
