@@ -1,7 +1,10 @@
-import type { ChatResponse, DialogResponse, Ticket } from './types'
+import type { ChatResponse, DialogResponse, Message, Ticket, UploadResponse } from './types'
 const dialogs = new Map<string, DialogResponse>()
 const services = [{ id: 'therapy', specialty_id: 'therapy', name: 'Приём терапевта', price: 8000, description: 'Первичная консультация специалиста.' }]
 const doctors = [{ id: 'doctor-1', specialty_id: 'therapy', name: 'Айдана Сәрсенова', slots: ['2026-10-01T09:00', '2026-10-01T11:30'] }]
+const files = new Map<string, Blob>()
+// shown for attachment ids the mock has never seen (e.g. after a reload)
+const placeholder = () => new Blob(['<svg xmlns="http://www.w3.org/2000/svg" width="440" height="300"><rect width="440" height="300" fill="#EEF1EE"/><text x="220" y="156" font-family="Inter, sans-serif" font-size="20" fill="#5D6963" text-anchor="middle">Файл недоступен в демо-режиме</text></svg>'], { type: 'image/svg+xml' })
 const wait = (ms = 700) => new Promise(resolve => setTimeout(resolve, ms))
 export const mock = {
   async patient() { await wait(150); return { token: 'mock-patient-token', user_id: 'demo-patient', role: 'patient' as const } },
@@ -21,5 +24,16 @@ export const mock = {
   async dialog(id: string) { await wait(100); return dialogs.get(id) || { dialog: { id, status: 'bot' as const, language: 'ru' as const, urgency: 'green' as const }, messages: [] } },
   async handoff(id: string) { const d = dialogs.get(id); if (d) d.dialog.status = 'operator'; return { ticket_id: 1, status: 'open', reply: { role: 'bot' as const, content: 'Обращение передано оператору.' } } },
   async queue(): Promise<Ticket[]> { return [...dialogs.values()].filter(d => d.dialog.status === 'operator').map((d, i) => ({ id: i + 1, dialog_id: d.dialog.id, reason: 'Запрошен оператор', summary: d.dialog.summary || '', status: 'open', urgency: d.dialog.urgency, last_message: d.messages.at(-1)?.content })) },
+  async upload(file: File, id?: string): Promise<UploadResponse> {
+    await wait()
+    const dialog_id = id || crypto.randomUUID(), attachmentId = crypto.randomUUID()
+    files.set(attachmentId, file)
+    const message: Message = { role: 'patient', content: file.name, data: { attachments: [{ id: attachmentId, name: file.name, content_type: file.type, size: file.size }] }, created_at: new Date().toISOString() }
+    const reply: Message = { role: 'bot', content: 'Файл получен. Врач или оператор посмотрит его вместе с вашим обращением.', created_at: new Date().toISOString() }
+    const prev = dialogs.get(dialog_id) || { dialog: { id: dialog_id, status: 'bot' as const, language: 'ru' as const, urgency: 'green' as const }, messages: [] }
+    dialogs.set(dialog_id, { ...prev, messages: [...prev.messages, message, reply] })
+    return { dialog_id, status: prev.dialog.status, message, reply }
+  },
+  async attachmentBlob(id: string) { await wait(150); return files.get(id) || placeholder() },
   async reply(id: string, message?: string, close = false) { const d = dialogs.get(id); if (d && message) d.messages.push({ role: 'operator', content: message }); if (d && close) d.dialog.status = 'bot'; return { ok: true } },
 }

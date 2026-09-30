@@ -271,10 +271,14 @@
   font-size: 14px;
   line-height: 1.5;
 }
+.message-form textarea:disabled {
+  background: transparent;
+  color: var(--text-muted);
+}
 .message-form textarea::placeholder {
   color: var(--text-muted);
 }
-.message-form button {
+.message-form .send-button {
   position: absolute;
   right: 9px;
   top: 8px;
@@ -330,3 +334,106 @@
 }
 .new-chat-button:hover { border-color: var(--text-muted); }
 .new-chat-button:disabled { opacity: .5; cursor: default; }
+
+/* attachments: paperclip in the composer, thumbnails and PDF chips in messages */
+.message-form .attach-button {
+  flex: none;
+  width: 44px;
+  height: 44px;
+  margin: -4px 6px 0 -6px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--primary);
+  cursor: pointer;
+  transition: background-color 120ms, border-color 120ms;
+}
+.message-form .attach-button:hover:not(:disabled) { background: var(--surface-2); }
+.message-form .attach-button:disabled { opacity: .5; cursor: default; }
+.message-form .attach-button:focus-visible,
+.message-form .send-button:focus-visible,
+.attachment-thumb:focus-visible,
+.attachment-file:focus-visible,
+.new-chat-button:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+.message-form .send-button:disabled { opacity: .45; }
+/* the hint starts after the paperclip; an error wraps onto its own full-width line instead of being cut off */
+.message-form .form-hint { left: 56px; max-width: calc(100% - 110px); }
+.message-form.has-error { flex-wrap: wrap; padding-bottom: 6px; }
+.message-form.has-error .form-hint {
+  position: static;
+  flex-basis: 100%;
+  max-width: none;
+  margin-top: 6px;
+  white-space: normal;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.attachment-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 8px;
+  max-width: 100%;
+}
+.patient-message .attachment-list { align-items: flex-end; margin-top: 0; }
+.bot-message .attachment-list { align-items: flex-start; }
+.attachment-thumb {
+  display: block;
+  width: min(220px, 100%);
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  overflow: hidden;
+  line-height: 0;
+}
+.attachment-thumb img {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 320px;
+  object-fit: cover;
+}
+.attachment-thumb-loading { height: 140px; }
+.attachment-file {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  max-width: min(280px, 100%);
+  min-height: 52px;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--text);
+  text-decoration: none;
+  transition: background-color 120ms, border-color 120ms;
+}
+.attachment-file svg { flex: none; color: var(--primary); }
+a.attachment-file:hover { background: var(--surface-2); }
+.attachment-file-text { display: flex; flex-direction: column; min-width: 0; }
+.attachment-file-name {
+  font-size: 14px;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.attachment-file-size {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+.attachment-file-loading { opacity: .6; }
+.attachment-file-failed svg { color: var(--text-muted); }
+.conversation-message .attachment-list { margin: 6px 0 4px; }
+.summary-panel .summary-attachments {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
