@@ -553,3 +553,16 @@ func TestNoPregnancyQuestionIfPatientSaidNotPregnant(t *testing.T) {
 		t.Fatal("must not ask when the patient already said she is not pregnant")
 	}
 }
+
+func TestEnglishConversation(t *testing.T) {
+	e := setup(t, ex("find_service", "ent", false, "", "green"))
+	tok := e.patient()
+	r := e.chat(tok, "", "I have a sore throat for three days")
+	if r.Language != "en" || len(r.Services) == 0 {
+		t.Fatalf("en: %+v", r)
+	}
+	r = e.chat(tok, r.DialogID, "and now chest pain")
+	if r.Urgency != "red" || r.Reply.Content != texts["red"]["en"] {
+		t.Fatalf("en red: %+v", r)
+	}
+}

@@ -16,36 +16,43 @@ var texts = map[string]map[string]string{
 	"red": {
 		"ru": "Ваши симптомы могут требовать срочной медицинской помощи. Срочно звоните 103 или обратитесь в ближайшее приёмное отделение. Не ждите записи к врачу. Мы также передали ваш диалог оператору.",
 		"kk": "Сіздегі белгілер шұғыл медициналық көмекті қажет етуі мүмкін. Дереу 103-ке қоңырау шалыңыз немесе жақын жердегі қабылдау бөлімшесіне барыңыз. Дәрігерге жазылуды күтпеңіз. Диалогыңызды операторға да жібердік.",
+		"en": "Your symptoms may need urgent medical help. Call 103 now or go to the nearest emergency department. Do not wait for a doctor's appointment. We have also passed your conversation to an operator.",
 	},
 	"yellow": {
 		"ru": "По вашему описанию стоит обратиться за медицинской помощью в ближайшее время. Если станет хуже — звоните 103.",
 		"kk": "Сипаттамаңызға қарағанда, жақын арада медициналық көмекке жүгінген жөн. Жағдайыңыз нашарласа — 103-ке қоңырау шалыңыз.",
+		"en": "Based on your description, you should seek medical help soon. If you feel worse, call 103.",
 	},
 	"handoff": {
 		"ru": "Передаю ваш вопрос оператору — он ответит здесь, в этом чате.",
 		"kk": "Сұрағыңызды операторға жібердім — ол осы чатта жауап береді.",
+		"en": "I am passing your question to an operator — they will reply here in this chat.",
 	},
 	"ask_pregnancy": {
 		"ru": "Есть ли у вас беременность или её вероятность?",
 		"kk": "Сізде жүктілік бар ма немесе болуы мүмкін бе?",
+		"en": "Are you pregnant, or could you be pregnant?",
 	},
 	"clarify": {
 		"ru": "Уточните, пожалуйста: что именно беспокоит, где и как давно?",
 		"kk": "Нақтылап жазыңызшы: не мазалайды, қай жерде және қашаннан бері?",
+		"en": "Could you please clarify: what exactly bothers you, where, and for how long?",
 	},
 	"fallback": {
 		"ru": "Вам подойдёт специалист: %s. Ниже — услуги с ценами и свободные слоты врачей.",
 		"kk": "Сізге қажетті маман: %s. Төменде — қызметтер бағасымен және дәрігерлердің бос уақыттары.",
+		"en": "The right specialist for you: %s. Below are the services with prices and doctors' free slots.",
 	},
 }
 
 var langInstr = map[string]string{
 	"ru": "Ответь на русском языке.",
 	"kk": "Жауапты тек қазақ тілінде жаз. Отвечай ТОЛЬКО на казахском языке.",
+	"en": "Answer in English only.",
 }
 
 func t(key, lang string) string {
-	if lang != "kk" {
+	if lang != "kk" && lang != "en" {
 		lang = "ru"
 	}
 	return texts[key][lang]
@@ -201,9 +208,9 @@ func (a *App) process(ctx context.Context, d *Dialog, text string) (*ChatRespons
 		d.Summary = "Сообщение пациента: «" + text + "». ИИ не смог разобрать запрос."
 	}
 
-	if hasKazakhLetters(text) {
-		ex.Language = "kk"
-	} else if ex.Language != "kk" {
+	if l := detectLanguage(text); l != "" {
+		ex.Language = l
+	} else if ex.Language != "kk" && ex.Language != "en" {
 		ex.Language = "ru"
 	}
 	d.Language = ex.Language
@@ -269,14 +276,21 @@ func (a *App) process(ctx context.Context, d *Dialog, text string) (*ChatRespons
 	if ex.SpecialtyID != nil {
 		spec := a.cat.Specialty(*ex.SpecialtyID)
 		svcs, docs := a.cat.ServicesFor(spec.ID), a.cat.DoctorsFor(spec.ID)
-		data, _ := json.Marshal(map[string]any{"specialty": spec, "services": svcs, "doctors_with_free_slots": humanSlots(docs)})
+		specName, specDesc := spec.Localized(d.Language)
+		llmSvcs := []map[string]any{}
+		for _, sv := range svcs {
+			n, desc := sv.Localized(d.Language)
+			llmSvcs = append(llmSvcs, map[string]any{"name": n, "price_kzt": sv.Price, "description": desc})
+		}
+		data, _ := json.Marshal(map[string]any{"specialty": map[string]string{"name": specName, "description": specDesc},
+			"services": llmSvcs, "doctors_with_free_slots": humanSlots(docs)})
 		reply, err := a.llm.Chat(ctx, []chatMsg{
 			{"system", fmt.Sprintf(answerSystemPrompt, d.Language)},
 			{"user", fmt.Sprintf("Запрос пациента: %s\nПоследнее сообщение: %s\n\nДАННЫЕ КАТАЛОГА:\n%s\n\n%s", d.Summary, text, data, langInstr[d.Language])},
 		}, nil)
 		if err != nil || strings.TrimSpace(reply) == "" {
 			log.Printf("compose failed: %v", err)
-			reply = fmt.Sprintf(t("fallback", d.Language), spec.Name)
+			reply = fmt.Sprintf(t("fallback", d.Language), specName)
 		}
 		return finish(prefix+strings.TrimSpace(reply), botData{Actions: actions, Services: svcs, Doctors: docs})
 	}
@@ -319,8 +333,8 @@ func (a *App) redCheck(ctx context.Context, d *Dialog, text string, patientMsgs 
 	if !hit {
 		return nil, false, nil
 	}
-	if hasKazakhLetters(text) || hasKazakhLetters(matched) {
-		lang = "kk"
+	if l := detectLanguage(text); l != "" {
+		lang = l
 	}
 	d.Language = lang
 	d.Urgency = "red"

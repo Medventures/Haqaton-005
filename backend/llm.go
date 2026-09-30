@@ -81,7 +81,7 @@ func extractionSchema(c *Catalog) map[string]any {
 	return map[string]any{
 		"type": "object",
 		"properties": map[string]any{
-			"language":            map[string]any{"type": "string", "enum": []string{"ru", "kk"}},
+			"language":            map[string]any{"type": "string", "enum": []string{"ru", "kk", "en"}},
 			"intent":              map[string]any{"type": "string", "enum": []string{"find_service", "service_info", "operator", "other"}},
 			"specialty_id":        map[string]any{"enum": ids},
 			"need_clarification":  map[string]any{"type": "boolean"},
@@ -102,7 +102,7 @@ func extractionPrompt(c *Catalog, t *TriageRules, clarLeft int, d *Dialog) strin
 	var sb strings.Builder
 	sb.WriteString(`Ты — модуль разбора сообщений пациента медицинской клиники. Верни ТОЛЬКО JSON по схеме.
 Поля:
-- language: "kk" если пациент пишет по-казахски, иначе "ru".
+- language: "kk" если пациент пишет по-казахски, "en" если по-английски, иначе "ru".
 - intent: find_service (хочет подобрать врача/услугу по жалобе), service_info (спрашивает о конкретной услуге, цене, враче), operator (просит живого человека/оператора/администратора), other (приветствие, не по теме).
 - specialty_id: id специальности СТРОГО из списка ниже, которая подходит под жалобу; null если непонятно.
 - need_clarification: true, только если жалоба слишком общая и специальность выбрать нельзя (например, «мне плохо»). Если жалоба явно подходит под специальность (горло/нос → ent, сыпь → dermatologist) — false.
@@ -122,6 +122,7 @@ func extractionPrompt(c *Catalog, t *TriageRules, clarLeft int, d *Dialog) strin
 	}
 	sb.WriteString("\nОриентиры для urgency=yellow (ru): " + strings.Join(t.Yellow["ru"], ", "))
 	sb.WriteString("\nОриентиры для urgency=yellow (kk): " + strings.Join(t.Yellow["kk"], ", "))
+	sb.WriteString("\nОриентиры для urgency=yellow (en): " + strings.Join(t.Yellow["en"], ", "))
 	if d.Pregnant {
 		sb.WriteString("\n\nИЗВЕСТНО: пациентка беременна")
 		if d.GestationWeeks != nil {
@@ -129,6 +130,7 @@ func extractionPrompt(c *Catalog, t *TriageRules, clarLeft int, d *Dialog) strin
 		}
 		sb.WriteString(". pregnant=true, ask_pregnancy=false. При беременности urgency=yellow и для таких жалоб (ru): " + strings.Join(t.YellowIfPregnant["ru"], ", "))
 		sb.WriteString("; (kk): " + strings.Join(t.YellowIfPregnant["kk"], ", "))
+		sb.WriteString("; (en): " + strings.Join(t.YellowIfPregnant["en"], ", "))
 		sb.WriteString(". Гинекологические жалобы при беременности — specialty_id=gynecologist.")
 	} else if d.PregnancyAsked {
 		sb.WriteString("\n\nВопрос о беременности уже задан: ask_pregnancy=false.")
@@ -139,7 +141,7 @@ func extractionPrompt(c *Catalog, t *TriageRules, clarLeft int, d *Dialog) strin
 	return sb.String()
 }
 
-const answerSystemPrompt = `Ты — вежливый администратор медицинской клиники в чате. Отвечай кратко (2-4 предложения), на языке пациента (%s: ru = русский, kk = қазақ тілі).
+const answerSystemPrompt = `Ты — вежливый администратор медицинской клиники в чате. Отвечай кратко (2-4 предложения), на языке пациента (%s: ru = русский, kk = қазақ тілі, en = English).
 Строгие правила:
 - НЕ ставь диагноз и не называй возможные болезни.
 - НЕ назначай лечение, лекарства, дозировки, процедуры.
