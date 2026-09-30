@@ -775,3 +775,34 @@ func TestPregnancyKnowledgeOnlyForPregnant(t *testing.T) {
 		t.Fatalf("pregnant question must get the pregnancy entry: %q", r.Reply.Content)
 	}
 }
+
+// LM Studio runs the model with a 4096-token context. Cyrillic is ~1 token per 2.5 characters, so the
+// system prompt must stay well under that (measured: 8884 characters = 4211 tokens) to leave room for 8 dialog messages and the JSON answer.
+func TestExtractionPromptFitsContext(t *testing.T) {
+	c, _ := LoadCatalog("../catalog.json")
+	tr, _ := LoadTriage("../triage_rules.json")
+	for _, lang := range []string{"ru", "kk", "en"} {
+		p := extractionPrompt(c, tr, 0, &Dialog{Pregnant: true, PregnancyAsked: true}, lang)
+		if n := len([]rune(p)); n > 4800 {
+			t.Errorf("%s prompt is %d characters, keep it under 4800", lang, n)
+		}
+	}
+}
+
+func TestGreetingLabelledOperatorIsNotHandedOff(t *testing.T) {
+	e := setup(t, ex("operator", "", false, "", "green"))
+	r := e.chat(e.patient(), "", "привет")
+	if r.Status != "bot" || r.TicketID != nil {
+		t.Fatalf("a greeting must not go to the operator: %+v", r)
+	}
+}
+
+func TestKnowledgeAnswerKeepsYellowForRiskyPregnancy(t *testing.T) {
+	e := setup(t, exWith(ex("find_service", "gynecologist", false, "", "green"), map[string]any{"risk_factors": []string{"hypertension"}}))
+	kb, _ := LoadKnowledge("../knowledge.json")
+	e.a.kb = kb
+	r := e.chat(e.patient(), "", "Я беременна, 20 недель, у меня гипертония, отекают ноги")
+	if r.Urgency != "yellow" || !has(r.Actions, "contact_operator") || !strings.HasPrefix(r.Reply.Content, texts["yellow"]["ru"]) {
+		t.Fatalf("pregnancy + hypertension: yellow with the KB answer: %+v", r)
+	}
+}

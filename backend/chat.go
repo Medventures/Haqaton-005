@@ -201,15 +201,19 @@ func (a *App) process(ctx context.Context, d *Dialog, text string) (*ChatRespons
 
 	// 2. LLM extraction.
 	var transcript strings.Builder
-	if len(hist) > 12 {
-		hist = hist[len(hist)-12:]
+	if len(hist) > 8 {
+		hist = hist[len(hist)-8:]
 	}
 	for _, m := range hist {
 		who := map[string]string{"patient": "Пациент", "bot": "Бот", "operator": "Оператор"}[m.Role]
-		fmt.Fprintf(&transcript, "%s: %s\n", who, m.Content)
+		content := []rune(m.Content)
+		if len(content) > 300 { // long bot answers eat the context; the gist is enough
+			content = append(content[:300], '…')
+		}
+		fmt.Fprintf(&transcript, "%s: %s\n", who, string(content))
 	}
 	ex, ok := a.llm.Extract(ctx, []chatMsg{
-		{"system", extractionPrompt(a.cat, a.triage, 2-d.Clarifications, d)},
+		{"system", extractionPrompt(a.cat, a.triage, 2-d.Clarifications, d, promptLang(text, d))},
 		{"user", "Диалог:\n" + transcript.String()},
 	}, a.cat)
 	if !ok && d.Summary == "" {
@@ -226,6 +230,10 @@ func (a *App) process(ctx context.Context, d *Dialog, text string) (*ChatRespons
 		ex.Language = "ru"
 	}
 	d.Language = ex.Language
+	// The model labels greetings as "operator" ("привет" -> operator). Only an explicit request for a person counts.
+	if ok && ex.Intent == "operator" && !asksForHuman(text) {
+		ex.Intent = "other"
+	}
 	if ex.SpecialtyID != nil && a.cat.Specialty(*ex.SpecialtyID) == nil {
 		ex.SpecialtyID = nil // only ids from the catalog
 	}
@@ -288,7 +296,13 @@ func (a *App) process(ctx context.Context, d *Dialog, text string) (*ChatRespons
 		if data.Services != nil && data.Doctors == nil {
 			data.Doctors = []Doctor{}
 		}
-		return finish(kb.AnswerIn(d.Language), data)
+		reply := kb.AnswerIn(d.Language)
+		if ex.Intent == "find_service" && d.Urgency == "yellow" { // e.g. pregnancy + hypertension + swelling
+			d.Assessed = true
+			data.Actions = []string{"contact_operator"}
+			reply = t("yellow", d.Language) + "\n\n" + reply
+		}
+		return finish(reply, data)
 	}
 
 	if ex.Intent == "operator" {
@@ -594,4 +608,12 @@ func contains(list []string, v string) bool {
 		}
 	}
 	return false
+}
+
+// promptLang: language for the prompt's hint lists — from the text, else the dialog's.
+func promptLang(text string, d *Dialog) string {
+	if l := detectLanguage(text); l != "" {
+		return l
+	}
+	return d.Language
 }

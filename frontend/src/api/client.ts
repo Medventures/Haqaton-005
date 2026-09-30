@@ -2,8 +2,11 @@ import type { ChatResponse, DialogResponse, Ticket } from './types'
 import { mock } from './mock'
 
 const useMock = import.meta.env.VITE_USE_MOCK === 'true'
+// Patient and operator tokens live under separate keys: both pages share one origin, and an operator
+// token on the patient page made /api/chat answer 403.
+export const tokenKey = () => (window.location.pathname.replace(/\/$/, '') === '/operator' ? 'operator_jwt' : 'patient_jwt')
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
-  const token = localStorage.getItem('clinic_token')
+  const token = localStorage.getItem(tokenKey())
   const response = await fetch(`/api${path}`, { ...init, headers: { ...(init?.body instanceof FormData ? {} : { 'Content-Type': 'application/json' }), ...(token ? { Authorization: `Bearer ${token}` } : {}), ...init?.headers } })
   if (!response.ok) {
     const body = await response.json().catch(() => null) as { error?: string; detail?: string } | null

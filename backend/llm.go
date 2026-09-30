@@ -113,40 +113,43 @@ func extractionSchema(c *Catalog) map[string]any {
 	}
 }
 
-func extractionPrompt(c *Catalog, t *TriageRules, clarLeft int, d *Dialog) string {
-	var sb strings.Builder
-	sb.WriteString(`Ты — модуль разбора сообщений пациента медицинской клиники. Верни ТОЛЬКО JSON по схеме.
-Поля:
-- language: "kk" если пациент пишет по-казахски, "en" если по-английски, иначе "ru".
-- intent: find_service (хочет подобрать врача/услугу по жалобе), service_info (спрашивает о конкретной услуге, цене, враче), operator (просит живого человека/оператора/администратора), other (приветствие, не по теме).
-- specialty_id: id специальности СТРОГО из списка ниже, которая подходит под жалобу; null если непонятно.
-- need_clarification: true, только если жалоба слишком общая и специальность выбрать нельзя (например, «мне плохо»). Если жалоба явно подходит под специальность (горло/нос → ent, сыпь → dermatologist) — false.
-- clarifying_question: один короткий вопрос о симптомах (что беспокоит, где, как давно) на языке пациента, или null. Никогда не спрашивай про диагноз или заболевание. Не спрашивай то, что уже известно.
-- urgency: "yellow", если стоит обратиться за помощью в ближайшее время (сутки-двое): сильная или нарастающая боль, высокая температура, кровь, травма, беременность, ребёнок с температурой; иначе "green".
-- urgency_reason: коротко почему (на русском).
-- pregnant: true, если из диалога следует, что пациентка беременна; false, если она сказала, что не беременна; иначе null.
-- gestation_weeks: срок беременности в неделях, если назван; иначе null.
-- ask_pregnancy: true, если пациентка (женщина) описывает боль внизу живота, кровянистые выделения, тошноту или задержку менструации, а про беременность в диалоге ничего не сказано. Иначе false.
-- risk_factors: факторы риска, которые пациентка САМА назвала в диалоге (не додумывай): hypertension (давление, гипертония), diabetes (диабет, в т.ч. гестационный), anemia (анемия, низкий гемоглобин), heart_disease (болезни сердца), kidney_disease (болезни почек), endocrine (щитовидка и др. эндокринные), multiple_pregnancy (двойня, многоплодная), preterm_risk (угроза прерывания, преждевременных родов), previous_complications (осложнения прошлых беременностей: выкидыш, кесарево, преэклампсия). Пустой массив, если ничего не названо.
-- summary: 1-2 предложения на русском для оператора: что хочет пациент и что выяснено (укажи беременность и срок, если известны).
-Не ставь диагноз.
+// promptTreats: complaint keywords per specialty in the prompt. The prompt must fit a 4096-token context
+// together with the dialog (see TestExtractionPromptFitsContext).
+const promptTreats = 5
 
-Специальности (id — название: описание; жалобы):
+func extractionPrompt(c *Catalog, t *TriageRules, clarLeft int, d *Dialog, lang string) string {
+	var sb strings.Builder
+	sb.WriteString(`Разбери сообщение пациента клиники. Верни ТОЛЬКО JSON по схеме. Диагноз не ставь.
+- language: kk (казахский), en (английский), иначе ru.
+- intent: find_service (жалоба, подобрать врача), service_info (вопрос об услуге/цене/враче/подготовке), operator (просит человека), other (приветствие, не по теме).
+- specialty_id: id строго из списка ниже или null.
+- need_clarification: true только если жалоба слишком общая («мне плохо»).
+- clarifying_question: один короткий вопрос о симптомах (где, как давно, насколько сильно) на языке пациента или null. Не про диагноз, не то, что уже известно.
+- urgency: yellow — нужна помощь в ближайшие 1–2 дня (сильная/нарастающая боль, высокая температура, кровь, травма, беременность, ребёнок с температурой), иначе green. urgency_reason: коротко, по-русски.
+- pregnant: true/false, если сказано; иначе null. gestation_weeks: срок в неделях или null.
+- ask_pregnancy: true, если женщина описывает боль внизу живота, кровянистые выделения, тошноту или задержку, а о беременности не сказано.
+- risk_factors: только названные пациенткой: hypertension, diabetes, anemia, heart_disease, kidney_disease, endocrine, multiple_pregnancy, preterm_risk (угроза прерывания), previous_complications (выкидыш, кесарево, преэклампсия в прошлом); иначе [].
+- summary: 1–2 предложения по-русски для оператора: что хочет пациент, что выяснено (беременность и срок, если известны).
+
+Специальности (id (название): типичные жалобы):
 `)
 	for _, s := range c.Specialties {
-		fmt.Fprintf(&sb, "- %s — %s: %s; %s\n", s.ID, s.Name, s.Description, strings.Join(s.Treats, ", "))
+		treats := s.Treats
+		if len(treats) > promptTreats {
+			treats = treats[:promptTreats]
+		}
+		fmt.Fprintf(&sb, "- %s (%s): %s\n", s.ID, s.Name, strings.Join(treats, ", "))
 	}
-	sb.WriteString("\nОриентиры для urgency=yellow (ru): " + strings.Join(t.Yellow["ru"], ", "))
-	sb.WriteString("\nОриентиры для urgency=yellow (kk): " + strings.Join(t.Yellow["kk"], ", "))
-	sb.WriteString("\nОриентиры для urgency=yellow (en): " + strings.Join(t.Yellow["en"], ", "))
+	if lang == "" {
+		lang = "ru"
+	}
+	sb.WriteString("\nОриентиры для urgency=yellow: " + strings.Join(t.Yellow[lang], ", "))
 	if d.Pregnant {
 		sb.WriteString("\n\nИЗВЕСТНО: пациентка беременна")
 		if d.GestationWeeks != nil {
 			fmt.Fprintf(&sb, " (срок %d нед.)", *d.GestationWeeks)
 		}
-		sb.WriteString(". pregnant=true, ask_pregnancy=false. При беременности urgency=yellow и для таких жалоб (ru): " + strings.Join(t.YellowIfPregnant["ru"], ", "))
-		sb.WriteString("; (kk): " + strings.Join(t.YellowIfPregnant["kk"], ", "))
-		sb.WriteString("; (en): " + strings.Join(t.YellowIfPregnant["en"], ", "))
+		sb.WriteString(". pregnant=true, ask_pregnancy=false. При беременности urgency=yellow и для таких жалоб: " + strings.Join(t.YellowIfPregnant[lang], ", "))
 		sb.WriteString(". Пациентка беременна: specialty_id=gynecologist (акушер-гинеколог) для любых жалоб, кроме явно другой области (зубы, глаза, кожа, ЛОР).")
 	} else if d.PregnancyAsked {
 		sb.WriteString("\n\nВопрос о беременности уже задан: ask_pregnancy=false.")

@@ -321,3 +321,12 @@
   color: white;
   font-size: 14px;
 }
+
+.new-chat-button {
+  margin-left: auto; display: inline-flex; align-items: center; gap: 6px;
+  height: 32px; padding: 0 10px; border: 1px solid var(--border); border-radius: 8px;
+  background: var(--surface); color: var(--text); font: inherit; font-size: 14px; cursor: pointer;
+  transition: border-color 120ms, background-color 120ms;
+}
+.new-chat-button:hover { border-color: var(--text-muted); }
+.new-chat-button:disabled { opacity: .5; cursor: default; }

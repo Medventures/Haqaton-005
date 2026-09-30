@@ -7,7 +7,7 @@ import type { DialogResponse, Ticket, Urgency } from '../api/types'
 export default function OperatorPage() {
   const { t, i18n } = useTranslation()
   const level = (urgency: Urgency) => t(`urgency.${urgency}`)
-  const [authenticated, setAuthenticated] = useState(Boolean(localStorage.getItem('operator_token')))
+  const [authenticated, setAuthenticated] = useState(Boolean(localStorage.getItem('operator_jwt')))
   const [username, setUsername] = useState('operator1')
   const [password, setPassword] = useState('operator1')
   const [tickets, setTickets] = useState<Ticket[]>([])
@@ -20,7 +20,7 @@ export default function OperatorPage() {
 
   async function login(event: FormEvent) {
     event.preventDefault(); setBusy(true); setError('')
-    try { const session = await api.operatorLogin(username, password); localStorage.setItem('clinic_token', session.token); localStorage.setItem('operator_token', 'true'); setAuthenticated(true) }
+    try { const session = await api.operatorLogin(username, password); localStorage.setItem('operator_jwt', session.token); setAuthenticated(true) }
     catch (e) { setError(e instanceof Error ? e.message : t('operator.loginError')) }
     finally { setBusy(false) }
   }

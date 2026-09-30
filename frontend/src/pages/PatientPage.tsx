@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
-import { ArrowUp, PhoneCall } from 'lucide-react'
+import { ArrowUp, PhoneCall, SquarePen } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { api } from '../api/client'
 import type { Dialog, DialogResponse, Language, Message } from '../api/types'
@@ -30,9 +30,9 @@ export default function PatientPage() {
     let active = true
     async function initialize() {
       try {
-        if (!localStorage.getItem('clinic_token')) {
+        if (!localStorage.getItem('patient_jwt')) {
           const session = await api.patient()
-          localStorage.setItem('clinic_token', session.token)
+          localStorage.setItem('patient_jwt', session.token)
         }
         const id = localStorage.getItem('clinic_dialog_id')
         if (id) {
@@ -72,6 +72,13 @@ export default function PatientPage() {
     } catch (e) { setError(e instanceof Error ? e.message : t('network')) }
     finally { setTyping(false) }
   }
+  // «Новый чат»: new patient session, the previous dialog stays with the clinic
+  async function newChat() {
+    if (typing) return
+    localStorage.removeItem('clinic_dialog_id')
+    setMessages([]); setDialog(null); setError(''); setWaitingFrom(null); setDismissedRed('')
+    try { const session = await api.patient(); localStorage.setItem('patient_jwt', session.token) } catch { /* keep the old token */ }
+  }
   function send(event: FormEvent) { event.preventDefault(); void sendMessage(input) }
   async function contactOperator(action = 'contact_operator') {
     if (!dialog?.id) return
@@ -91,7 +98,7 @@ export default function PatientPage() {
   return <main className="patient-page">
     <header className="site-header patient-site-header"><a className="clinic-brand" href="/"><img src="/logo-mark.svg" alt="" width="28" height="28" />Ana<span>Care</span></a><div className="header-tools">{dialog?.urgency && <span className={`urgency-chip urgency-${dialog.urgency}`} aria-label={t(`urgency.${dialog.urgency}`)}><i />{t(`urgency.${dialog.urgency}`)}</span>}<div className="language-switch" role="group" aria-label="Language"><button className={language === 'ru' ? 'active' : ''} onClick={() => selectLanguage('ru')}>Рус</button><button className={language === 'kk' ? 'active' : ''} onClick={() => selectLanguage('kk')}>Қаз</button><button className={language === 'en' ? 'active' : ''} onClick={() => selectLanguage('en')}>Eng</button></div></div></header>
     {showRisk && latestRed ? <section className="risk-screen"><div className="risk-screen-content"><span className="risk-screen-kicker">{t('riskKicker')}</span><h1>{t('riskTitle')}</h1><p className="risk-screen-lead">{t('riskLead')}</p><p className="risk-screen-message">{latestRed.content}</p><p>{t('riskAdvice')}</p><div className="risk-actions">{riskActions.map(action => action === 'call_103' ? <a className="call-button" key={action} href="tel:103"><PhoneCall size={18}/>{t('actions.call_103')}</a> : (action === 'contact_operator' || action === 'urgent_operator') ? <button className="contact-button" key={action} onClick={() => void contactOperator(action)}>{t(`actions.${action}`)}</button> : null)}</div><p className="medical-disclaimer">{t('disclaimer')}</p><button className="risk-return" onClick={() => setDismissedRed(redKey(latestRed))}>{language === 'ru' ? 'Вернуться в чат' : language === 'kk' ? 'Чатқа оралу' : 'Return to chat'}</button></div></section> : <section className="patient-content"><div className="patient-intro"><span className="eyebrow">ANACARE</span><h1>{t('title')}</h1><p>{t('subtitle')}</p></div>
-      <section className="chat-panel" aria-label="Patient chat"><div className="chat-toolbar"><div className="online-indicator"/><span>AnaCare</span><span className="chat-toolbar-sub">· {t('consultation')}</span></div>
+      <section className="chat-panel" aria-label="Patient chat"><div className="chat-toolbar"><div className="online-indicator"/><span>AnaCare</span><span className="chat-toolbar-sub">· {t('consultation')}</span>{messages.length > 0 && <button type="button" className="new-chat-button" onClick={() => void newChat()} disabled={typing}><SquarePen size={16} strokeWidth={1.75} />{t('newChat')}</button>}</div>
         <div className="chat-messages">{!messages.length && ready && <div className="welcome-content"><div className="welcome-note">{t('greet')}</div><div className="welcome-examples"><span>{t('examples.title')}</span>{(['item1', 'item2', 'item3'] as const).map(key => <button key={key} type="button" disabled={typing} onClick={() => void sendMessage(t(`examples.${key}`))}>{t(`examples.${key}`)}</button>)}</div></div>}
           {messages.map((message, index) => <MessageView key={`${index}-${message.id || message.content.slice(0, 8)}`} message={message} language={language} onOperator={action => void contactOperator(action)} onBook={showToast} />)}
           {waitingSpecialist && <div className="chat-message bot-message" role="status"><div className="typing-bubble waiting-bubble"><span className="spinner" aria-hidden="true"/>{t('waitingSpecialist')}</div></div>}
