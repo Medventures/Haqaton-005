@@ -101,6 +101,9 @@ func (a *App) routes() http.Handler {
 	r.With(a.auth("patient")).Post("/api/appointments", a.createAppointment)
 	r.With(a.auth("patient", "operator")).Get("/api/appointments", a.listAppointments)
 	r.With(a.auth("patient", "operator")).Post("/api/appointments/{id}/cancel", a.cancelAppointment)
+	r.With(integrationAuth).Put("/api/integration/catalog", a.integrationCatalog)
+	r.With(integrationAuth).Put("/api/integration/doctors/{id}/slots", a.integrationDoctorSlots)
+	r.With(integrationAuth).Get("/api/integration/appointments", a.integrationAppointments)
 
 	// Optional: serve the built frontend (SPA) from the same process, e.g. STATIC_DIR=../frontend/dist.
 	if dir := os.Getenv("STATIC_DIR"); dir != "" {

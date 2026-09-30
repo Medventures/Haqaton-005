@@ -22,6 +22,7 @@ services:
       OPERATORS: ${OPERATORS:-}
       APP_ENV: ${APP_ENV:-}
       TRUST_PROXY: ${TRUST_PROXY:-}
+      INTEGRATION_API_KEY: ${INTEGRATION_API_KEY:-}
       CATALOG_PATH: /app/catalog.json
       TRIAGE_PATH: /app/triage_rules.json
       KNOWLEDGE_PATH: /app/knowledge.json
