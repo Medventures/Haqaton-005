@@ -21,15 +21,15 @@ type Dict = {
   }
   ops: { title: string; lead: string; summaryTitle: string; want: string; found: string; why: string; queue: string; tickets: { text: string; u: Urgency; reason: string }[]; pregnant: string }
   api: { title: string; lead: string; spec: string; rows: [string, string, string][] }
-  footer: { safety: string; stack: string }
+  footer: { tagline: string; safety: string; stack: string }
 }
 
 export const dict: Record<Lang, Dict> = {
   ru: {
     nav: { how: 'Как работает', levels: 'Срочность', operators: 'Операторам', api: 'Интеграция', open: 'Открыть чат' },
     hero: {
-      title: 'Подскажет, к какому врачу идти. И заметит, когда ждать нельзя.',
-      lead: 'Чат клиники на русском, казахском и английском. Подбирает специалиста, услуги с ценами и свободное время. Опасные симптомы распознаёт до ИИ и сразу направляет к 103.',
+      title: 'Подскажет, к какому врачу идти. И заметит, когда ждать нельзя — особенно во время беременности.',
+      lead: 'AnaCare — ассистент для женщин, в первую очередь по акушерству и гинекологии: планирование, беременность, период после родов. Учитывает срок беременности и факторы риска, оценивает срочность — зелёный, жёлтый, красный — и при опасных признаках сразу направляет к 103 и на срочную консультацию акушера-гинеколога. Модель работает локально, отвечает на казахском, русском и английском. Написать может и любой другой пациент.',
       open: 'Открыть чат',
       operator: 'Вход для операторов',
       replay: 'Показать снова',
@@ -45,7 +45,7 @@ export const dict: Record<Lang, Dict> = {
         { kind: 'patient', text: 'Второй день тянет низ живота' },
         { kind: 'bot', text: 'Есть ли у вас беременность или её вероятность?', urgency: 'green' },
         { kind: 'patient', text: 'Да, я на 32 неделе' },
-        { kind: 'bot', text: 'Ваши симптомы могут требовать срочной помощи. Срочно звоните 103.', urgency: 'red', actions: ['Вызвать скорую — 103', 'Срочно связаться с оператором'] },
+        { kind: 'bot', text: 'Ваши симптомы могут требовать срочной помощи. Срочно звоните 103.', urgency: 'red', actions: ['Вызвать скорую — 103', 'Срочная консультация акушера-гинеколога'] },
       ],
     ],
     typing: 'печатает',
@@ -99,6 +99,7 @@ export const dict: Record<Lang, Dict> = {
       ],
     },
     footer: {
+      tagline: 'AnaCare — мост между женщиной и врачом. Ближе к безопасному материнству.',
       safety: 'Бот не ставит диагноз и не назначает лечение. Оценка срочности ориентировочная. При угрозе жизни звоните 103.',
       stack: 'Сделано на Go, Postgres и React. Языковая модель работает локально в LM Studio.',
     },
@@ -106,8 +107,8 @@ export const dict: Record<Lang, Dict> = {
   kk: {
     nav: { how: 'Қалай жұмыс істейді', levels: 'Шұғылдық', operators: 'Операторларға', api: 'Интеграция', open: 'Чатты ашу' },
     hero: {
-      title: 'Қай дәрігерге бару керегін айтады. Күтуге болмайтынын да байқайды.',
-      lead: 'Клиниканың қазақ, орыс және ағылшын тіліндегі чаты. Маманды, бағасымен қызметтерді және бос уақытты табады. Қауіпті белгілерді ЖИ-ге дейін анықтап, бірден 103-ке бағыттайды.',
+      title: 'Қай дәрігерге бару керегін айтады. Күтуге болмайтынын да байқайды — әсіресе жүктілік кезінде.',
+      lead: 'AnaCare — әйелдерге арналған көмекші, ең алдымен акушерлік және гинекология бойынша: жүктілікті жоспарлау, жүктілік, босанғаннан кейінгі кезең. Жүктілік мерзімі мен қауіп факторларын ескереді, шұғылдықты бағалайды — жасыл, сары, қызыл — және қауіпті белгілер болса, бірден 103-ке және акушер-гинекологтың шұғыл кеңесіне бағыттайды. Модель жергілікті жұмыс істейді, қазақ, орыс және ағылшын тілдерінде жауап береді. Басқа науқастар да жаза алады.',
       open: 'Чатты ашу',
       operator: 'Операторларға кіру',
       replay: 'Қайта көрсету',
@@ -123,7 +124,7 @@ export const dict: Record<Lang, Dict> = {
         { kind: 'patient', text: 'Екі күннен бері іштің төменгі жағы тартып ауырады' },
         { kind: 'bot', text: 'Сізде жүктілік бар ма немесе болуы мүмкін бе?', urgency: 'green' },
         { kind: 'patient', text: 'Иә, 32 аптадамын' },
-        { kind: 'bot', text: 'Сіздегі белгілер шұғыл көмекті қажет етуі мүмкін. Дереу 103-ке қоңырау шалыңыз.', urgency: 'red', actions: ['Жедел жәрдем шақыру — 103', 'Операторға шұғыл хабарласу'] },
+        { kind: 'bot', text: 'Сіздегі белгілер шұғыл көмекті қажет етуі мүмкін. Дереу 103-ке қоңырау шалыңыз.', urgency: 'red', actions: ['Жедел жәрдем шақыру — 103', 'Акушер-гинекологтың шұғыл кеңесі'] },
       ],
     ],
     typing: 'жазып жатыр',
@@ -177,6 +178,7 @@ export const dict: Record<Lang, Dict> = {
       ],
     },
     footer: {
+      tagline: 'AnaCare — әйел мен дәрігердің арасындағы көпір. Қауіпсіз аналыққа жақынырақ.',
       safety: 'Бот диагноз қоймайды және ем тағайындамайды. Шұғылдық бағасы шамамен берілген. Өмірге қауіп төнсе, 103-ке қоңырау шалыңыз.',
       stack: 'Go, Postgres және React негізінде. Тілдік модель LM Studio-да жергілікті жұмыс істейді.',
     },
@@ -184,8 +186,8 @@ export const dict: Record<Lang, Dict> = {
   en: {
     nav: { how: 'How it works', levels: 'Urgency', operators: 'For operators', api: 'Integration', open: 'Open chat' },
     hero: {
-      title: 'Tells patients which doctor to see. And notices when it can’t wait.',
-      lead: 'A clinic chat in Kazakh, Russian and English. It finds the right specialist, services with prices and free time slots. Dangerous symptoms are caught before the AI runs, and the patient is sent straight to 103.',
+      title: 'Tells you which doctor to see. And notices when it can’t wait — especially during pregnancy.',
+      lead: 'AnaCare is an assistant for women, with obstetrics and gynecology first: planning, pregnancy and the postpartum period. It takes the pregnancy week and risk factors into account, rates urgency as green, yellow or red, and on warning signs sends the patient straight to 103 and to an urgent obstetrician-gynecologist consultation. The model runs locally and answers in Kazakh, Russian and English. Any other patient can write too.',
       open: 'Open chat',
       operator: 'Operator sign-in',
       replay: 'Play again',
@@ -201,7 +203,7 @@ export const dict: Record<Lang, Dict> = {
         { kind: 'patient', text: 'Pulling pain in my lower abdomen for two days' },
         { kind: 'bot', text: 'Are you pregnant, or could you be pregnant?', urgency: 'green' },
         { kind: 'patient', text: 'Yes, I’m 32 weeks pregnant' },
-        { kind: 'bot', text: 'Your symptoms may need urgent medical help. Call 103 now.', urgency: 'red', actions: ['Call an ambulance — 103', 'Contact an operator urgently'] },
+        { kind: 'bot', text: 'Your symptoms may need urgent medical help. Call 103 now.', urgency: 'red', actions: ['Call an ambulance — 103', 'Urgent obstetrician-gynecologist consultation'] },
       ],
     ],
     typing: 'typing',
@@ -255,6 +257,7 @@ export const dict: Record<Lang, Dict> = {
       ],
     },
     footer: {
+      tagline: 'AnaCare — a bridge between a woman and her doctor. Closer to safe motherhood.',
       safety: 'The bot does not diagnose or prescribe treatment. The urgency level is an estimate. If a life is at risk, call 103.',
       stack: 'Built with Go, Postgres and React. The language model runs locally in LM Studio.',
     },

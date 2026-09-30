@@ -44,7 +44,7 @@ export default function App() {
             <i className="dot dot-yellow" />
             <i className="dot dot-red" />
           </span>
-          MedHub Clinic
+          AnaCare
         </a>
         <nav className="nav">
           <a href="#how">{t.nav.how}</a>
@@ -90,6 +90,7 @@ export default function App() {
       </main>
 
       <footer className="foot">
+        <p className="tagline">{t.footer.tagline}</p>
         <p className="safety">{t.footer.safety}</p>
         <p className="stack">{t.footer.stack}</p>
       </footer>
