@@ -19,12 +19,13 @@ import (
 var openapiSpec []byte
 
 type App struct {
-	db     *pgxpool.Pool
-	cat    *Catalog
-	triage *TriageRules
-	llm    *LLM
-	kb     *Knowledge
-	secret []byte
+	db        *pgxpool.Pool
+	cat       *Catalog
+	triage    *TriageRules
+	llm       *LLM
+	kb        *Knowledge
+	questions *QuestionBank
+	secret    []byte
 	// askFirst: one clarifying question before showing urgency/services (ASK_FIRST=false disables)
 	askFirst bool
 }
@@ -59,13 +60,17 @@ func main() {
 	if err != nil {
 		log.Fatalf("knowledge base: %v", err)
 	}
+	qb, err := LoadQuestions(env("QUESTIONS_PATH", "../questions.json"))
+	if err != nil {
+		log.Fatalf("questions: %v", err)
+	}
 	db, err := connectDB(context.Background(), env("DATABASE_URL", "postgres://clinic:clinic@localhost:5432/clinic?sslmode=disable"))
 	if err != nil {
 		log.Fatalf("db: %v", err)
 	}
 	llm := NewLLM(env("LLM_BASE_URL", "http://host.docker.internal:1234/v1"), env("LLM_MODEL", ""))
 	llm.ModelKK = os.Getenv("LLM_MODEL_KK")
-	a := &App{db: db, cat: cat, triage: tr, kb: kb,
+	a := &App{db: db, cat: cat, triage: tr, kb: kb, questions: qb,
 		llm: llm, askFirst: env("ASK_FIRST", "true") != "false",
 		secret: secretFromEnv()}
 	operators = loadOperators()

@@ -118,7 +118,7 @@ func setup(t *testing.T, extractions ...string) *testEnv {
 	}
 	f := &fakeLLM{extractions: extractions}
 	llmSrv := httptest.NewServer(f)
-	a := &App{db: db, cat: cat, triage: tr, kb: &Knowledge{}, llm: NewLLM(llmSrv.URL, "fake"), secret: []byte("test")}
+	a := &App{db: db, cat: cat, triage: tr, kb: &Knowledge{}, questions: &QuestionBank{}, llm: NewLLM(llmSrv.URL, "fake"), secret: []byte("test")}
 	srv := httptest.NewServer(a.routes())
 	t.Cleanup(func() { srv.Close(); llmSrv.Close(); db.Close() })
 	return &testEnv{t, a, f, srv}
@@ -895,5 +895,47 @@ func TestDirectSpecialistRequestSkipsQuestions(t *testing.T) {
 	r := e.chat(e.patient(), "", "у папы был инфаркт в прошлом году, хочу к кардиологу")
 	if r.Urgency == "red" || len(r.Services) == 0 || r.Services[0].SpecialtyID != "cardiologist" {
 		t.Fatalf("a direct request for a specialist gets the cards at once: %+v", r)
+	}
+}
+
+func TestSpecialtyGuessedFromCatalogWhenModelMisses(t *testing.T) {
+	e := setup(t, ex("find_service", "", false, "", "green"))
+	r := e.chat(e.patient(), "", "Тамағым ауырады, үш күн болды")
+	if len(r.Services) == 0 || r.Services[0].SpecialtyID != "ent" {
+		t.Fatalf("catalog keywords must pick the ENT when the model returns null: %+v", r)
+	}
+}
+
+func TestGuessSpecialty(t *testing.T) {
+	c, _ := LoadCatalog("../catalog.json")
+	for text, want := range map[string]string{
+		"болит горло третий день": "ent",
+		"тамағым ауырады":         "ent",
+		"сыпь и зуд на руках":     "dermatologist",
+		"как дела":                "",
+	} {
+		if got := c.GuessSpecialty(text); got != want {
+			t.Errorf("%q -> %q, want %q", text, got, want)
+		}
+	}
+}
+
+func TestQuestionBankForKazakhComplaint(t *testing.T) {
+	qb, err := LoadQuestions("../questions.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	// the model's broken Kazakh question must not reach the patient
+	e := setup(t, exWith(ex("find_service", "", false, "Тарттықтану қандай жерде болып табылады?", "green"), map[string]any{"language": "kk"}))
+	e.a.questions = qb
+	e.a.askFirst = true
+	r := e.chat(e.patient(), "", "Менің аяғым тартылып ауырады")
+	if r.Reply.Content != "Аяғыңыз ісінді ме немесе қызарды ма?" {
+		t.Fatalf("curated legs question expected, got %q", r.Reply.Content)
+	}
+	for text, want := range map[string]string{"Басым ауырып жатыр": "head", "болит горло": "throat", "много работы, устала": "", "тіс ауырады": "teeth"} {
+		if c, _ := qb.Question(text, 0, "kk"); c != want {
+			t.Errorf("%q -> %q, want %q", text, c, want)
+		}
 	}
 }

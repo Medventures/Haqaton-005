@@ -252,6 +252,12 @@ func (a *App) process(ctx context.Context, d *Dialog, text string) (*ChatRespons
 	if ex.SpecialtyID != nil && a.cat.Specialty(*ex.SpecialtyID) == nil {
 		ex.SpecialtyID = nil // only ids from the catalog
 	}
+	// The model found no specialty (KazLLM misses often): match the patient's words against the catalog's complaints.
+	if ex.SpecialtyID == nil && ex.Intent == "find_service" && !d.Pregnant {
+		if g := a.cat.GuessSpecialty(strings.Join(patientMsgs, " ")); g != "" {
+			ex.SpecialtyID = &g
+		}
+	}
 	if ex.Summary != "" {
 		d.Summary = ex.Summary
 	}
@@ -342,7 +348,10 @@ func (a *App) process(ctx context.Context, d *Dialog, text string) (*ChatRespons
 			q = strings.TrimSpace(*ex.ClarifyingQuestion)
 		}
 		defaultQ := t([]string{"ask_first", "ask_second", "ask_third"}[d.Clarifications], d.Language)
-		if q == "" || lastBotSaid(hist, q) || !inLanguage(q, d.Language) {
+		// Curated questions for known complaint types; the model's question only for ru/en and only if it is sane.
+		if _, bank := a.questions.Question(strings.Join(patientMsgs, " "), d.Clarifications, d.Language); bank != "" {
+			q = bank
+		} else if q == "" || d.Language == "kk" || lastBotSaid(hist, q) || !inLanguage(q, d.Language) {
 			q = defaultQ
 		}
 		d.Clarifications++

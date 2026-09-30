@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"os"
+	"strings"
 	"sync"
 )
 
@@ -124,4 +125,58 @@ func (s Specialty) Localized(lang string) (string, string) {
 		return tr["name"], tr["description"]
 	}
 	return s.Name, s.Description
+}
+
+// GuessSpecialty picks the specialty whose complaint phrases (treats, ru/kk) best match the text:
+// a phrase counts when every word stem of it (first 4 letters; «бол…» for all forms of боль) occurs in the text
+// («боль в горле» ~ «болит горло»). A fallback when the model returns no specialty; ties and no hits give "".
+func (c *Catalog) GuessSpecialty(text string) string {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+	have := map[string]bool{}
+	for _, st := range wordStems(text) {
+		have[st] = true
+	}
+	best, bestScore, tie := "", 0, false
+	for _, s := range c.Specialties {
+		score := 0
+		for _, tr := range s.Treats {
+			stems := wordStems(tr)
+			ok := len(stems) > 0
+			for _, st := range stems {
+				ok = ok && have[st]
+			}
+			if ok {
+				score += len(stems) // multi-word phrases weigh more
+			}
+		}
+		switch {
+		case score > bestScore:
+			best, bestScore, tie = s.ID, score, false
+		case score == bestScore && score > 0:
+			tie = true
+		}
+	}
+	if tie {
+		return ""
+	}
+	return best
+}
+
+func wordStems(text string) []string {
+	var out []string
+	for _, w := range strings.Fields(normalize(text)) {
+		r := []rune(w)
+		switch {
+		case len(r) < 3:
+			continue
+		case strings.HasPrefix(w, "бол"): // боль / болит / болят / болела
+			out = append(out, "бол")
+		case len(r) < 4:
+			out = append(out, w)
+		default:
+			out = append(out, string(r[:4]))
+		}
+	}
+	return out
 }
