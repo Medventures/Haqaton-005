@@ -25,26 +25,29 @@ type phraseCase struct {
 }
 
 // Minimum pass rate per category (whole case: every non-null expectation must hold).
-// Clean-text emergencies (red_ru, red_kk, red_en) are not here: their expect_red must be 100%.
-// Set after the rule fixes of 2026-09-30, a few points under the measured rate, so that a regression
-// fails the test while the known leftovers (see the report in the commit / gen_cases.py notes) do not.
+// Clean-text emergencies (expect_red in red_ru, red_kk, red_en) must be 100% — checked separately below.
+// Thresholds were set on 2026-09-30 after the rule fixes, a little under the measured rate (measured in
+// brackets), so that a regression fails while the known leftovers do not. Known leftovers (LLM / medic):
+// arbitrary typos ("не магу дышать"), "insult" in Latin (an English word), breast pain where the
+// breastfeeding context is in another clause ("лактостаз, болит грудь" — stays red, the safe side),
+// past pain with the recovery in another clause ("грудь болела, но уже прошло").
 var minPassRate = map[string]float64{
-	"red_ru":         1.00, // whole case, incl. language
-	"red_kk":         1.00,
-	"red_en":         1.00,
-	"red_mix":        0.95, // ru+kk in one message
-	"red_noisy":      0.90, // caps, no Kazakh letters, typos: arbitrary typos stay for the LLM
-	"red_translit":   0.80, // Latin transliteration: a small explicit rule set, not a transliterator
-	"red_preg":       0.95,
-	"red_preg_mix":   0.95,
-	"not_red":        0.90, // false-red traps: breast/chest context split by a comma stays red (safe side)
-	"not_red_nopreg": 1.00,
-	"preg_detect":    0.95,
-	"preg_negative":  0.95,
-	"kb":             0.90,
-	"kb_preg":        0.90,
-	"kb_none":        0.95,
-	"lang":           0.90,
+	"red_ru":         1.00, // [100%] whole case, incl. language
+	"red_kk":         1.00, // [100%]
+	"red_en":         1.00, // [100%]
+	"red_mix":        0.97, // [100%] ru+kk in one message
+	"red_noisy":      0.95, // [98.7%] caps, no Kazakh letters, typos
+	"red_translit":   0.85, // [95.5%] Latin: a small explicit rule set, not a transliterator
+	"red_preg":       0.97, // [100%]
+	"red_preg_mix":   0.97, // [100%]
+	"not_red":        0.93, // [95.9%] false-red traps
+	"not_red_nopreg": 1.00, // [100%] red_if_pregnant phrases without pregnancy
+	"preg_detect":    0.97, // [100%]
+	"preg_negative":  0.97, // [100%]
+	"kb":             0.95, // [100%] keywords were tuned on these very cases: expect lower on new wordings
+	"kb_preg":        0.95, // [100%]
+	"kb_none":        0.97, // [100%]
+	"lang":           0.95, // [100%]
 }
 
 func TestThousandCases(t *testing.T) {
