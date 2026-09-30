@@ -841,7 +841,7 @@ func TestPregnantVagueQuestionDoesNotReofferGynecologist(t *testing.T) {
 func TestAskFirstAlsoForComplaintLabelledServiceInfo(t *testing.T) {
 	e := setup(t, ex("service_info", "dentist", false, "Зуб реагирует на холодное?", "green"), ex("service_info", "dentist", false, "", "green"))
 	e.a.askFirst = true
-	r := e.chat(e.patient(), "", "Тіс ауырып жатыр")
+	r := e.chat(e.patient(), "", "Болит зуб")
 	if r.Reply.Content != "Зуб реагирует на холодное?" || len(r.Services) != 0 {
 		t.Fatalf("a complaint labelled service_info still gets questions: %+v", r)
 	}
@@ -856,5 +856,35 @@ func TestKazakhWithoutSpecialLettersTrustsModel(t *testing.T) {
 	r := e.chat(e.patient(), "", "Басым ауырып жатыр")
 	if r.Language != "kk" {
 		t.Fatalf("Kazakh text without Kazakh-only letters and without Russian words: %q", r.Language)
+	}
+}
+
+func TestDropForeignScript(t *testing.T) {
+	in := "Запишитесь к терапевту 01.10 в 09:00. Прием建议您在就诊前充分休息，多喝水。Если станет хуже — звоните 103."
+	got := dropForeignScript(in)
+	if strings.ContainsAny(got, "建议休息") || !strings.Contains(got, "Запишитесь к терапевту") || !strings.Contains(got, "звоните 103.") {
+		t.Fatalf("got %q", got)
+	}
+	if dropForeignScript("Обычный ответ. Без иероглифов.") != "Обычный ответ. Без иероглифов." {
+		t.Fatal("clean text must stay unchanged")
+	}
+}
+
+func TestInLanguage(t *testing.T) {
+	cases := []struct {
+		q, lang string
+		want    bool
+	}{
+		{"Есть ли температура или тошнота?", "ru", true},
+		{"Бұл болқанда және келесі күндегі температура сипаттамасы келеді?", "ru", false},
+		{"Қызуыңыз бар ма?", "kk", true},
+		{"Есть ли у вас температура?", "kk", false},
+		{"Do you have a fever?", "en", true},
+		{"是否发烧?", "ru", false},
+	}
+	for _, c := range cases {
+		if got := inLanguage(c.q, c.lang); got != c.want {
+			t.Errorf("inLanguage(%q, %s) = %v", c.q, c.lang, got)
+		}
 	}
 }

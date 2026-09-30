@@ -6,8 +6,10 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"regexp"
 	"strings"
 	"time"
+	"unicode"
 
 	"github.com/go-chi/chi/v5"
 )
@@ -337,7 +339,7 @@ func (a *App) process(ctx context.Context, d *Dialog, text string) (*ChatRespons
 			q = strings.TrimSpace(*ex.ClarifyingQuestion)
 		}
 		defaultQ := t([]string{"ask_first", "ask_second", "ask_third"}[d.Clarifications], d.Language)
-		if q == "" || lastBotSaid(hist, q) {
+		if q == "" || lastBotSaid(hist, q) || !inLanguage(q, d.Language) {
 			q = defaultQ
 		}
 		d.Clarifications++
@@ -386,6 +388,7 @@ func (a *App) process(ctx context.Context, d *Dialog, text string) (*ChatRespons
 			{"system", fmt.Sprintf(answerSystemPrompt, d.Language)},
 			{"user", fmt.Sprintf("Запрос пациента: %s\nПоследнее сообщение: %s\n\nДАННЫЕ КАТАЛОГА:\n%s\n\n%s", d.Summary, text, data, langInstr[d.Language])},
 		})
+		reply = dropForeignScript(reply)
 		if err != nil || strings.TrimSpace(reply) == "" {
 			log.Printf("compose failed: %v", err)
 			reply = fmt.Sprintf(t("fallback", d.Language), specName)
@@ -407,7 +410,8 @@ func (a *App) process(ctx context.Context, d *Dialog, text string) (*ChatRespons
 		{"system", fmt.Sprintf(answerSystemPrompt, d.Language) + "\nЕсли вопрос не про запись к врачу — вежливо скажи, что ты помогаешь подобрать врача и услугу, и попроси описать жалобу."},
 		{"user", fmt.Sprintf("Сообщение пациента: %s\n\nДАННЫЕ: специалисты клиники: %s\n\n%s", text, strings.Join(names, ", "), langInstr[d.Language])},
 	})
-	if err != nil {
+	reply = dropForeignScript(reply)
+	if err != nil || strings.TrimSpace(reply) == "" {
 		return handoff("Бот не справился: ошибка ИИ", botData{Actions: actions})
 	}
 	return finish(prefix+strings.TrimSpace(reply), botData{Actions: actions})
@@ -677,3 +681,48 @@ func hasRussianWords(text string) bool {
 	}
 	return false
 }
+
+// inLanguage: a model-written question must be in the dialog's language (Qwen wrote broken Kazakh
+// questions into a Russian dialog); otherwise the bot uses its own question.
+func inLanguage(q, lang string) bool {
+	if hasForeignScript(q) {
+		return false
+	}
+	switch lang {
+	case "kk":
+		return hasKazakhLetters(q) || !hasRussianWords(q)
+	case "en":
+		return detectLanguage(q) == "en"
+	default:
+		return !hasKazakhLetters(q) && detectLanguage(q) != "en"
+	}
+}
+
+func hasForeignScript(s string) bool {
+	for _, r := range s {
+		if unicode.Is(unicode.Han, r) || unicode.Is(unicode.Hiragana, r) || unicode.Is(unicode.Katakana, r) || unicode.Is(unicode.Hangul, r) || unicode.Is(unicode.Arabic, r) {
+			return true
+		}
+	}
+	return false
+}
+
+// dropForeignScript removes sentences in Chinese etc. (the model sometimes switches script mid-answer).
+func dropForeignScript(s string) string {
+	if !hasForeignScript(s) {
+		return s
+	}
+	var out []string
+	for _, line := range strings.Split(s, "\n") {
+		var keep []string
+		for _, sent := range sentenceRe.FindAllString(line, -1) {
+			if !hasForeignScript(sent) && strings.TrimSpace(sent) != "" {
+				keep = append(keep, strings.TrimSpace(sent))
+			}
+		}
+		out = append(out, strings.Join(keep, " "))
+	}
+	return strings.TrimSpace(strings.Join(out, "\n"))
+}
+
+var sentenceRe = regexp.MustCompile(`[^.!?。！？]+[.!?。！？]*`)

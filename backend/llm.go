@@ -156,6 +156,7 @@ func extractionPrompt(c *Catalog, t *TriageRules, clarLeft int, d *Dialog, lang 
 	if lang == "" {
 		lang = "ru"
 	}
+	fmt.Fprintf(&sb, "\nЯзык пациента: %s — clarifying_question пиши только на нём.", map[string]string{"ru": "русский", "kk": "қазақ тілі", "en": "English"}[lang])
 	sb.WriteString("\nОриентиры для urgency=yellow: " + strings.Join(t.Yellow[lang], ", "))
 	if d.Pregnant {
 		sb.WriteString("\n\nИЗВЕСТНО: пациентка беременна")
