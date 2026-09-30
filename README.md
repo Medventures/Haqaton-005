@@ -62,8 +62,11 @@ curl -s $B/api/operator/queue -H "Authorization: Bearer $OP" | jq
 ### Тесты
 
 ```bash
+docker compose up -d db          # тестам нужен Postgres (создают отдельную БД clinic_test)
 cd backend && go test ./...
 ```
+
+Тесты чат-логики (`backend/chat_test.go`) идут через HTTP API с настоящим Postgres и фейковым OpenAI-совместимым LLM-сервером: red без вызова LLM (в т.ч. на ответе-уточнении), лимит 2 уточнений, retry и безопасный fallback, специальности только из каталога, врачи только со слотами, уровень только растёт, сортировка очереди, бот молчит при операторе, доступ patient/operator, ответ и закрытие оператором. Без Postgres тесты пропускаются.
 
 ## API
 
