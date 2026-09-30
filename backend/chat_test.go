@@ -52,10 +52,22 @@ func (f *fakeLLM) calls() (int, int) {
 	return f.extractN, f.answerN
 }
 
+// exWith patches an extraction JSON with extra fields (pregnant, ask_pregnancy, ...).
+func exWith(base string, extra map[string]any) string {
+	var m map[string]any
+	json.Unmarshal([]byte(base), &m)
+	for k, v := range extra {
+		m[k] = v
+	}
+	b, _ := json.Marshal(m)
+	return string(b)
+}
+
 // ex builds an extraction JSON; spec "" means null.
 func ex(intent, spec string, clarify bool, question, urgency string) string {
 	m := map[string]any{"language": "ru", "intent": intent, "specialty_id": nil, "need_clarification": clarify,
-		"clarifying_question": nil, "urgency": urgency, "urgency_reason": "тест", "summary": "summary: " + intent}
+		"clarifying_question": nil, "urgency": urgency, "urgency_reason": "тест", "summary": "summary: " + intent,
+		"pregnant": nil, "gestation_weeks": nil, "ask_pregnancy": false}
 	if spec != "" {
 		m["specialty_id"] = spec
 	}
@@ -412,5 +424,132 @@ func TestContactOperatorButton(t *testing.T) {
 	}
 	if out["status"] != "operator" || e.openTickets(r.DialogID) != 1 {
 		t.Fatalf("button must create a ticket: %+v", out)
+	}
+}
+
+func (e *testEnv) dialog(id string) *Dialog {
+	e.t.Helper()
+	d, err := e.a.getDialog(context.Background(), id)
+	if err != nil {
+		e.t.Fatal(err)
+	}
+	return d
+}
+
+// Pain first, pregnancy later: red must fire on the second message via the whole history.
+func TestPregnancyLaterMakesEarlierPainRed(t *testing.T) {
+	e := setup(t, exWith(ex("find_service", "gynecologist", false, "", "green"), map[string]any{"ask_pregnancy": true}))
+	tok := e.patient()
+	r := e.chat(tok, "", "тянет низ живота второй день")
+	if r.Urgency == "red" {
+		t.Fatalf("without pregnancy this is not red: %+v", r)
+	}
+	if r.Reply.Content != texts["ask_pregnancy"]["ru"] {
+		t.Fatalf("expected pregnancy question, got %q", r.Reply.Content)
+	}
+	r = e.chat(tok, r.DialogID, "да, я на 32 неделе")
+	if r.Urgency != "red" || !has(r.Actions, "call_103") || !has(r.Actions, "urgent_operator") {
+		t.Fatalf("pregnant + earlier pain must be red with two buttons: %+v", r)
+	}
+	if n, _ := e.llm.calls(); n != 1 {
+		t.Fatalf("red must be decided before LLM on the second message, extraction calls = %d", n)
+	}
+	d := e.dialog(r.DialogID)
+	if !d.Pregnant || d.GestationWeeks == nil || *d.GestationWeeks != 32 {
+		t.Fatalf("pregnancy flag/weeks: %+v", d)
+	}
+	var q []Ticket
+	e.do("GET", "/api/operator/queue", e.operator(), nil, &q)
+	if len(q) != 1 || !q[0].Pregnant || !strings.Contains(q[0].Summary, "срок 32") {
+		t.Fatalf("queue must show pregnancy: %+v", q)
+	}
+}
+
+func TestPregnancyRedInOneMessageKazakh(t *testing.T) {
+	e := setup(t)
+	r := e.chat(e.patient(), "", "Мен жүктімін, 30 аптадамын, су кетті")
+	if r.Urgency != "red" || r.Language != "kk" || !has(r.Actions, "urgent_operator") {
+		t.Fatalf("kk pregnant red: %+v", r)
+	}
+}
+
+func TestPlainRedHasOnlyAmbulanceButton(t *testing.T) {
+	e := setup(t)
+	r := e.chat(e.patient(), "", "боль в груди")
+	if has(r.Actions, "urgent_operator") {
+		t.Fatalf("not pregnant: only call_103 expected: %v", r.Actions)
+	}
+}
+
+func TestLLMPregnantTrueSetsFlagAndRechecksRed(t *testing.T) {
+	// "жду малыша" is not in the phrase list — LLM reports pregnancy, red_if_pregnant must then fire.
+	e := setup(t, exWith(ex("find_service", "gynecologist", false, "", "yellow"), map[string]any{"pregnant": true, "gestation_weeks": 20}))
+	r := e.chat(e.patient(), "", "жду малыша, появились кровянистые выделения")
+	if r.Urgency != "red" || !has(r.Actions, "urgent_operator") {
+		t.Fatalf("LLM pregnancy must trigger red_if_pregnant: %+v", r)
+	}
+	if d := e.dialog(r.DialogID); !d.Pregnant || d.GestationWeeks == nil || *d.GestationWeeks != 20 {
+		t.Fatalf("flag from LLM: %+v", d)
+	}
+}
+
+func TestPregnancyFlagNeverCleared(t *testing.T) {
+	// flag comes only from the LLM (no phrase), then the LLM says "not pregnant" — the flag must stay
+	e := setup(t,
+		exWith(ex("find_service", "gynecologist", false, "", "green"), map[string]any{"pregnant": true}),
+		exWith(ex("find_service", "therapist", false, "", "green"), map[string]any{"pregnant": false}))
+	tok := e.patient()
+	r := e.chat(tok, "", "жду малыша, хочу встать на учёт")
+	r = e.chat(tok, r.DialogID, "а ещё насморк")
+	if !e.dialog(r.DialogID).Pregnant {
+		t.Fatal("pregnancy flag must never be cleared")
+	}
+}
+
+func TestPregnancyQuestionAskedOnceAndNotCounted(t *testing.T) {
+	ask := exWith(ex("find_service", "", true, "Как давно?", "green"), map[string]any{"ask_pregnancy": true})
+	e := setup(t, ask, ask)
+	tok := e.patient()
+	r := e.chat(tok, "", "тошнота по утрам")
+	if r.Reply.Content != texts["ask_pregnancy"]["ru"] {
+		t.Fatalf("first: pregnancy question, got %q", r.Reply.Content)
+	}
+	r = e.chat(tok, r.DialogID, "не знаю")
+	if r.Reply.Content != "Как давно?" {
+		t.Fatalf("pregnancy question must be asked only once, got %q", r.Reply.Content)
+	}
+	if d := e.dialog(r.DialogID); !d.PregnancyAsked || d.Clarifications != 1 {
+		t.Fatalf("pregnancy question must not use the clarification limit: %+v", d)
+	}
+}
+
+func TestUrgentOperatorButtonAfterRed(t *testing.T) {
+	e := setup(t)
+	tok := e.patient()
+	r := e.chat(tok, "", "беременна, отошли воды")
+	var out map[string]any
+	if code := e.do("POST", "/api/chat/operator", tok, map[string]string{"dialog_id": r.DialogID}, &out); code != 200 || out["urgent"] != true {
+		t.Fatalf("urgent operator: %d %+v", code, out)
+	}
+	var q []Ticket
+	e.do("GET", "/api/operator/queue", e.operator(), nil, &q)
+	if len(q) != 1 || !strings.HasPrefix(q[0].Reason, "СРОЧНО") {
+		t.Fatalf("one ticket, urgent reason: %+v", q)
+	}
+}
+
+func TestPregnancyQuestionEvenIfLLMMissedIt(t *testing.T) {
+	e := setup(t, ex("find_service", "gynecologist", false, "", "green")) // ask_pregnancy=false
+	r := e.chat(e.patient(), "", "Тянет низ живота второй день")
+	if r.Reply.Content != texts["ask_pregnancy"]["ru"] {
+		t.Fatalf("safety net must ask about pregnancy, got %q", r.Reply.Content)
+	}
+}
+
+func TestNoPregnancyQuestionIfPatientSaidNotPregnant(t *testing.T) {
+	e := setup(t, exWith(ex("find_service", "gynecologist", false, "", "green"), map[string]any{"pregnant": false}))
+	r := e.chat(e.patient(), "", "Тянет низ живота, беременности нет")
+	if r.Reply.Content == texts["ask_pregnancy"]["ru"] {
+		t.Fatal("must not ask when the patient already said she is not pregnant")
 	}
 }
