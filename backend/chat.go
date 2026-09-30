@@ -624,9 +624,16 @@ func (a *App) operatorReply(w http.ResponseWriter, r *http.Request) {
 		writeErr(w, 404, "dialog not found")
 		return
 	}
+	// operators work only with dialogs handed off to them (same rule as reading)
+	var tickets int
+	a.db.QueryRow(ctx, `select count(*) from tickets where dialog_id=$1`, d.ID).Scan(&tickets)
+	if tickets == 0 {
+		writeErr(w, 404, "dialog not found")
+		return
+	}
 	var m *Message
 	if strings.TrimSpace(in.Message) != "" {
-		if m, err = a.addMessage(ctx, d.ID, "operator", userFrom(r).ID, in.Message, map[string]any{"urgency": d.Urgency}); err != nil {
+		if m, err = a.addMessage(ctx, d.ID, "operator", userFrom(r).ID, in.Message, map[string]any{"urgency": d.VisibleUrgency()}); err != nil {
 			writeErr(w, 500, "db error")
 			return
 		}

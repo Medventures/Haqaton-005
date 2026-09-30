@@ -971,3 +971,11 @@ func TestDegradedModeWhenLLMFails(t *testing.T) {
 		t.Fatalf("unrecognisable message with the model down goes to the operator: %+v", r)
 	}
 }
+
+func TestOperatorCannotWriteIntoDialogNotHandedOff(t *testing.T) {
+	e := setup(t, ex("find_service", "ent", false, "", "green"))
+	r := e.chat(e.patient(), "", "болит горло")
+	if code := e.do("POST", "/api/operator/reply", e.operator(), map[string]any{"dialog_id": r.DialogID, "message": "hi"}, nil); code != 404 {
+		t.Fatalf("operator reply into a dialog without a ticket: %d", code)
+	}
+}
