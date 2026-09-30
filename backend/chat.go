@@ -253,22 +253,10 @@ func (a *App) process(ctx context.Context, d *Dialog, text string) (*ChatRespons
 	if !ok {
 		return handoff("Бот не справился: ИИ не вернул корректный JSON (2 попытки)", botData{})
 	}
-	if ex.Intent == "operator" {
-		return handoff("Пациент попросил оператора", botData{})
-	}
-
-	// 4 (ob/gyn). Pregnancy question: asked once, does not count toward the clarification limit.
-	// The model's ask_pregnancy is trusted only with a gyn/gastro specialty (it asked about pregnancy for a sore throat);
-	// otherwise the ask_pregnancy_if phrases decide.
-	llmAsk := ex.AskPregnancy && ex.SpecialtyID != nil && (*ex.SpecialtyID == "gynecologist" || *ex.SpecialtyID == "gastroenterologist")
-	if (llmAsk || a.triage.NeedsPregnancyQuestion(text)) && !d.Pregnant && !d.PregnancyAsked && !(ex.Pregnant != nil && !*ex.Pregnant) {
-		d.PregnancyAsked = true
-		return finish(t("ask_pregnancy", d.Language), botData{})
-	}
-
 	// Knowledge base: practical questions (address, hours, test preparation, ...) get the curated answer
 	// from knowledge.json as is — no LLM rewriting, so Kazakh stays correct. A complaint needs 2+ keyword hits.
-	if kb, score := a.kb.Search(text); kb != nil && (ex.Intent != "find_service" || score >= 2) {
+	// Checked before the operator intent: the model labelled "Где вы находитесь?" as operator.
+	if kb, score := a.kb.Search(text); kb != nil && !asksForHuman(text) && (ex.Intent != "find_service" || score >= 2) {
 		data := botData{}
 		seen := map[string]bool{}
 		for _, id := range kb.ServiceIDs {
@@ -284,6 +272,19 @@ func (a *App) process(ctx context.Context, d *Dialog, text string) (*ChatRespons
 			data.Doctors = []Doctor{}
 		}
 		return finish(kb.AnswerIn(d.Language), data)
+	}
+
+	if ex.Intent == "operator" {
+		return handoff("Пациент попросил оператора", botData{})
+	}
+
+	// 4 (ob/gyn). Pregnancy question: asked once, does not count toward the clarification limit.
+	// The model's ask_pregnancy is trusted only with a gyn/gastro specialty (it asked about pregnancy for a sore throat);
+	// otherwise the ask_pregnancy_if phrases decide.
+	llmAsk := ex.AskPregnancy && ex.SpecialtyID != nil && (*ex.SpecialtyID == "gynecologist" || *ex.SpecialtyID == "gastroenterologist")
+	if (llmAsk || a.triage.NeedsPregnancyQuestion(text)) && !d.Pregnant && !d.PregnancyAsked && !(ex.Pregnant != nil && !*ex.Pregnant) {
+		d.PregnancyAsked = true
+		return finish(t("ask_pregnancy", d.Language), botData{})
 	}
 
 	// Ask first: for a complaint, one clarifying question before any urgency level or services are shown
@@ -553,4 +554,18 @@ func humanSlots(docs []Doctor) []map[string]any {
 		out = append(out, map[string]any{"doctor": d.Name, "free_slots": slots})
 	}
 	return out
+}
+
+var humanWords = []string{"оператор", "администратор", "живой человек", "живым человеком", "с человеком",
+	"адаммен", "операторға", "operator", "human", "real person"}
+
+// asksForHuman: the patient explicitly asks for a person — never answer that from the knowledge base.
+func asksForHuman(text string) bool {
+	n := normalize(text)
+	for _, w := range humanWords {
+		if strings.Contains(n, w) {
+			return true
+		}
+	}
+	return false
 }

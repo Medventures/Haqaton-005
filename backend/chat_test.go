@@ -708,3 +708,16 @@ func TestRedBeatsKnowledge(t *testing.T) {
 		t.Fatalf("red first: %+v", r)
 	}
 }
+
+func TestKnowledgeBeatsMislabelledOperatorIntent(t *testing.T) {
+	e := setup(t, ex("operator", "", false, "", "green"), ex("operator", "", false, "", "green"))
+	e.a.kb = testKB()
+	r := e.chat(e.patient(), "", "Во сколько вы работаете?")
+	if r.Status != "bot" || r.Reply.Content != "Мы работаем с 8:00 до 20:00." {
+		t.Fatalf("KB must answer, not hand off: %+v", r)
+	}
+	r = e.chat(e.patient(), "", "Соедините с оператором, во сколько вы работаете?")
+	if r.Status != "operator" {
+		t.Fatalf("an explicit request for a person goes to the operator: %+v", r)
+	}
+}
