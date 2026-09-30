@@ -43,5 +43,35 @@ services:
     ports: ["127.0.0.1:5180:80"]
     depends_on: [backend]
 
+  # Optional fully-containerised LLM (llama.cpp server, OpenAI-compatible API).
+  # Not started by plain `docker compose up`; enable with `docker compose --profile llm up -d`
+  # and set LLM_BASE_URL=http://llm:8080/v1 in .env. The port is NOT published to the host:
+  # only services on the compose network (backend) can reach it.
+  # GPU (NVIDIA): use image ghcr.io/ggml-org/llama.cpp:server-cuda, add `-ngl 99` to the command
+  # and uncomment the `deploy` block below (requires nvidia-container-toolkit).
+  llm:
+    image: ghcr.io/ggml-org/llama.cpp:server
+    profiles: [llm]
+    command: >
+      -m /models/${LLM_GGUF:-model.gguf}
+      --host 0.0.0.0 --port 8080
+      -c 8192 -np 1 --jinja --no-webui
+    volumes:
+      - ${LLM_MODELS_DIR:-./models}:/models:ro
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8080/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 60
+      start_period: 10s
+    restart: unless-stopped
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: all
+    #           capabilities: [gpu]
+
 volumes:
   pgdata:

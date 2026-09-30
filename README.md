@@ -61,6 +61,16 @@ AnaCare подбирает врача любого профиля из ката�
 
 На Linux доступ из контейнера к хосту обеспечивает `extra_hosts: host.docker.internal:host-gateway` в `docker-compose.yml`. LM Studio должен слушать не только `127.0.0.1` (в настройках сервера — «Serve on Local Network»).
 
+### Модель внутри Docker Compose (опционально)
+
+Если LM Studio на хосте нет, модель можно поднять в том же Compose: весь проект стартует одной командой, а данные пациентов не покидают периметр клиники. Сервис `llm` (llama.cpp server, OpenAI-совместимый API с `json_schema`) включается профилем и наружу порт не публикует — к нему ходит только backend.
+
+1. Скачайте GGUF-модель, например Qwen2.5-7B-Instruct `Q4_K_M`, в папку `./models` (она в `.gitignore`).
+2. В `.env`: `LLM_BASE_URL=http://llm:8080/v1`, `LLM_MODEL=local` (любая строка), `LLM_GGUF=<имя файла в ./models>`.
+3. `docker compose --profile llm up -d` — поднимет db, backend, frontend и llm.
+
+GPU (NVIDIA): образ `ghcr.io/ggml-org/llama.cpp:server-cuda`, `-ngl 99` и блок `deploy` — см. комментарий в `docker-compose.yml`. По умолчанию (`docker compose up` без профиля) всё работает как раньше, через LM Studio.
+
 ### Проверка через curl
 
 ```bash
