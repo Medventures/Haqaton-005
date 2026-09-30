@@ -939,3 +939,11 @@ func TestQuestionBankForKazakhComplaint(t *testing.T) {
 		}
 	}
 }
+
+func TestGuessAlsoForComplaintLabelledServiceInfo(t *testing.T) {
+	e := setup(t, ex("service_info", "", false, "", "green"))
+	r := e.chat(e.patient(), "", "Болит горло, немного больно глотать")
+	if len(r.Services) == 0 || r.Services[0].SpecialtyID != "ent" || r.Status != "bot" {
+		t.Fatalf("a complaint labelled service_info with no specialty: ENT from the catalog, not the operator: %+v", r)
+	}
+}

@@ -253,7 +253,7 @@ func (a *App) process(ctx context.Context, d *Dialog, text string) (*ChatRespons
 		ex.SpecialtyID = nil // only ids from the catalog
 	}
 	// The model found no specialty (KazLLM misses often): match the patient's words against the catalog's complaints.
-	if ex.SpecialtyID == nil && ex.Intent == "find_service" && !d.Pregnant {
+	if ex.SpecialtyID == nil && isComplaint(ex, text) && !d.Pregnant { // KazLLM labels complaints service_info
 		if g := a.cat.GuessSpecialty(strings.Join(patientMsgs, " ")); g != "" {
 			ex.SpecialtyID = &g
 		}
