@@ -138,7 +138,19 @@ components:
       properties: {token: {type: string}, user_id: {type: string}, role: {type: string, enum: [patient, operator]}}
     Service:
       type: object
-      properties: {id: {type: string}, specialty_id: {type: string}, name: {type: string}, price: {type: integer, description: тенге}, description: {type: string}}
+      properties:
+        id: {type: string}
+        specialty_id: {type: string}
+        name: {type: string, description: на русском}
+        price: {type: integer, description: тенге}
+        description: {type: string, description: на русском}
+        i18n: {$ref: "#/components/schemas/I18n"}
+    I18n:
+      type: object
+      description: "Переводы: {kk: {name, description}, en: {name, description}}. Фронтенд показывает поле на языке интерфейса, иначе базовое (ru)."
+      additionalProperties:
+        type: object
+        properties: {name: {type: string}, description: {type: string}}
     Doctor:
       type: object
       properties: {id: {type: string}, name: {type: string}, specialty_id: {type: string}, slots: {type: array, items: {type: string, example: "2026-10-01T09:00"}}}
@@ -167,7 +179,7 @@ components:
         id: {type: string, format: uuid}
         patient_id: {type: string}
         status: {type: string, enum: [bot, operator]}
-        language: {type: string, enum: [ru, kk]}
+        language: {type: string, enum: [ru, kk, en]}
         urgency: {$ref: "#/components/schemas/Urgency"}
         urgency_reason: {type: string}
         clarifications: {type: integer, maximum: 2}
@@ -198,7 +210,7 @@ components:
         status: {type: string, enum: [bot, operator]}
         urgency: {$ref: "#/components/schemas/Urgency"}
         urgency_reason: {type: string}
-        language: {type: string, enum: [ru, kk]}
+        language: {type: string, enum: [ru, kk, en]}
         reply: {allOf: [{$ref: "#/components/schemas/Message"}], nullable: true, description: null — диалог у оператора, бот молчит}
         actions: {type: array, items: {type: string, enum: [call_103, contact_operator, urgent_operator]}}
         services: {type: array, items: {$ref: "#/components/schemas/Service"}}
