@@ -232,6 +232,11 @@ func (a *App) process(ctx context.Context, d *Dialog, text string) (*ChatRespons
 	if ex.Summary != "" {
 		d.Summary = ex.Summary
 	}
+	for _, r := range ex.RiskFactors { // only known ids, only added
+		if riskFactorNames[r] != "" && !contains(d.RiskFactors, r) {
+			d.RiskFactors = append(d.RiskFactors, r)
+		}
+	}
 	if ok && ex.Pregnant != nil && *ex.Pregnant && !d.Pregnant {
 		// LLM found a pregnancy the phrase rules missed: re-run the deterministic red check with it.
 		d.Pregnant = true
@@ -247,6 +252,16 @@ func (a *App) process(ctx context.Context, d *Dialog, text string) (*ChatRespons
 	}
 	if ex.Urgency == "yellow" {
 		d.Urgency = maxUrgency(d.Urgency, "yellow") // never goes down
+	}
+	// A pregnant patient with risk factors and a complaint: at least yellow (risk-oriented route).
+	if d.Pregnant && len(d.RiskFactors) > 0 && ex.Intent == "find_service" && d.Urgency == "green" {
+		d.Urgency = "yellow"
+		d.UrgencyReason = "беременность с факторами риска"
+	}
+	// Pregnant and no specialty picked: the obstetrician-gynecologist is the default route.
+	if d.Pregnant && ex.SpecialtyID == nil && (ex.Intent == "find_service" || ex.Intent == "service_info") && a.cat.Specialty("gynecologist") != nil {
+		g := "gynecologist"
+		ex.SpecialtyID = &g
 	}
 
 	// 6a. Explicit request for a human.
@@ -564,6 +579,15 @@ func asksForHuman(text string) bool {
 	n := normalize(text)
 	for _, w := range humanWords {
 		if strings.Contains(n, w) {
+			return true
+		}
+	}
+	return false
+}
+
+func contains(list []string, v string) bool {
+	for _, x := range list {
+		if x == v {
 			return true
 		}
 	}

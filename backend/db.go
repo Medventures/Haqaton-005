@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"strings"
 	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -25,6 +26,7 @@ alter table dialogs add column if not exists pregnant boolean not null default f
 alter table dialogs add column if not exists gestation_weeks int;
 alter table dialogs add column if not exists pregnancy_asked boolean not null default false;
 alter table dialogs add column if not exists assessed boolean not null default false;  -- urgency shown to the patient
+alter table dialogs add column if not exists risk_factors text[] not null default '{}';  -- obstetric risk factors, only added
 create table if not exists messages (
   id bigserial primary key,
   dialog_id uuid not null references dialogs(id) on delete cascade,
@@ -75,6 +77,7 @@ type Dialog struct {
 	GestationWeeks *int      `json:"gestation_weeks"`
 	PregnancyAsked bool      `json:"pregnancy_asked"`
 	Assessed       bool      `json:"assessed"`
+	RiskFactors    []string  `json:"risk_factors"`
 	CreatedAt      time.Time `json:"created_at"`
 }
 
@@ -97,6 +100,7 @@ type Ticket struct {
 	Language  string    `json:"language"`
 	Pregnant  bool      `json:"pregnant"`
 	Weeks     *int      `json:"gestation_weeks"`
+	Risks     []string  `json:"risk_factors"`
 	LastMsg   string    `json:"last_message"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
@@ -104,17 +108,18 @@ type Ticket struct {
 
 func (a *App) getDialog(ctx context.Context, id string) (*Dialog, error) {
 	d := &Dialog{}
-	err := a.db.QueryRow(ctx, `select id, patient_id, status, language, urgency, urgency_reason, clarifications, summary, pregnant, gestation_weeks, pregnancy_asked, assessed, created_at
+	err := a.db.QueryRow(ctx, `select id, patient_id, status, language, urgency, urgency_reason, clarifications, summary, pregnant, gestation_weeks, pregnancy_asked, assessed, risk_factors, created_at
 		from dialogs where id=$1`, id).Scan(&d.ID, &d.PatientID, &d.Status, &d.Language, &d.Urgency, &d.UrgencyReason, &d.Clarifications, &d.Summary,
-		&d.Pregnant, &d.GestationWeeks, &d.PregnancyAsked, &d.Assessed, &d.CreatedAt)
+		&d.Pregnant, &d.GestationWeeks, &d.PregnancyAsked, &d.Assessed, &d.RiskFactors, &d.CreatedAt)
 	return d, err
 }
 
 func (a *App) saveDialog(ctx context.Context, d *Dialog) error {
 	_, err := a.db.Exec(ctx, `update dialogs set status=$2, language=$3, urgency=$4, urgency_reason=$5, clarifications=$6, summary=$7,
 		pregnant = pregnant or $8, gestation_weeks=coalesce($9, gestation_weeks), pregnancy_asked = pregnancy_asked or $10,
-		assessed = assessed or $11, updated_at=now()
-		where id=$1`, d.ID, d.Status, d.Language, d.Urgency, d.UrgencyReason, d.Clarifications, d.Summary, d.Pregnant, d.GestationWeeks, d.PregnancyAsked, d.Assessed)
+		assessed = assessed or $11,
+		risk_factors = array(select distinct unnest(risk_factors || $12::text[])), updated_at=now()
+		where id=$1`, d.ID, d.Status, d.Language, d.Urgency, d.UrgencyReason, d.Clarifications, d.Summary, d.Pregnant, d.GestationWeeks, d.PregnancyAsked, d.Assessed, d.RiskFactors)
 	return err
 }
 
@@ -157,6 +162,13 @@ func (a *App) handoff(ctx context.Context, d *Dialog, reason string) (int64, err
 	if summary == "" {
 		summary = "Пациент ещё не описал запрос."
 	}
+	if len(d.RiskFactors) > 0 {
+		names := []string{}
+		for _, r := range d.RiskFactors {
+			names = append(names, riskFactorNames[r])
+		}
+		summary += " Факторы риска: " + strings.Join(names, ", ") + "."
+	}
 	var id int64
 	err := a.db.QueryRow(ctx, `update tickets set reason=$2, summary=$3, updated_at=now() where dialog_id=$1 and status='open' returning id`,
 		d.ID, reason, summary).Scan(&id)
@@ -167,7 +179,7 @@ func (a *App) handoff(ctx context.Context, d *Dialog, reason string) (int64, err
 	return id, err
 }
 
-const ticketCols = `t.id, t.dialog_id, t.reason, t.summary, t.status, d.urgency, d.language, d.pregnant, d.gestation_weeks,
+const ticketCols = `t.id, t.dialog_id, t.reason, t.summary, t.status, d.urgency, d.language, d.pregnant, d.gestation_weeks, d.risk_factors,
 	coalesce((select content from messages m where m.dialog_id=t.dialog_id order by id desc limit 1), ''), t.created_at, t.updated_at`
 
 func scanTickets(rows interface {
@@ -180,7 +192,7 @@ func scanTickets(rows interface {
 	out := []Ticket{}
 	for rows.Next() {
 		var t Ticket
-		if err := rows.Scan(&t.ID, &t.DialogID, &t.Reason, &t.Summary, &t.Status, &t.Urgency, &t.Language, &t.Pregnant, &t.Weeks, &t.LastMsg, &t.CreatedAt, &t.UpdatedAt); err != nil {
+		if err := rows.Scan(&t.ID, &t.DialogID, &t.Reason, &t.Summary, &t.Status, &t.Urgency, &t.Language, &t.Pregnant, &t.Weeks, &t.Risks, &t.LastMsg, &t.CreatedAt, &t.UpdatedAt); err != nil {
 			return nil, err
 		}
 		out = append(out, t)

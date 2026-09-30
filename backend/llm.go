@@ -72,17 +72,18 @@ func (l *LLM) chatWith(ctx context.Context, model string, msgs []chatMsg, schema
 }
 
 type Extraction struct {
-	Language           string  `json:"language"`
-	Intent             string  `json:"intent"`
-	SpecialtyID        *string `json:"specialty_id"`
-	NeedClarification  bool    `json:"need_clarification"`
-	ClarifyingQuestion *string `json:"clarifying_question"`
-	Urgency            string  `json:"urgency"`
-	UrgencyReason      string  `json:"urgency_reason"`
-	Pregnant           *bool   `json:"pregnant"`
-	GestationWeeks     *int    `json:"gestation_weeks"`
-	AskPregnancy       bool    `json:"ask_pregnancy"`
-	Summary            string  `json:"summary"`
+	Language           string   `json:"language"`
+	Intent             string   `json:"intent"`
+	SpecialtyID        *string  `json:"specialty_id"`
+	NeedClarification  bool     `json:"need_clarification"`
+	ClarifyingQuestion *string  `json:"clarifying_question"`
+	Urgency            string   `json:"urgency"`
+	UrgencyReason      string   `json:"urgency_reason"`
+	Pregnant           *bool    `json:"pregnant"`
+	GestationWeeks     *int     `json:"gestation_weeks"`
+	AskPregnancy       bool     `json:"ask_pregnancy"`
+	RiskFactors        []string `json:"risk_factors"`
+	Summary            string   `json:"summary"`
 }
 
 func extractionSchema(c *Catalog) map[string]any {
@@ -104,10 +105,11 @@ func extractionSchema(c *Catalog) map[string]any {
 			"pregnant":            map[string]any{"type": []string{"boolean", "null"}},
 			"gestation_weeks":     map[string]any{"type": []string{"integer", "null"}},
 			"ask_pregnancy":       map[string]any{"type": "boolean"},
+			"risk_factors":        map[string]any{"type": "array", "items": map[string]any{"type": "string", "enum": riskFactorIDs}},
 			"summary":             map[string]any{"type": "string"},
 		},
 		"additionalProperties": false,
-		"required":             []string{"language", "intent", "specialty_id", "need_clarification", "clarifying_question", "urgency", "urgency_reason", "pregnant", "gestation_weeks", "ask_pregnancy", "summary"},
+		"required":             []string{"language", "intent", "specialty_id", "need_clarification", "clarifying_question", "urgency", "urgency_reason", "pregnant", "gestation_weeks", "ask_pregnancy", "risk_factors", "summary"},
 	}
 }
 
@@ -125,6 +127,7 @@ func extractionPrompt(c *Catalog, t *TriageRules, clarLeft int, d *Dialog) strin
 - pregnant: true, если из диалога следует, что пациентка беременна; false, если она сказала, что не беременна; иначе null.
 - gestation_weeks: срок беременности в неделях, если назван; иначе null.
 - ask_pregnancy: true, если пациентка (женщина) описывает боль внизу живота, кровянистые выделения, тошноту или задержку менструации, а про беременность в диалоге ничего не сказано. Иначе false.
+- risk_factors: факторы риска, которые пациентка САМА назвала в диалоге (не додумывай): hypertension (давление, гипертония), diabetes (диабет, в т.ч. гестационный), anemia (анемия, низкий гемоглобин), heart_disease (болезни сердца), kidney_disease (болезни почек), endocrine (щитовидка и др. эндокринные), multiple_pregnancy (двойня, многоплодная), preterm_risk (угроза прерывания, преждевременных родов), previous_complications (осложнения прошлых беременностей: выкидыш, кесарево, преэклампсия). Пустой массив, если ничего не названо.
 - summary: 1-2 предложения на русском для оператора: что хочет пациент и что выяснено (укажи беременность и срок, если известны).
 Не ставь диагноз.
 
@@ -144,7 +147,7 @@ func extractionPrompt(c *Catalog, t *TriageRules, clarLeft int, d *Dialog) strin
 		sb.WriteString(". pregnant=true, ask_pregnancy=false. При беременности urgency=yellow и для таких жалоб (ru): " + strings.Join(t.YellowIfPregnant["ru"], ", "))
 		sb.WriteString("; (kk): " + strings.Join(t.YellowIfPregnant["kk"], ", "))
 		sb.WriteString("; (en): " + strings.Join(t.YellowIfPregnant["en"], ", "))
-		sb.WriteString(". Гинекологические жалобы при беременности — specialty_id=gynecologist.")
+		sb.WriteString(". Пациентка беременна: specialty_id=gynecologist (акушер-гинеколог) для любых жалоб, кроме явно другой области (зубы, глаза, кожа, ЛОР).")
 	} else if d.PregnancyAsked {
 		sb.WriteString("\n\nВопрос о беременности уже задан: ask_pregnancy=false.")
 	}
@@ -178,4 +181,14 @@ func (l *LLM) Extract(ctx context.Context, msgs []chatMsg, c *Catalog) (ex Extra
 	}
 	return Extraction{Language: "ru", Intent: "operator", Urgency: "yellow",
 		UrgencyReason: "ИИ не вернул корректный ответ — безопасный вариант"}, false
+}
+
+// riskFactorIDs: obstetric risk factors (AnaCare risk-oriented route).
+var riskFactorIDs = []string{"hypertension", "diabetes", "anemia", "heart_disease", "kidney_disease", "endocrine",
+	"multiple_pregnancy", "preterm_risk", "previous_complications"}
+
+var riskFactorNames = map[string]string{
+	"hypertension": "гипертензия", "diabetes": "диабет", "anemia": "анемия", "heart_disease": "болезни сердца",
+	"kidney_disease": "болезни почек", "endocrine": "эндокринные нарушения", "multiple_pregnancy": "многоплодная беременность",
+	"preterm_risk": "угроза преждевременных родов", "previous_complications": "осложнения прошлых беременностей",
 }

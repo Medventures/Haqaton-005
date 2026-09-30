@@ -187,6 +187,7 @@ components:
         pregnant: {type: boolean, description: "Флаг беременности: ставится кодом по фразам или LLM, никогда не снимается"}
         gestation_weeks: {type: integer, nullable: true}
         pregnancy_asked: {type: boolean, description: Вопрос о беременности уже задан}
+        risk_factors: {type: array, items: {type: string, enum: [hypertension, diabetes, anemia, heart_disease, kidney_disease, endocrine, multiple_pregnancy, preterm_risk, previous_complications]}, description: "Акушерские факторы риска, названные пациенткой; только добавляются. Беременность + фактор риска + жалоба → не ниже yellow"}
         assessed: {type: boolean, description: "Срочность оценена и показана пациенту. До этого пациент получает urgency: \"\" (бот сначала задаёт уточняющий вопрос); red оценивается сразу"}
         created_at: {type: string, format: date-time}
     Ticket:
@@ -201,6 +202,7 @@ components:
         language: {type: string}
         pregnant: {type: boolean}
         gestation_weeks: {type: integer, nullable: true}
+        risk_factors: {type: array, items: {type: string}}
         last_message: {type: string}
         created_at: {type: string, format: date-time}
         updated_at: {type: string, format: date-time}

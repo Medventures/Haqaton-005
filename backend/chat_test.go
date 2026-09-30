@@ -71,7 +71,7 @@ func exWith(base string, extra map[string]any) string {
 func ex(intent, spec string, clarify bool, question, urgency string) string {
 	m := map[string]any{"language": "ru", "intent": intent, "specialty_id": nil, "need_clarification": clarify,
 		"clarifying_question": nil, "urgency": urgency, "urgency_reason": "тест", "summary": "summary: " + intent,
-		"pregnant": nil, "gestation_weeks": nil, "ask_pregnancy": false}
+		"pregnant": nil, "gestation_weeks": nil, "ask_pregnancy": false, "risk_factors": []string{}}
 	if spec != "" {
 		m["specialty_id"] = spec
 	}
@@ -719,5 +719,42 @@ func TestKnowledgeBeatsMislabelledOperatorIntent(t *testing.T) {
 	r = e.chat(e.patient(), "", "Соедините с оператором, во сколько вы работаете?")
 	if r.Status != "operator" {
 		t.Fatalf("an explicit request for a person goes to the operator: %+v", r)
+	}
+}
+
+func TestPregnantWithoutSpecialtyGoesToObGyn(t *testing.T) {
+	e := setup(t, ex("find_service", "", false, "", "green"))
+	r := e.chat(e.patient(), "", "Я беременна, 20 недель, ноги отекают к вечеру")
+	if len(r.Services) == 0 || r.Services[0].SpecialtyID != "gynecologist" {
+		t.Fatalf("pregnant patient must be routed to the obstetrician-gynecologist: %+v", r)
+	}
+}
+
+func TestPregnantRiskFactorsRaiseToYellowAndReachOperator(t *testing.T) {
+	e := setup(t,
+		exWith(ex("find_service", "gynecologist", false, "", "green"), map[string]any{"risk_factors": []string{"hypertension", "diabetes", "made_up"}}),
+		ex("operator", "", false, "", "green"))
+	tok := e.patient()
+	r := e.chat(tok, "", "Я беременна, 28 недель, у меня гипертония и диабет, болит голова")
+	if r.Urgency != "yellow" || !has(r.Actions, "contact_operator") {
+		t.Fatalf("pregnancy + risk factors must be at least yellow: %+v", r)
+	}
+	r = e.chat(tok, r.DialogID, "соедините с оператором")
+	var q []Ticket
+	e.do("GET", "/api/operator/queue", e.operator(), nil, &q)
+	if len(q) != 1 || !strings.Contains(q[0].Summary, "гипертензия") || !strings.Contains(q[0].Summary, "диабет") || len(q[0].Risks) != 2 {
+		t.Fatalf("operator must see risk factors (unknown ids dropped): %+v", q)
+	}
+}
+
+func TestRiskFactorsOnlyAdded(t *testing.T) {
+	e := setup(t,
+		exWith(ex("find_service", "gynecologist", false, "", "green"), map[string]any{"risk_factors": []string{"anemia"}}),
+		ex("find_service", "gynecologist", false, "", "green"))
+	tok := e.patient()
+	r := e.chat(tok, "", "беременна, анемия")
+	r = e.chat(tok, r.DialogID, "а когда сдавать скрининг?")
+	if d := e.dialog(r.DialogID); len(d.RiskFactors) != 1 || d.RiskFactors[0] != "anemia" {
+		t.Fatalf("risk factors must persist: %+v", d.RiskFactors)
 	}
 }
