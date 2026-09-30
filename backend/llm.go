@@ -115,7 +115,23 @@ func extractionSchema(c *Catalog) map[string]any {
 
 // promptTreats: complaint keywords per specialty in the prompt. The prompt must fit a 4096-token context
 // together with the dialog (see TestExtractionPromptFitsContext).
-const promptTreats = 5
+const promptTreats = 3 // per language: 3 Russian + 3 Kazakh complaint keywords
+
+// promptTreatsOf keeps both languages: Kazakh keywords sit at the end of the list, and a plain
+// cut dropped them ("тамағым ауырады" went to the gastroenterologist).
+func promptTreatsOf(treats []string) []string {
+	var ru, kk []string
+	for _, x := range treats {
+		if hasKazakhLetters(x) {
+			if len(kk) < promptTreats {
+				kk = append(kk, x)
+			}
+		} else if len(ru) < promptTreats {
+			ru = append(ru, x)
+		}
+	}
+	return append(ru, kk...)
+}
 
 func extractionPrompt(c *Catalog, t *TriageRules, clarLeft int, d *Dialog, lang string) string {
 	var sb strings.Builder
@@ -128,16 +144,13 @@ func extractionPrompt(c *Catalog, t *TriageRules, clarLeft int, d *Dialog, lang 
 - urgency: yellow — нужна помощь в ближайшие 1–2 дня (сильная/нарастающая боль, высокая температура, кровь, травма, беременность, ребёнок с температурой), иначе green. urgency_reason: коротко, по-русски.
 - pregnant: true/false, если сказано; иначе null. gestation_weeks: срок в неделях или null.
 - ask_pregnancy: true, если женщина описывает боль внизу живота, кровянистые выделения, тошноту или задержку, а о беременности не сказано.
-- risk_factors: только названные пациенткой: hypertension, diabetes, anemia, heart_disease, kidney_disease, endocrine, multiple_pregnancy, preterm_risk (угроза прерывания), previous_complications (выкидыш, кесарево, преэклампсия в прошлом); иначе [].
+- risk_factors: только названные пациенткой: hypertension, diabetes, anemia, heart_disease, kidney_disease, endocrine, multiple_pregnancy, preterm_risk, previous_complications (прошлые выкидыш/кесарево/преэклампсия); иначе [].
 - summary: 1–2 предложения по-русски для оператора: что хочет пациент, что выяснено (беременность и срок, если известны).
 
 Специальности (id (название): типичные жалобы):
 `)
 	for _, s := range c.Specialties {
-		treats := s.Treats
-		if len(treats) > promptTreats {
-			treats = treats[:promptTreats]
-		}
+		treats := promptTreatsOf(s.Treats)
 		fmt.Fprintf(&sb, "- %s (%s): %s\n", s.ID, s.Name, strings.Join(treats, ", "))
 	}
 	if lang == "" {

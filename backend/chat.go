@@ -38,6 +38,11 @@ var texts = map[string]map[string]string{
 		"kk": "Нақтылаңызшы: бұл қашаннан бері басталды және 1-ден 10-ға дейінгі шкала бойынша қаншалықты қатты мазалайды?",
 		"en": "Could you tell me when it started and how bad it is on a scale from 1 to 10?",
 	},
+	"ask_second": {
+		"ru": "Есть ли ещё что-то: температура, тошнота, слабость? И для кого консультация — для вас или для ребёнка?",
+		"kk": "Тағы бірдеңе бар ма: қызу, жүрек айну, әлсіздік? Кеңес кімге керек — өзіңізге ме, балаңызға ма?",
+		"en": "Anything else, such as fever, nausea or weakness? And is the appointment for you or for a child?",
+	},
 	"clarify": {
 		"ru": "Уточните, пожалуйста: что именно беспокоит, где и как давно?",
 		"kk": "Нақтылап жазыңызшы: не мазалайды, қай жерде және қашаннан бері?",
@@ -267,7 +272,8 @@ func (a *App) process(ctx context.Context, d *Dialog, text string) (*ChatRespons
 		d.UrgencyReason = "беременность с факторами риска"
 	}
 	// Pregnant and no specialty picked: the obstetrician-gynecologist is the default route.
-	if d.Pregnant && ex.SpecialtyID == nil && (ex.Intent == "find_service" || ex.Intent == "service_info") && a.cat.Specialty("gynecologist") != nil {
+	// Only for a complaint: "менде тағы вопрос" (service_info/other) must not re-offer the gynecologist.
+	if d.Pregnant && ex.SpecialtyID == nil && ex.Intent == "find_service" && a.cat.Specialty("gynecologist") != nil {
 		g := "gynecologist"
 		ex.SpecialtyID = &g
 	}
@@ -318,15 +324,19 @@ func (a *App) process(ctx context.Context, d *Dialog, text string) (*ChatRespons
 		return finish(t("ask_pregnancy", d.Language), botData{})
 	}
 
-	// Ask first: for a complaint, one clarifying question before any urgency level or services are shown
-	// (red is still decided immediately above). Counts toward the 2-clarification limit.
-	if a.askFirst && !d.Assessed && ex.Intent == "find_service" && d.Clarifications == 0 {
+	// Ask first: for a complaint, two clarifying questions before any urgency level or services are shown
+	// (red is still decided immediately above). They use the 2-clarification limit.
+	if a.askFirst && !d.Assessed && ex.Intent == "find_service" && d.Clarifications < 2 {
 		q := ""
 		if ex.ClarifyingQuestion != nil {
 			q = strings.TrimSpace(*ex.ClarifyingQuestion)
 		}
-		if q == "" {
-			q = t("ask_first", d.Language)
+		defaultQ := t("ask_first", d.Language)
+		if d.Clarifications == 1 {
+			defaultQ = t("ask_second", d.Language)
+		}
+		if q == "" || lastBotSaid(hist, q) {
+			q = defaultQ
 		}
 		d.Clarifications++
 		return finish(q, botData{})
@@ -619,4 +629,14 @@ func promptLang(text string, d *Dialog) string {
 		return l
 	}
 	return d.Language
+}
+
+// lastBotSaid: the model repeats its own question — do not ask the same thing twice.
+func lastBotSaid(hist []Message, q string) bool {
+	for i := len(hist) - 1; i >= 0; i-- {
+		if hist[i].Role == "bot" {
+			return strings.EqualFold(strings.TrimSpace(hist[i].Content), q)
+		}
+	}
+	return false
 }

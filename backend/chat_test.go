@@ -620,7 +620,8 @@ func TestKazakhAnswersUseKazakhModel(t *testing.T) {
 }
 
 func TestAskFirstBeforeUrgencyAndServices(t *testing.T) {
-	e := setup(t, ex("find_service", "therapist", false, "", "yellow"), ex("find_service", "therapist", false, "", "yellow"))
+	y := ex("find_service", "therapist", false, "", "yellow")
+	e := setup(t, y, y, y)
 	e.a.askFirst = true
 	tok := e.patient()
 	r := e.chat(tok, "", "температура 39")
@@ -635,8 +636,24 @@ func TestAskFirstBeforeUrgencyAndServices(t *testing.T) {
 		t.Fatalf("patient must not see the level before assessment: %q", d.Dialog.Urgency)
 	}
 	r = e.chat(tok, r.DialogID, "второй день, на 7 из 10")
+	if r.Urgency != "" || len(r.Services) != 0 || r.Reply.Content != texts["ask_second"]["ru"] {
+		t.Fatalf("second turn: second question: %+v", r)
+	}
+	r = e.chat(tok, r.DialogID, "слабость, для меня")
 	if r.Urgency != "yellow" || len(r.Services) == 0 || !has(r.Actions, "contact_operator") {
-		t.Fatalf("after the answer: level and services: %+v", r)
+		t.Fatalf("after two answers: level and services: %+v", r)
+	}
+}
+
+func TestAskFirstDoesNotRepeatTheSameQuestion(t *testing.T) {
+	q := ex("find_service", "ent", false, "Как давно болит горло?", "green")
+	e := setup(t, q, q, q)
+	e.a.askFirst = true
+	tok := e.patient()
+	r := e.chat(tok, "", "болит горло")
+	r = e.chat(tok, r.DialogID, "три дня")
+	if r.Reply.Content == "Как давно болит горло?" {
+		t.Fatal("the same question must not be asked twice")
 	}
 }
 
@@ -804,5 +821,13 @@ func TestKnowledgeAnswerKeepsYellowForRiskyPregnancy(t *testing.T) {
 	r := e.chat(e.patient(), "", "Я беременна, 20 недель, у меня гипертония, отекают ноги")
 	if r.Urgency != "yellow" || !has(r.Actions, "contact_operator") || !strings.HasPrefix(r.Reply.Content, texts["yellow"]["ru"]) {
 		t.Fatalf("pregnancy + hypertension: yellow with the KB answer: %+v", r)
+	}
+}
+
+func TestPregnantVagueQuestionDoesNotReofferGynecologist(t *testing.T) {
+	e := setup(t, ex("service_info", "", false, "", "green"))
+	r := e.chat(e.patient(), "", "я беременна, у меня ещё вопрос")
+	if len(r.Services) != 0 {
+		t.Fatalf("a vague question must not bring the gynecologist cards: %+v", r.Services)
 	}
 }
