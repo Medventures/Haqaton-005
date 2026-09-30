@@ -39,7 +39,8 @@ export default function PatientPage() {
   function applyDialog(data: DialogResponse) {
     setDialog(data.dialog); setMessages(data.messages || []); selectLanguage(data.dialog.language || 'ru')
   }
-  useEffect(() => { bottom.current?.scrollIntoView({ behavior: 'smooth' }) }, [messages, typing])
+  // scroll only the message list: scrollIntoView would also scroll the window and hide the header on mobile
+  useEffect(() => { const list = bottom.current?.parentElement; list?.scrollTo({ top: list.scrollHeight, behavior: 'smooth' }) }, [messages, typing])
   useEffect(() => {
     if (!dialog?.id || dialog.status !== 'operator') return
     const timer = window.setInterval(() => api.dialog(dialog.id).then(applyDialog).catch(() => {}), 3000)
