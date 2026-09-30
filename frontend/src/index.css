@@ -71,11 +71,18 @@ a {
 }
 
 .clinic-brand {
+  display: inline-flex;
+  align-items: center;
   text-decoration: none;
   font-size: 17px;
   font-weight: 700;
   color: var(--text);
   letter-spacing: -0.4px;
+}
+
+.clinic-brand img {
+  flex: none;
+  margin-right: 8px;
 }
 
 .clinic-brand span {

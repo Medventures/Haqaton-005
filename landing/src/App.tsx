@@ -39,12 +39,8 @@ export default function App() {
     <>
       <header className="top">
         <a className="brand" href="#">
-          <span className="brand-dots" aria-hidden>
-            <i className="dot dot-green" />
-            <i className="dot dot-yellow" />
-            <i className="dot dot-red" />
-          </span>
-          AnaCare
+          <img src="/logo-mark.svg" alt="" width="28" height="28" />
+          Ana<span>Care</span>
         </a>
         <nav className="nav">
           <a href="#how">{t.nav.how}</a>
