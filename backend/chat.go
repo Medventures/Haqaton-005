@@ -257,8 +257,9 @@ func (a *App) process(ctx context.Context, d *Dialog, text string) (*ChatRespons
 	}
 
 	// 4 (ob/gyn). Pregnancy question: asked once, does not count toward the clarification limit.
-	// The model's ask_pregnancy is trusted only for ob/gyn-relevant specialties (it asked about pregnancy for a sore throat).
-	llmAsk := ex.AskPregnancy && (ex.SpecialtyID == nil || *ex.SpecialtyID == "gynecologist" || *ex.SpecialtyID == "gastroenterologist")
+	// The model's ask_pregnancy is trusted only with a gyn/gastro specialty (it asked about pregnancy for a sore throat);
+	// otherwise the ask_pregnancy_if phrases decide.
+	llmAsk := ex.AskPregnancy && ex.SpecialtyID != nil && (*ex.SpecialtyID == "gynecologist" || *ex.SpecialtyID == "gastroenterologist")
 	if (llmAsk || a.triage.NeedsPregnancyQuestion(text)) && !d.Pregnant && !d.PregnancyAsked && !(ex.Pregnant != nil && !*ex.Pregnant) {
 		d.PregnancyAsked = true
 		return finish(prefix+t("ask_pregnancy", d.Language), botData{Actions: actions})

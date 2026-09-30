@@ -507,7 +507,8 @@ func TestPregnancyFlagNeverCleared(t *testing.T) {
 }
 
 func TestPregnancyQuestionAskedOnceAndNotCounted(t *testing.T) {
-	ask := exWith(ex("find_service", "", true, "Как давно?", "green"), map[string]any{"ask_pregnancy": true})
+	// "тошнота" is not in ask_pregnancy_if: the LLM decides, and is trusted with a gyn/gastro specialty
+	ask := exWith(ex("find_service", "gastroenterologist", true, "Как давно?", "green"), map[string]any{"ask_pregnancy": true})
 	e := setup(t, ask, ask)
 	tok := e.patient()
 	r := e.chat(tok, "", "тошнота по утрам")
@@ -591,5 +592,13 @@ func TestKazakhDialogKeepsKazakhWithoutSpecialLetters(t *testing.T) {
 	r = e.chat(tok, r.DialogID, "бес кун болды")
 	if r.Language != "kk" {
 		t.Fatalf("Kazakh dialog must stay Kazakh: %q", r.Language)
+	}
+}
+
+func TestLLMPregnancyQuestionIgnoredWithoutGynSpecialty(t *testing.T) {
+	e := setup(t, exWith(ex("find_service", "", true, "Қашаннан бері?", "yellow"), map[string]any{"ask_pregnancy": true}))
+	r := e.chat(e.patient(), "", "Тамағым ауырады, қызуым бар")
+	if r.Reply.Content == texts["ask_pregnancy"]["kk"] {
+		t.Fatal("no gyn specialty and no ob/gyn phrase: must not ask about pregnancy")
 	}
 }
