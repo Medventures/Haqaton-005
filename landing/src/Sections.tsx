@@ -78,11 +78,6 @@ export function Levels({ lang }: { lang: Lang }) {
               {t.items[u].name}
             </h3>
             <p>{t.items[u].text}</p>
-            <ul className="examples">
-              {t.items[u].examples.map((e) => (
-                <li key={e}>«{e}»</li>
-              ))}
-            </ul>
           </div>
         ))}
       </div>

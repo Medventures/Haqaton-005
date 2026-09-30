@@ -182,11 +182,6 @@ a { color: inherit; }
 .level h3 { font-size: 22px; display: flex; align-items: center; gap: 10px; }
 .level h3 .dot { width: 10px; height: 10px; }
 .level p { margin-top: 10px; color: var(--text-muted); }
-.examples { list-style: none; padding: 0; margin: 16px 0 0; display: flex; flex-direction: column; gap: 6px; }
-.examples li { font-size: 15px; }
-.level-green .examples li { color: var(--green); }
-.level-yellow .examples li { color: var(--yellow); }
-.level-red .examples li { color: var(--red); }
 .note { margin-top: 48px; padding: 16px 20px; border-left: 3px solid var(--primary); background: var(--surface); color: var(--text-muted); max-width: 48em; font-size: 15px; }
 
 .ops { display: grid; grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr); gap: 56px; align-items: start; }

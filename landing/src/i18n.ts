@@ -16,7 +16,7 @@ type Dict = {
   scale: {
     title: string
     lead: string
-    items: Record<Urgency, { name: string; text: string; examples: string[] }>
+    items: Record<Urgency, { name: string; text: string }>
     note: string
   }
   ops: { title: string; lead: string; summaryTitle: string; want: string; found: string; why: string; queue: string; tickets: { text: string; u: Urgency; reason: string }[]; pregnant: string }
@@ -65,9 +65,9 @@ export const dict: Record<Lang, Dict> = {
       title: 'Три уровня срочности',
       lead: 'Уровень виден пациенту в шапке чата и оператору в очереди. В течение диалога он может только расти.',
       items: {
-        green: { name: 'Плановое', text: 'Обычный подбор врача и услуги.', examples: ['болит горло', 'сыпь на руке', 'хочу проверить зрение'] },
-        yellow: { name: 'В ближайшее время', text: 'Бот советует не откладывать и предлагает связаться с оператором. Подбор услуги остаётся.', examples: ['температура 39', 'беременна, отёки ног', 'кровь в моче'] },
-        red: { name: 'Срочно', text: 'Подбор прекращается. Кнопка «Вызвать скорую — 103», диалог — первым в очереди оператора.', examples: ['боль в груди', 'онемела половина лица', 'на 32 неделе, отошли воды'] },
+        green: { name: 'Плановое', text: 'Обычный подбор врача и услуги.' },
+        yellow: { name: 'В ближайшее время', text: 'Бот советует не откладывать и предлагает связаться с оператором. Подбор услуги остаётся.' },
+        red: { name: 'Срочно', text: 'Подбор прекращается. Кнопка «Вызвать скорую — 103», диалог — первым в очереди оператора.' },
       },
       note: 'Красный уровень определяется кодом по списку фраз, а не моделью. Список лежит в triage_rules.json и редактируется без перезапуска кода.',
     },
@@ -143,9 +143,9 @@ export const dict: Record<Lang, Dict> = {
       title: 'Шұғылдықтың үш деңгейі',
       lead: 'Деңгейді пациент чаттың жоғарғы жағынан, оператор кезектен көреді. Диалог барысында ол тек жоғарылайды.',
       items: {
-        green: { name: 'Жоспарлы', text: 'Дәрігер мен қызметті әдеттегідей таңдау.', examples: ['тамақ ауырады', 'қолда бөртпе', 'көруді тексергім келеді'] },
-        yellow: { name: 'Жақын арада', text: 'Бот кешіктірмеуге кеңес беріп, операторға хабарласуды ұсынады. Қызмет таңдауы сақталады.', examples: ['қызу 39', 'жүктімін, аяғым ісінеді', 'зәрде қан'] },
-        red: { name: 'Шұғыл', text: 'Таңдау тоқтайды. «Жедел жәрдем шақыру — 103» батырмасы, диалог оператор кезегінде бірінші.', examples: ['кеуде ауырады', 'беттің жартысы ұйып қалды', '32 аптадамын, су кетті'] },
+        green: { name: 'Жоспарлы', text: 'Дәрігер мен қызметті әдеттегідей таңдау.' },
+        yellow: { name: 'Жақын арада', text: 'Бот кешіктірмеуге кеңес беріп, операторға хабарласуды ұсынады. Қызмет таңдауы сақталады.' },
+        red: { name: 'Шұғыл', text: 'Таңдау тоқтайды. «Жедел жәрдем шақыру — 103» батырмасы, диалог оператор кезегінде бірінші.' },
       },
       note: 'Қызыл деңгейді модель емес, код тіркестер тізімі бойынша анықтайды. Тізім triage_rules.json файлында, кодты қайта жазбай өзгертуге болады.',
     },
@@ -221,9 +221,9 @@ export const dict: Record<Lang, Dict> = {
       title: 'Three urgency levels',
       lead: 'Patients see the level at the top of the chat, operators see it in the queue. During a conversation it can only go up.',
       items: {
-        green: { name: 'Routine', text: 'Regular doctor and service matching.', examples: ['sore throat', 'rash on my arm', 'I want an eye check'] },
-        yellow: { name: 'Soon', text: 'The bot advises not to delay and offers an operator. Service matching stays available.', examples: ['fever of 39', 'pregnant, swollen legs', 'blood in urine'] },
-        red: { name: 'Urgent', text: 'Matching stops. A “Call an ambulance — 103” button, and the chat is first in the operator queue.', examples: ['chest pain', 'half of my face is numb', '32 weeks, my water broke'] },
+        green: { name: 'Routine', text: 'Regular doctor and service matching.' },
+        yellow: { name: 'Soon', text: 'The bot advises not to delay and offers an operator. Service matching stays available.' },
+        red: { name: 'Urgent', text: 'Matching stops. A “Call an ambulance — 103” button, and the chat is first in the operator queue.' },
       },
       note: 'Red is decided by code from a phrase list, not by the model. The list lives in triage_rules.json and can be edited without touching the code.',
     },
