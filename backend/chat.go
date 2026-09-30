@@ -332,8 +332,11 @@ func (a *App) process(ctx context.Context, d *Dialog, text string) (*ChatRespons
 		return finish(q, botData{})
 	}
 
-	// From here the urgency level is shown to the patient.
-	d.Assessed = true
+	// From here the urgency level is shown to the patient — for complaints and service questions,
+	// not for a greeting ("привет" must not get a green «Плановое» badge).
+	if ex.Intent == "find_service" || ex.Intent == "service_info" || d.Urgency != "green" {
+		d.Assessed = true
+	}
 	var actions []string
 	prefix := ""
 	if d.Urgency == "yellow" {

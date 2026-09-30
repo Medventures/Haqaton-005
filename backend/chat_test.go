@@ -792,7 +792,7 @@ func TestExtractionPromptFitsContext(t *testing.T) {
 func TestGreetingLabelledOperatorIsNotHandedOff(t *testing.T) {
 	e := setup(t, ex("operator", "", false, "", "green"))
 	r := e.chat(e.patient(), "", "привет")
-	if r.Status != "bot" || r.TicketID != nil {
+	if r.Status != "bot" || r.TicketID != nil || r.Urgency != "" {
 		t.Fatalf("a greeting must not go to the operator: %+v", r)
 	}
 }
