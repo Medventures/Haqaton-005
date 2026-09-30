@@ -1,6 +1,6 @@
 export type Urgency = 'green' | 'yellow' | 'red'
 export type Language = 'ru' | 'kk' | 'en'
-export type Service = { id: string; specialty_id?: string; name: string; price: number; description: string; specialty?: string; i18n?: Partial<Record<Language, { name?: string; specialty?: string; description?: string }>> }
+export type Service = { id: string; specialty_id?: string; name: string; price: number; description: string; specialty?: string | { name: string; i18n?: Partial<Record<Language, { name?: string }>> }; i18n?: Partial<Record<Language, { name?: string; specialty?: string; description?: string }>> }
 export type Doctor = { id: string; name: string; specialty_id?: string; slots: string[] }
 export type MessageData = { urgency?: Urgency; actions?: string[]; services?: Service[]; doctors?: Doctor[] }
 export type Message = { id?: number; role: 'patient' | 'bot' | 'operator'; author?: string; content: string; data?: MessageData; created_at?: string }

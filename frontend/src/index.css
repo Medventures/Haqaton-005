@@ -132,6 +132,46 @@ a {
   color: var(--text-muted);
 }
 
+.language-switch {
+  display: flex;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--surface);
+}
+.language-switch button {
+  min-height: 36px;
+  padding: 0 9px;
+  border: 0;
+  border-right: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 600;
+}
+.language-switch button:last-child { border-right: 0; }
+.language-switch button.active { background: var(--primary-soft); color: var(--primary); }
+.operator-header-actions { display: flex; align-items: center; gap: 12px; }
+.service-specialty { display: block; margin-top: 4px; color: var(--text-muted); font-size: 12px; }
+.pregnancy-badge { display: inline-block; margin-top: 7px; padding: 4px 7px; border: 1px solid var(--yellow); border-radius: 6px; color: var(--yellow); background: var(--yellow-bg); font-size: 12px; }
+.risk-screen { width: 100%; min-height: calc(100dvh - 64px); margin: 0; border: 0; border-top: 1px solid var(--red); border-radius: 0; background: var(--red-bg); }
+.risk-screen-content { width: min(100% - 32px, 760px); margin: 0 auto; padding: 48px 0; }
+.risk-screen-kicker { color: var(--red); font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+.risk-screen h1 { max-width: 620px; margin: 10px 0 18px; color: var(--red); font-size: 28px; line-height: 1.25; }
+.risk-screen-content > p { color: var(--text); line-height: 1.6; }
+.risk-screen-message { padding: 16px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); }
+.risk-actions { display: grid; gap: 10px; margin: 22px 0; }
+.risk-actions .call-button, .risk-actions .contact-button { width: 100%; min-height: 52px; justify-content: center; }
+.risk-return { padding: 10px 0; border: 0; background: transparent; color: var(--primary); font-weight: 600; }
+
+@media (max-width: 700px) {
+  .risk-screen { min-height: calc(100dvh - 56px); }
+  .risk-screen-content { width: auto; margin: 0; padding: 24px 16px; }
+  .risk-screen h1 { font-size: 24px; }
+  .operator-header-actions { gap: 5px; }
+  .operator-site-header .language-switch button { padding: 0 5px; }
+}
+
 @keyframes message-in {
   from {
     opacity: 0;
