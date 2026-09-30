@@ -75,6 +75,41 @@ paths:
                   status: {type: string}
                   urgent: {type: boolean, description: true — диалог red (кнопка «Срочно связаться с оператором»)}
                   reply: {$ref: "#/components/schemas/Message"}
+  /api/chat/attachments:
+    post:
+      summary: Пациент прикрепляет фото/PDF анализа или заключения (бот файл не читает — его смотрит врач/оператор)
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file]
+              properties:
+                file: {type: string, format: binary, description: "JPG, PNG, WEBP или PDF до 10 МБ; тип проверяется по содержимому"}
+                dialog_id: {type: string, format: uuid, description: Пусто — новый диалог}
+      responses:
+        "200":
+          description: Файл сохранён
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  dialog_id: {type: string, format: uuid}
+                  status: {type: string}
+                  message: {$ref: "#/components/schemas/Message"}
+                  reply: {$ref: "#/components/schemas/Message"}
+        "413": {description: Больше 10 МБ}
+        "415": {description: Неподдерживаемый тип}
+  /api/attachments/{id}:
+    get:
+      summary: Файл вложения. Пациент — только свои, оператор — только из переданных диалогов
+      parameters:
+        - {name: id, in: path, required: true, schema: {type: string, format: uuid}}
+      responses:
+        "200": {description: Содержимое файла с его Content-Type}
+        "404": {description: Нет файла или нет доступа}
   /api/dialogs/{id}:
     get:
       summary: Диалог с сообщениями. Пациент — только свой; оператор — только переданные (есть обращение).
@@ -172,6 +207,11 @@ components:
               items: {type: string, enum: [call_103, contact_operator, urgent_operator]}
             services: {type: array, items: {$ref: "#/components/schemas/Service"}}
             doctors: {type: array, items: {$ref: "#/components/schemas/Doctor"}}
+            attachments:
+              type: array
+              items:
+                type: object
+                properties: {id: {type: string, format: uuid}, name: {type: string}, content_type: {type: string}, size: {type: integer}}
         created_at: {type: string, format: date-time}
     Dialog:
       type: object

@@ -93,6 +93,8 @@ func (a *App) routes() http.Handler {
 	r.With(a.auth("patient")).Post("/api/chat", a.chat)
 	r.With(a.auth("patient")).Post("/api/chat/operator", a.requestOperator)
 	r.With(a.auth("patient", "operator")).Get("/api/dialogs/{id}", a.getDialogHandler)
+	r.With(a.auth("patient")).Post("/api/chat/attachments", a.uploadAttachment)
+	r.With(a.auth("patient", "operator")).Get("/api/attachments/{id}", a.getAttachment)
 	r.With(a.auth("operator")).Get("/api/operator/queue", a.queue)
 	r.With(a.auth("operator")).Post("/api/operator/reply", a.operatorReply)
 

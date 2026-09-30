@@ -37,6 +37,15 @@ create table if not exists messages (
   created_at timestamptz not null default now()
 );
 create index if not exists messages_dialog on messages(dialog_id, id);
+create table if not exists attachments (
+  id uuid primary key default gen_random_uuid(),
+  dialog_id uuid not null references dialogs(id) on delete cascade,
+  name text not null,
+  content_type text not null,
+  size int not null,
+  data bytea not null,
+  created_at timestamptz not null default now()
+);
 create table if not exists tickets (
   id bigserial primary key,
   dialog_id uuid not null references dialogs(id) on delete cascade,
