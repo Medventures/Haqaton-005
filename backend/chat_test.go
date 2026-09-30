@@ -568,7 +568,7 @@ func TestEnglishConversation(t *testing.T) {
 }
 
 func TestNoPregnancyQuestionForUnrelatedSpecialty(t *testing.T) {
-	e := setup(t, exWith(ex("find_service", "ent", false, "", "yellow"), map[string]any{"ask_pregnancy": true}))
+	e := setup(t, exWith(ex("find_service", "therapist", false, "", "yellow"), map[string]any{"ask_pregnancy": true}))
 	r := e.chat(e.patient(), "", "Тамағым ауырады, қызуым бар")
 	if r.Reply.Content == texts["ask_pregnancy"]["kk"] {
 		t.Fatal("sore throat must not trigger the pregnancy question")
