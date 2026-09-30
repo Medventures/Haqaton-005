@@ -77,7 +77,8 @@
   "actions": {
     "call_103": "Call an ambulance — 103",
     "contact_operator": "Contact an operator",
-    "urgent_operator": "Urgent obstetrician-gynecologist consultation"
+    "urgent_operator": "Urgent obstetrician-gynecologist consultation",
+    "urgent_doctor": "Contact a doctor urgently"
   },
   "newChat": "New chat",
   "attach": "Attach a photo or PDF",

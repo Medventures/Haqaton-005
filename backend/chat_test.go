@@ -286,7 +286,7 @@ func TestClarificationLimitThenPicksSpecialty(t *testing.T) {
 
 func TestInvalidJSONRetriesOnceThenSafeFallback(t *testing.T) {
 	e := setup(t, "not json", "{broken")
-	r := e.chat(e.patient(), "", "болит горло")
+	r := e.chat(e.patient(), "", "мне как-то не так")
 	if n, m := e.llm.calls(); n != 2 || m != 0 {
 		t.Fatalf("expected exactly 2 extraction attempts and no answer call, got %d/%d", n, m)
 	}
@@ -479,11 +479,11 @@ func TestPregnancyRedInOneMessageKazakh(t *testing.T) {
 	}
 }
 
-func TestPlainRedHasOnlyAmbulanceButton(t *testing.T) {
+func TestPlainRedHasAmbulanceAndDoctorButtons(t *testing.T) {
 	e := setup(t)
 	r := e.chat(e.patient(), "", "боль в груди")
-	if has(r.Actions, "urgent_operator") {
-		t.Fatalf("not pregnant: only call_103 expected: %v", r.Actions)
+	if !has(r.Actions, "call_103") || !has(r.Actions, "urgent_doctor") || has(r.Actions, "urgent_operator") {
+		t.Fatalf("red, not pregnant: 103 + urgent doctor: %v", r.Actions)
 	}
 }
 
@@ -945,5 +945,29 @@ func TestGuessAlsoForComplaintLabelledServiceInfo(t *testing.T) {
 	r := e.chat(e.patient(), "", "Болит горло, немного больно глотать")
 	if len(r.Services) == 0 || r.Services[0].SpecialtyID != "ent" || r.Status != "bot" {
 		t.Fatalf("a complaint labelled service_info with no specialty: ENT from the catalog, not the operator: %+v", r)
+	}
+}
+
+func TestGreenSaysNothingUrgent(t *testing.T) {
+	e := setup(t, ex("find_service", "ent", false, "", "green"))
+	r := e.chat(e.patient(), "", "Болит горло третий день")
+	if r.Urgency != "green" || !strings.HasPrefix(r.Reply.Content, texts["green"]["ru"]) {
+		t.Fatalf("green answer starts with the routine note: %+v", r)
+	}
+}
+
+func TestDegradedModeWhenLLMFails(t *testing.T) {
+	qb, _ := LoadQuestions("../questions.json")
+	e := setup(t, "broken", "broken", "broken", "broken") // every extraction fails
+	e.a.questions = qb
+	e.a.askFirst = true
+	tok := e.patient()
+	r := e.chat(tok, "", "сәлем басым ауырып тұр")
+	if r.Status != "bot" || r.Urgency != "" || r.Reply.Content != "Қызуыңыз бар ма? Қан қысымыңызды өлшедіңіз бе?" {
+		t.Fatalf("the model is down but the complaint is known: curated Kazakh question, no handoff: %+v", r)
+	}
+	r = e.chat(tok, "", "мне плохо") // nothing recognisable: the safe fallback stays
+	if r.Status != "operator" {
+		t.Fatalf("unrecognisable message with the model down goes to the operator: %+v", r)
 	}
 }

@@ -25,6 +25,11 @@ var texts = map[string]map[string]string{
 		"kk": "Сипаттамаңызға қарағанда, жақын арада медициналық көмекке жүгінген жөн. Жағдайыңыз нашарласа — 103-ке қоңырау шалыңыз.",
 		"en": "Based on your description, you should seek medical help soon. If you feel worse, call 103.",
 	},
+	"green": {
+		"ru": "По вашему описанию срочной помощи не требуется — можно записаться к врачу в обычном порядке.",
+		"kk": "Сипаттамаңызға қарағанда шұғыл көмек қажет емес — дәрігерге әдеттегі тәртіппен жазылуға болады.",
+		"en": "From your description, you do not need urgent help — you can book a regular appointment.",
+	},
 	"handoff": {
 		"ru": "Передаю ваш вопрос оператору — он ответит здесь, в этом чате.",
 		"kk": "Сұрағыңызды операторға жібердім — ол осы чатта жауап береді.",
@@ -234,6 +239,28 @@ func (a *App) process(ctx context.Context, d *Dialog, text string) (*ChatRespons
 	if !ok && d.Summary == "" {
 		d.Summary = "Сообщение пациента: «" + text + "». ИИ не смог разобрать запрос."
 	}
+	// The model failed (e.g. LM Studio "context size exceeded"), but the complaint is recognisable by code:
+	// keep going with the curated questions and the catalog instead of handing off at once.
+	if !ok {
+		all := strings.Join(patientMsgs, " ")
+		bankCat, _ := a.questions.Question(all, 0, "ru")
+		guess := a.cat.GuessSpecialty(all)
+		if bankCat != "" || guess != "" {
+			log.Printf("LLM unavailable, degraded mode (questions=%q, specialty=%q)", bankCat, guess)
+			lang := detectLanguage(text)
+			if lang == "" {
+				lang = d.Language
+			}
+			if lang == "" || (lang == "ru" && !hasRussianWords(text) && d.Language != "ru") {
+				lang = "kk" // «басым ауырып тұр»: no Russian words -> most likely Kazakh
+			}
+			ex = Extraction{Language: lang, Intent: "find_service", Urgency: "green", Summary: d.Summary}
+			if guess != "" {
+				ex.SpecialtyID = &guess
+			}
+			ok = true
+		}
+	}
 
 	// Cyrillic without Kazakh-specific letters is Russian, unless the dialog is already in Kazakh
 	// ("басым ауырады" has no special letters): the model misjudges this too often.
@@ -365,7 +392,8 @@ func (a *App) process(ctx context.Context, d *Dialog, text string) (*ChatRespons
 	}
 	var actions []string
 	prefix := ""
-	if d.Urgency == "yellow" {
+	switch {
+	case d.Urgency == "yellow":
 		actions = []string{"contact_operator"}
 		prefix = t("yellow", d.Language) + "\n\n"
 	}
@@ -410,6 +438,9 @@ func (a *App) process(ctx context.Context, d *Dialog, text string) (*ChatRespons
 		if err != nil || strings.TrimSpace(reply) == "" {
 			log.Printf("compose failed: %v", err)
 			reply = fmt.Sprintf(t("fallback", d.Language), specName)
+		}
+		if d.Urgency == "green" && isComplaint(ex, text) {
+			prefix = t("green", d.Language) + "\n\n" // green: nothing urgent, a routine visit
 		}
 		return finish(prefix+strings.TrimSpace(reply), botData{Actions: actions, Services: svcs, Doctors: docs})
 	}
@@ -474,9 +505,10 @@ func (a *App) redCheck(ctx context.Context, d *Dialog, text string, patientMsgs 
 		return nil, true, err
 	}
 	res.TicketID = &id
-	actions := []string{"call_103"}
+	// red: 103 + an urgent contact with a doctor (for a pregnant patient — the obstetrician-gynecologist)
+	actions := []string{"call_103", "urgent_doctor"}
 	if d.Pregnant {
-		actions = append(actions, "urgent_operator")
+		actions = []string{"call_103", "urgent_operator"}
 	}
 	r, err := finish(t("red", lang), botData{Actions: actions})
 	return r, true, err
