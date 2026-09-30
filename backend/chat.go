@@ -384,6 +384,12 @@ func (a *App) process(ctx context.Context, d *Dialog, text string) (*ChatRespons
 		return finish(prefix+q, botData{Actions: actions})
 	}
 
+	// All questions asked and still no specialty: the general practitioner is the first step, not the operator.
+	if ex.SpecialtyID == nil && d.Clarifications >= maxQuestions && isComplaint(ex, text) && a.cat.Specialty("therapist") != nil {
+		th := "therapist"
+		ex.SpecialtyID = &th
+	}
+
 	// 4-5. Specialty found: services + doctors from the catalog, LLM phrases the answer.
 	if ex.SpecialtyID != nil {
 		spec := a.cat.Specialty(*ex.SpecialtyID)
