@@ -375,15 +375,15 @@ for q, h in KB_NONE:
 # ---------------------------------------------------------------- 10. language detection
 LANG = [
     ("У меня болит горло", "ru", ""), ("Тамағым ауырады", "kk", "kk"), ("I have a sore throat", "en", "en"),
-    ("my throat hurts, ЛОР?", "en", "en"), ("хочу к ENT врачу", "ru", ""), ("кеудем болит", "mix", "kk"),
+    ("my throat hurts, ЛОР?", "en", "en"), ("хочу к ENT врачу", "ru", ""), ("кеудем болит", "mix", "kk", True),
     ("басым ауырады", "kk", "kk"), ("ауырып жатыр", "kk", "kk"), ("керек маған дәрігер", "kk", "kk"), ("рахмет", "kk", "kk"),
     ("калай жазылуга болады", "kk", "kk"), ("OK спасибо", "ru", ""), ("МРТ сколько стоит", "ru", ""), ("hello", "en", "en"),
-    ("kudem auyrady", "translit", "kk"), ("bolit grud", "translit", ""), ("salem, kerek dariger", "translit", "kk"),
+    ("kudem auyrady", "translit", "kk", True), ("bolit grud", "translit", "", True), ("salem, kerek dariger", "translit", "kk"),
     ("zdravstvuyte, mne nuzhen vrach", "translit", ""), ("pozhaluysta pomogite", "translit", ""), ("Hi, I need a doctor", "en", "en"),
     ("тамақ ауырады керек дәрі", "kk", "kk"), ("жатырмын", "kk", "kk"), ("спасибо большое", "ru", ""),
 ]
-for t, h, want in LANG:
-    add("lang", t, h, lang=want, preg=None)
+for t, h, want, *red in LANG:
+    add("lang", t, h, red=bool(red), lang=want, preg=None)
 
 # ---------------------------------------------------------------- 11. handwritten tricky cases
 HAND = [
@@ -458,6 +458,19 @@ HAND = [
     ("kudem auyrady srochno", "red_translit", "translit", True, False, None, None, None, ""),
     ("ne mogu dyshat pomogite", "red_translit", "translit", True, False, None, None, None, ""),
     ("grudnoi rebenok kashlyaet", "not_red", "translit", False, False, None, None, None, "translit trap"),
+    # probes for the broader rules added with this suite (must stay green)
+    ("не могу дышать носом, насморк неделю", "not_red", "ru", False, False, None, None, "", "nasal congestion"),
+    ("нос не дышит третий день", "not_red", "ru", False, False, None, None, "", "nasal congestion"),
+    ("носом дышать трудно", "not_red", "ru", False, False, None, None, "", "nasal congestion"),
+    ("была рвота, хочу сдать анализ крови", "not_red", "ru", False, False, None, None, "", "'рвот' + 'кров' in one part"),
+    ("наглотался воды в бассейне, кашляю", "not_red", "ru", False, False, None, None, "", ""),
+    ("припадаю на левую ногу после травмы", "not_red", "ru", False, False, None, None, "", "limping, not a seizure"),
+    ("жүрек ауруы бар, кардиологқа жазылғым келеді", "not_red", "kk", False, False, None, None, "kk", "known heart disease, booking"),
+    ("сердце проверить хочу", "not_red", "ru", False, False, None, None, "", ""),
+    ("губы сохнут и трескаются", "not_red", "ru", False, False, None, None, "", ""),
+    ("sudorogi v nogah po nocham", "not_red", "translit", False, False, None, None, None, ""),
+    ("u papy byl infarkt", "not_red", "translit", False, False, None, None, None, ""),
+    ("мы берем 2 новых талона", "preg_negative", "ru", False, False, None, None, "", "'берем' + digit is not pregnancy"),
     ("that's an insult to my intelligence, where is the clinic", "not_red", "en", False, False, None, None, "en", "'insult' in English"),
 ]
 for text, cat, hint, red, preg, weeks, kb, lang, note in HAND:

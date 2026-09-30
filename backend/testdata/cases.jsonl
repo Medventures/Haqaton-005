@@ -1003,7 +1003,7 @@
 {"text": "I have a sore throat", "cat": "lang", "lang_hint": "en", "expect_red": false, "expect_pregnant": null, "expect_weeks": null, "expect_kb": null, "expect_lang": "en", "src": "gen", "note": ""}
 {"text": "my throat hurts, ЛОР?", "cat": "lang", "lang_hint": "en", "expect_red": false, "expect_pregnant": null, "expect_weeks": null, "expect_kb": null, "expect_lang": "en", "src": "gen", "note": ""}
 {"text": "хочу к ENT врачу", "cat": "lang", "lang_hint": "ru", "expect_red": false, "expect_pregnant": null, "expect_weeks": null, "expect_kb": null, "expect_lang": "", "src": "gen", "note": ""}
-{"text": "кеудем болит", "cat": "lang", "lang_hint": "mix", "expect_red": false, "expect_pregnant": null, "expect_weeks": null, "expect_kb": null, "expect_lang": "kk", "src": "gen", "note": ""}
+{"text": "кеудем болит", "cat": "lang", "lang_hint": "mix", "expect_red": true, "expect_pregnant": null, "expect_weeks": null, "expect_kb": null, "expect_lang": "kk", "src": "gen", "note": ""}
 {"text": "басым ауырады", "cat": "lang", "lang_hint": "kk", "expect_red": false, "expect_pregnant": null, "expect_weeks": null, "expect_kb": null, "expect_lang": "kk", "src": "gen", "note": ""}
 {"text": "ауырып жатыр", "cat": "lang", "lang_hint": "kk", "expect_red": false, "expect_pregnant": null, "expect_weeks": null, "expect_kb": null, "expect_lang": "kk", "src": "gen", "note": ""}
 {"text": "керек маған дәрігер", "cat": "lang", "lang_hint": "kk", "expect_red": false, "expect_pregnant": null, "expect_weeks": null, "expect_kb": null, "expect_lang": "kk", "src": "gen", "note": ""}
@@ -1012,8 +1012,8 @@
 {"text": "OK спасибо", "cat": "lang", "lang_hint": "ru", "expect_red": false, "expect_pregnant": null, "expect_weeks": null, "expect_kb": null, "expect_lang": "", "src": "gen", "note": ""}
 {"text": "МРТ сколько стоит", "cat": "lang", "lang_hint": "ru", "expect_red": false, "expect_pregnant": null, "expect_weeks": null, "expect_kb": null, "expect_lang": "", "src": "gen", "note": ""}
 {"text": "hello", "cat": "lang", "lang_hint": "en", "expect_red": false, "expect_pregnant": null, "expect_weeks": null, "expect_kb": null, "expect_lang": "en", "src": "gen", "note": ""}
-{"text": "kudem auyrady", "cat": "lang", "lang_hint": "translit", "expect_red": false, "expect_pregnant": null, "expect_weeks": null, "expect_kb": null, "expect_lang": "kk", "src": "gen", "note": ""}
-{"text": "bolit grud", "cat": "lang", "lang_hint": "translit", "expect_red": false, "expect_pregnant": null, "expect_weeks": null, "expect_kb": null, "expect_lang": "", "src": "gen", "note": ""}
+{"text": "kudem auyrady", "cat": "lang", "lang_hint": "translit", "expect_red": true, "expect_pregnant": null, "expect_weeks": null, "expect_kb": null, "expect_lang": "kk", "src": "gen", "note": ""}
+{"text": "bolit grud", "cat": "lang", "lang_hint": "translit", "expect_red": true, "expect_pregnant": null, "expect_weeks": null, "expect_kb": null, "expect_lang": "", "src": "gen", "note": ""}
 {"text": "salem, kerek dariger", "cat": "lang", "lang_hint": "translit", "expect_red": false, "expect_pregnant": null, "expect_weeks": null, "expect_kb": null, "expect_lang": "kk", "src": "gen", "note": ""}
 {"text": "zdravstvuyte, mne nuzhen vrach", "cat": "lang", "lang_hint": "translit", "expect_red": false, "expect_pregnant": null, "expect_weeks": null, "expect_kb": null, "expect_lang": "", "src": "gen", "note": ""}
 {"text": "pozhaluysta pomogite", "cat": "lang", "lang_hint": "translit", "expect_red": false, "expect_pregnant": null, "expect_weeks": null, "expect_kb": null, "expect_lang": "", "src": "gen", "note": ""}
@@ -1091,4 +1091,16 @@
 {"text": "kudem auyrady srochno", "cat": "red_translit", "lang_hint": "translit", "expect_red": true, "expect_pregnant": false, "expect_weeks": null, "expect_kb": null, "expect_lang": null, "src": "hand", "note": ""}
 {"text": "ne mogu dyshat pomogite", "cat": "red_translit", "lang_hint": "translit", "expect_red": true, "expect_pregnant": false, "expect_weeks": null, "expect_kb": null, "expect_lang": null, "src": "hand", "note": ""}
 {"text": "grudnoi rebenok kashlyaet", "cat": "not_red", "lang_hint": "translit", "expect_red": false, "expect_pregnant": false, "expect_weeks": null, "expect_kb": null, "expect_lang": null, "src": "hand", "note": "translit trap"}
+{"text": "не могу дышать носом, насморк неделю", "cat": "not_red", "lang_hint": "ru", "expect_red": false, "expect_pregnant": false, "expect_weeks": null, "expect_kb": null, "expect_lang": "", "src": "hand", "note": "nasal congestion"}
+{"text": "нос не дышит третий день", "cat": "not_red", "lang_hint": "ru", "expect_red": false, "expect_pregnant": false, "expect_weeks": null, "expect_kb": null, "expect_lang": "", "src": "hand", "note": "nasal congestion"}
+{"text": "носом дышать трудно", "cat": "not_red", "lang_hint": "ru", "expect_red": false, "expect_pregnant": false, "expect_weeks": null, "expect_kb": null, "expect_lang": "", "src": "hand", "note": "nasal congestion"}
+{"text": "была рвота, хочу сдать анализ крови", "cat": "not_red", "lang_hint": "ru", "expect_red": false, "expect_pregnant": false, "expect_weeks": null, "expect_kb": null, "expect_lang": "", "src": "hand", "note": "'рвот' + 'кров' in one part"}
+{"text": "наглотался воды в бассейне, кашляю", "cat": "not_red", "lang_hint": "ru", "expect_red": false, "expect_pregnant": false, "expect_weeks": null, "expect_kb": null, "expect_lang": "", "src": "hand", "note": ""}
+{"text": "припадаю на левую ногу после травмы", "cat": "not_red", "lang_hint": "ru", "expect_red": false, "expect_pregnant": false, "expect_weeks": null, "expect_kb": null, "expect_lang": "", "src": "hand", "note": "limping, not a seizure"}
+{"text": "жүрек ауруы бар, кардиологқа жазылғым келеді", "cat": "not_red", "lang_hint": "kk", "expect_red": false, "expect_pregnant": false, "expect_weeks": null, "expect_kb": null, "expect_lang": "kk", "src": "hand", "note": "known heart disease, booking"}
+{"text": "сердце проверить хочу", "cat": "not_red", "lang_hint": "ru", "expect_red": false, "expect_pregnant": false, "expect_weeks": null, "expect_kb": null, "expect_lang": "", "src": "hand", "note": ""}
+{"text": "губы сохнут и трескаются", "cat": "not_red", "lang_hint": "ru", "expect_red": false, "expect_pregnant": false, "expect_weeks": null, "expect_kb": null, "expect_lang": "", "src": "hand", "note": ""}
+{"text": "sudorogi v nogah po nocham", "cat": "not_red", "lang_hint": "translit", "expect_red": false, "expect_pregnant": false, "expect_weeks": null, "expect_kb": null, "expect_lang": null, "src": "hand", "note": ""}
+{"text": "u papy byl infarkt", "cat": "not_red", "lang_hint": "translit", "expect_red": false, "expect_pregnant": false, "expect_weeks": null, "expect_kb": null, "expect_lang": null, "src": "hand", "note": ""}
+{"text": "мы берем 2 новых талона", "cat": "preg_negative", "lang_hint": "ru", "expect_red": false, "expect_pregnant": false, "expect_weeks": null, "expect_kb": null, "expect_lang": "", "src": "hand", "note": "'берем' + digit is not pregnancy"}
 {"text": "that's an insult to my intelligence, where is the clinic", "cat": "not_red", "lang_hint": "en", "expect_red": false, "expect_pregnant": false, "expect_weeks": null, "expect_kb": null, "expect_lang": "en", "src": "hand", "note": "'insult' in English"}
