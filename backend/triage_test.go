@@ -104,3 +104,42 @@ func TestRedIfPregnantOnlyWhenPregnant(t *testing.T) {
 		t.Error("plain red must still work")
 	}
 }
+
+func TestDetectLanguage(t *testing.T) {
+	cases := map[string]string{
+		"У меня болит горло":    "",
+		"Тамағым ауырады":       "kk",
+		"I have a sore throat":  "en",
+		"my throat hurts, ЛОР?": "en",
+		"хочу к ENT врачу":      "",
+	}
+	for s, want := range cases {
+		if got := detectLanguage(s); got != want {
+			t.Errorf("%q: %q, want %q", s, got, want)
+		}
+	}
+}
+
+func TestEnglishTriage(t *testing.T) {
+	tr, err := LoadTriage("../triage_rules.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, s := range []string{"I have chest pain", "I can't breathe!", "my mom passed out"} {
+		if _, lang, ok := tr.CheckRed(s, false); !ok || lang != "en" {
+			t.Errorf("expected en red: %q", s)
+		}
+	}
+	if _, _, ok := tr.CheckRed("I have a sore throat", false); ok {
+		t.Error("sore throat is not red")
+	}
+	if _, _, ok := tr.CheckRed("some spotting today", true); !ok {
+		t.Error("spotting must be red when pregnant")
+	}
+	if ok, w := DetectPregnancy("I'm 28 weeks pregnant"); !ok || w == nil || *w != 28 {
+		t.Errorf("en pregnancy: %v %v", ok, w)
+	}
+	if ok, _ := DetectPregnancy("I'm not pregnant"); ok {
+		t.Error("negation in English")
+	}
+}

@@ -86,6 +86,26 @@ func maxUrgency(a, b string) string {
 	return a
 }
 
+// detectLanguage: kk by Kazakh-specific letters, en by Latin script; "" = let the LLM decide.
+func detectLanguage(s string) string {
+	if hasKazakhLetters(s) {
+		return "kk"
+	}
+	latin, cyr := 0, 0
+	for _, r := range s {
+		switch {
+		case unicode.Is(unicode.Latin, r):
+			latin++
+		case unicode.Is(unicode.Cyrillic, r):
+			cyr++
+		}
+	}
+	if latin > 0 && latin > cyr*3 {
+		return "en"
+	}
+	return ""
+}
+
 func hasKazakhLetters(s string) bool {
 	return strings.ContainsAny(strings.ToLower(s), "әғқңөұүһі")
 }
@@ -105,12 +125,15 @@ var pregnancyRe = []*regexp.Regexp{
 	regexp.MustCompile(`мерзім\D{0,20}\d+\s*апта`),
 	regexp.MustCompile(`\d+\s*(аптадамын|аптасындамын|аптадамыз)`),
 	regexp.MustCompile(`\d+\s*апталық`),
+	regexp.MustCompile(`\bpregnan`),
+	regexp.MustCompile(`\bexpecting a baby`),
+	regexp.MustCompile(`\d+\s*weeks?\s+(pregnant|along)`),
 }
 
 // Negations are removed before matching: "я не беременна" must not set the flag.
-var pregnancyNegRe = regexp.MustCompile(`не\s+беремен\S*|беременност\S*\s+(нет|исключена)|нет\s+беременност\S*|жүкті\s+емес\S*|жүктілік\s+жоқ|жүктілігім\s+жоқ`)
+var pregnancyNegRe = regexp.MustCompile(`не\s+беремен\S*|беременност\S*\s+(нет|исключена)|нет\s+беременност\S*|жүкті\s+емес\S*|жүктілік\s+жоқ|жүктілігім\s+жоқ|not\s+pregnant|no\s+pregnancy`)
 
-var weeksRe = regexp.MustCompile(`(\d{1,2})\s*(й|я|ой|ші|шы|інші|ыншы)?\s*(недел|апта)`)
+var weeksRe = regexp.MustCompile(`(\d{1,2})\s*(й|я|ой|ші|шы|інші|ыншы)?\s*(недел|апта|week)`)
 
 // DetectPregnancy: does the text say the patient is pregnant, and the gestation week if mentioned.
 func DetectPregnancy(text string) (bool, *int) {

@@ -358,6 +358,128 @@
    "all": [
     "суицид"
    ]
+  },
+  {
+   "lang": "en",
+   "all": [
+    "chest pain"
+   ]
+  },
+  {
+   "lang": "en",
+   "all": [
+    "pain",
+    "chest"
+   ]
+  },
+  {
+   "lang": "en",
+   "all": [
+    "heart attack"
+   ]
+  },
+  {
+   "lang": "en",
+   "all": [
+    "face",
+    "numb"
+   ]
+  },
+  {
+   "lang": "en",
+   "all": [
+    "stroke"
+   ]
+  },
+  {
+   "lang": "en",
+   "all": [
+    "can t speak"
+   ]
+  },
+  {
+   "lang": "en",
+   "all": [
+    "can t breathe"
+   ]
+  },
+  {
+   "lang": "en",
+   "all": [
+    "cannot breathe"
+   ]
+  },
+  {
+   "lang": "en",
+   "all": [
+    "short of breath"
+   ]
+  },
+  {
+   "lang": "en",
+   "all": [
+    "hard to breathe"
+   ]
+  },
+  {
+   "lang": "en",
+   "all": [
+    "severe bleeding"
+   ]
+  },
+  {
+   "lang": "en",
+   "all": [
+    "bleeding won t stop"
+   ]
+  },
+  {
+   "lang": "en",
+   "all": [
+    "unconscious"
+   ]
+  },
+  {
+   "lang": "en",
+   "all": [
+    "passed out"
+   ]
+  },
+  {
+   "lang": "en",
+   "all": [
+    "fainted"
+   ]
+  },
+  {
+   "lang": "en",
+   "all": [
+    "seizure"
+   ]
+  },
+  {
+   "lang": "en",
+   "all": [
+    "suicid"
+   ]
+  },
+  {
+   "lang": "en",
+   "all": [
+    "kill myself"
+   ]
+  },
+  {
+   "lang": "en",
+   "all": [
+    "don t want to live"
+   ]
+  },
+  {
+   "lang": "en",
+   "all": [
+    "end my life"
+   ]
   }
  ],
  "yellow": {
@@ -404,6 +526,23 @@
    "жарақат",
    "сынық",
    "күйік"
+  ],
+  "en": [
+   "high fever",
+   "fever 39",
+   "severe pain",
+   "sharp pain",
+   "stomach pain",
+   "vomiting",
+   "blood in urine",
+   "dizzy",
+   "swelling",
+   "allergy",
+   "rash all over",
+   "pregnant",
+   "injury",
+   "fracture",
+   "burn"
   ]
  },
  "red_if_pregnant": [
@@ -705,6 +844,75 @@
    "all": [
     "қызуым 39"
    ]
+  },
+  {
+   "lang": "en",
+   "all": [
+    "lower",
+    "abdom"
+   ]
+  },
+  {
+   "lang": "en",
+   "all": [
+    "bleeding"
+   ]
+  },
+  {
+   "lang": "en",
+   "all": [
+    "spotting"
+   ]
+  },
+  {
+   "lang": "en",
+   "all": [
+    "water broke"
+   ]
+  },
+  {
+   "lang": "en",
+   "all": [
+    "waters broke"
+   ]
+  },
+  {
+   "lang": "en",
+   "all": [
+    "leaking fluid"
+   ]
+  },
+  {
+   "lang": "en",
+   "all": [
+    "baby",
+    "not moving"
+   ]
+  },
+  {
+   "lang": "en",
+   "all": [
+    "contraction"
+   ]
+  },
+  {
+   "lang": "en",
+   "all": [
+    "severe headache"
+   ]
+  },
+  {
+   "lang": "en",
+   "all": [
+    "blurred vision"
+   ]
+  },
+  {
+   "lang": "en",
+   "all": [
+    "fell on",
+    "belly"
+   ]
   }
  ],
  "yellow_if_pregnant": {
@@ -739,6 +947,18 @@
    "зәр шығарғанда ашиды",
    "қышу",
    "қан қысымы көтерілді"
+  ],
+  "en": [
+   "nausea",
+   "vomiting",
+   "swollen legs",
+   "heartburn",
+   "discharge",
+   "back pain",
+   "dizziness",
+   "fever",
+   "cough",
+   "burning when urinating"
   ]
  },
  "ask_pregnancy_if": {
@@ -758,6 +978,14 @@
    "етеккір кешік",
    "етеккірім келмей",
    "қанды бөлініс"
+  ],
+  "en": [
+   "lower abdomen",
+   "lower belly",
+   "spotting",
+   "period is late",
+   "missed period",
+   "late period"
   ]
  }
 }
