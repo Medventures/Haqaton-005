@@ -6,6 +6,7 @@ import './chat.css'
 import './operator.css'
 import './operator-conversation.css'
 import './responsive.css'
+import './i18n'
 import App from './App.tsx'
 
 createRoot(document.getElementById('root')!).render(
