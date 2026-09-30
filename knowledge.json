@@ -1,0 +1,265 @@
+{
+  "_comment": "Демо-данные MedHub Clinic (вымышленная клиника, Астана): адрес, часы, контакты и инструкции условные, цены хранятся только в catalog.json.",
+  "entries": [
+    {
+      "id": "address",
+      "keywords": {"ru": ["адрес", "где находит", "как добраться", "как доехать", "автобус", "расположен"], "kk": ["мекенжай", "қай жерде", "қалай жетуге", "қалай баруға", "автобус", "орналасқан"], "en": ["address", "where are you", "location", "how to get", "directions", "bus"]},
+      "answer": {
+        "ru": "MedHub Clinic находится по адресу: г. Астана, проспект Кабанбай батыра, 40, первый этаж. Рядом остановка «Кабанбай батыра», сюда идут автобусы 10, 21 и 40. Вход с улицы, у входа есть вывеска MedHub Clinic.",
+        "kk": "MedHub Clinic мекенжайы: Астана қаласы, Қабанбай батыр даңғылы, 40, бірінші қабат. Жақын жерде «Қабанбай батыр» аялдамасы бар, оған 10, 21 және 40 автобустары барады. Кіреберіс көше жақта, есік үстінде MedHub Clinic маңдайшасы бар.",
+        "en": "MedHub Clinic is located at 40 Kabanbay Batyr Avenue, ground floor, Astana. The nearest stop is Kabanbay Batyr, served by buses 10, 21 and 40. The entrance is from the street, marked with a MedHub Clinic sign."
+      },
+      "service_ids": []
+    },
+    {
+      "id": "hours",
+      "keywords": {"ru": ["режим работы", "часы работы", "во сколько", "открыт", "выходн", "работаете"], "kk": ["жұмыс уақыты", "жұмыс кестесі", "қашан ашық", "сағат нешеде", "демалыс"], "en": ["opening hours", "open", "working hours", "weekend", "closing time"]},
+      "answer": {
+        "ru": "Клиника работает с понедельника по пятницу с 8:00 до 20:00, в субботу с 9:00 до 16:00. Воскресенье и государственные праздники — выходные дни. Забор крови проводится в будни с 8:00 до 11:00.",
+        "kk": "Клиника дүйсенбіден жұмаға дейін 8:00-ден 20:00-ге дейін, сенбі күні 9:00-ден 16:00-ге дейін жұмыс істейді. Жексенбі және мемлекеттік мерекелер — демалыс күндері. Қан алу жұмыс күндері 8:00-ден 11:00-ге дейін жүргізіледі.",
+        "en": "The clinic is open Monday to Friday from 8:00 to 20:00 and on Saturday from 9:00 to 16:00. It is closed on Sundays and public holidays. Blood samples are taken on weekdays from 8:00 to 11:00."
+      },
+      "service_ids": []
+    },
+    {
+      "id": "contacts",
+      "keywords": {"ru": ["телефон", "позвонить", "номер", "контакт", "колл-центр", "почта"], "kk": ["телефон", "қоңырау", "нөмір", "байланыс", "хабарлас"], "en": ["phone", "call you", "contact", "phone number", "email", "call center"]},
+      "answer": {
+        "ru": "Контакт-центр MedHub Clinic: +7 (7172) 55-00-00, работает ежедневно с 8:00 до 21:00. Электронная почта: info@medhub-clinic.kz. Операторы отвечают на русском, казахском и английском языках.",
+        "kk": "MedHub Clinic байланыс орталығы: +7 (7172) 55-00-00, күн сайын 8:00-ден 21:00-ге дейін жұмыс істейді. Электрондық пошта: info@medhub-clinic.kz. Операторлар орыс, қазақ және ағылшын тілдерінде жауап береді.",
+        "en": "MedHub Clinic contact center: +7 (7172) 55-00-00, open daily from 8:00 to 21:00. Email: info@medhub-clinic.kz. Operators speak Russian, Kazakh and English."
+      },
+      "service_ids": []
+    },
+    {
+      "id": "parking",
+      "keywords": {"ru": ["парковк", "припарков", "стоянк", "на машине", "автомобил"], "kk": ["көлік қою", "тұрақ", "паркинг", "көлікпен"], "en": ["parking", "park", "car", "drive"]},
+      "answer": {
+        "ru": "Для пациентов есть бесплатная парковка во дворе клиники на 20 мест. Въезд со стороны улицы Сыганак. Места у входа отведены для людей с инвалидностью.",
+        "kk": "Науқастар үшін клиника ауласында 20 орынға арналған тегін тұрақ бар. Көлік Сығанақ көшесі жағынан кіреді. Кіреберіс жанындағы орындар мүгедектігі бар адамдарға арналған.",
+        "en": "Free patient parking for 20 cars is available in the clinic courtyard. The entrance is from Syganak Street. Spaces near the door are reserved for people with disabilities."
+      },
+      "service_ids": []
+    },
+    {
+      "id": "accessibility",
+      "keywords": {"ru": ["инвалид", "коляск", "пандус", "лифт", "маломобил"], "kk": ["мүгедек", "арба", "пандус", "лифт"], "en": ["wheelchair", "disabilit", "ramp", "elevator", "accessib"]},
+      "answer": {
+        "ru": "Вход в клинику оборудован пандусом, все кабинеты расположены на первом этаже. Если вам нужна помощь сотрудника при посещении, сообщите об этом оператору при записи.",
+        "kk": "Клиника кіреберісінде пандус бар, барлық кабинеттер бірінші қабатта орналасқан. Келген кезде қызметкердің көмегі қажет болса, жазылу кезінде операторға айтыңыз.",
+        "en": "The clinic entrance has a ramp and all rooms are on the ground floor. If you need assistance from staff during your visit, please let the operator know when booking."
+      },
+      "service_ids": []
+    },
+    {
+      "id": "booking",
+      "keywords": {"ru": ["записат", "запись", "как записа", "свободное время", "талон"], "kk": ["жазыл", "жазылу", "қалай жазыл", "бос уақыт"], "en": ["book", "appointment", "sign up", "schedule a visit", "available slot"]},
+      "answer": {
+        "ru": "Записаться можно прямо в этом чате: опишите, что вас беспокоит, или назовите нужную услугу, и я предложу врача и свободное время. Также можно записаться по телефону контакт-центра +7 (7172) 55-00-00. После записи оператор может связаться с вами для подтверждения.",
+        "kk": "Осы чатта тікелей жазылуға болады: не мазалайтынын жазыңыз немесе қажетті қызметті атаңыз, мен дәрігер мен бос уақытты ұсынамын. Сондай-ақ байланыс орталығының +7 (7172) 55-00-00 телефоны арқылы жазылуға болады. Жазылғаннан кейін растау үшін оператор сізге хабарласуы мүмкін.",
+        "en": "You can book right here in this chat: describe what is bothering you or name the service you need, and I will suggest a doctor and an available time. You can also book by calling the contact center at +7 (7172) 55-00-00. After booking, an operator may contact you to confirm."
+      },
+      "service_ids": []
+    },
+    {
+      "id": "reschedule_cancel",
+      "keywords": {"ru": ["отмен", "перенес", "перенос", "изменить время", "не смогу прийти"], "kk": ["болдырма", "бас тарт", "ауыстыр", "уақытын өзгерт", "келе алмаймын"], "en": ["cancel", "reschedule", "change my appointment", "move my appointment", "can't come"]},
+      "answer": {
+        "ru": "Чтобы перенести или отменить запись, позвоните в контакт-центр по номеру +7 (7172) 55-00-00. Пожалуйста, сообщите об этом не позднее чем за 2 часа до приёма, чтобы время могли занять другие пациенты.",
+        "kk": "Жазылуды ауыстыру немесе болдырмау үшін +7 (7172) 55-00-00 нөмірі бойынша байланыс орталығына қоңырау шалыңыз. Уақытты басқа науқастар пайдалана алуы үшін бұл туралы қабылдауға кемінде 2 сағат қалғанда хабарлаңыз.",
+        "en": "To reschedule or cancel an appointment, please call the contact center at +7 (7172) 55-00-00. Kindly let us know at least 2 hours before the visit so the time can be offered to other patients."
+      },
+      "service_ids": []
+    },
+    {
+      "id": "late",
+      "keywords": {"ru": ["опазд", "опоздан", "задерживаюсь", "не успеваю"], "kk": ["кешіг", "кешігіп", "үлгермей"], "en": ["late", "running late", "delayed", "won't make it on time"]},
+      "answer": {
+        "ru": "Пожалуйста, приходите за 10–15 минут до приёма, чтобы оформить документы. Если вы опаздываете, позвоните в контакт-центр: при опоздании более чем на 15 минут приём может быть перенесён на другое свободное время.",
+        "kk": "Құжаттарды рәсімдеу үшін қабылдауға 10–15 минут бұрын келіңіз. Кешігіп жатсаңыз, байланыс орталығына қоңырау шалыңыз: 15 минуттан артық кешіккен жағдайда қабылдау басқа бос уақытқа ауыстырылуы мүмкін.",
+        "en": "Please arrive 10 to 15 minutes before your appointment to complete the paperwork. If you are running late, call the contact center: if you are more than 15 minutes late, your visit may be moved to another available time."
+      },
+      "service_ids": []
+    },
+    {
+      "id": "payment",
+      "keywords": {"ru": ["оплат", "оплачив", "карт", "наличн", "kaspi", "каспи"], "kk": ["төле", "төлем", "карта", "қолма-қол", "kaspi", "каспи"], "en": ["pay", "payment", "card", "cash", "kaspi"]},
+      "answer": {
+        "ru": "Оплатить услуги можно на ресепшене наличными, банковской картой или через Kaspi QR. Оплата производится перед приёмом или исследованием. Стоимость конкретной услуги я могу подсказать в этом чате.",
+        "kk": "Қызметтерге тіркеу орнында қолма-қол ақшамен, банк картасымен немесе Kaspi QR арқылы төлеуге болады. Төлем қабылдау немесе зерттеу алдында жасалады. Нақты қызметтің бағасын осы чатта айтып бере аламын.",
+        "en": "You can pay at the reception desk in cash, by bank card or via Kaspi QR. Payment is made before the visit or examination. I can tell you the price of a specific service here in the chat."
+      },
+      "service_ids": []
+    },
+    {
+      "id": "osms",
+      "keywords": {"ru": ["осмс", "обязательное страхован", "бесплатно", "гобмп", "по страховке"], "kk": ["мәмс", "осмс", "міндетті сақтандыру", "тегін", "төмкк"], "en": ["compulsory insurance", "osms", "free of charge", "state insurance", "social health insurance"]},
+      "answer": {
+        "ru": "Возможность получить услугу в рамках ОСМС (обязательного социального медицинского страхования) зависит от вашего статуса застрахованности и наличия направления. Покрытие проверяет оператор контакт-центра по номеру +7 (7172) 55-00-00. Возьмите с собой удостоверение личности.",
+        "kk": "МӘМС (міндетті әлеуметтік медициналық сақтандыру) аясында қызмет алу мүмкіндігі сіздің сақтандыру мәртебеңізге және жолдаманың болуына байланысты. Қамтуды +7 (7172) 55-00-00 нөмірі бойынша байланыс орталығының операторы тексереді. Жеке куәлігіңізді ала келіңіз.",
+        "en": "Whether a service can be provided under OSMS (compulsory social health insurance) depends on your insurance status and whether you have a referral. Coverage is checked by a contact center operator at +7 (7172) 55-00-00. Please bring your ID card."
+      },
+      "service_ids": []
+    },
+    {
+      "id": "dms",
+      "keywords": {"ru": ["дмс", "добровольн", "страховая компан", "страховой полис", "полис"], "kk": ["емс", "ерікті сақтандыру", "сақтандыру компания", "полис"], "en": ["private insurance", "voluntary insurance", "dms", "insurer", "insurance policy"]},
+      "answer": {
+        "ru": "Клиника принимает пациентов по полисам ДМС (добровольного медицинского страхования) ряда страховых компаний. Покрытие конкретной услуги проверяет оператор контакт-центра: сообщите ему название страховой компании и номер полиса. Если услуга не покрывается, её можно оплатить самостоятельно.",
+        "kk": "Клиника бірқатар сақтандыру компанияларының ЕМС (ерікті медициналық сақтандыру) полистері бойынша науқастарды қабылдайды. Нақты қызметтің қамтылуын байланыс орталығының операторы тексереді: оған сақтандыру компаниясының атауын және полис нөмірін айтыңыз. Қызмет қамтылмаса, оны өзіңіз төлей аласыз.",
+        "en": "The clinic accepts voluntary health insurance (DMS) policies from a number of insurers. Coverage for a specific service is checked by a contact center operator, so please give them your insurer's name and policy number. If a service is not covered, you can pay for it yourself."
+      },
+      "service_ids": []
+    },
+    {
+      "id": "documents",
+      "keywords": {"ru": ["документ", "что взять", "удостоверени", "паспорт", "что с собой"], "kk": ["құжат", "не алу керек", "жеке куәлік", "төлқұжат", "өзіммен"], "en": ["documents", "what to bring", "id card", "passport", "bring with me"]},
+      "answer": {
+        "ru": "Возьмите с собой удостоверение личности или паспорт, полис ДМС при наличии, направление врача, если оно есть, и результаты предыдущих обследований и анализов. Для ребёнка нужно свидетельство о рождении или удостоверение ребёнка.",
+        "kk": "Өзіңізбен бірге жеке куәлікті немесе төлқұжатты, болса ЕМС полисін, дәрігер жолдамасын (болған жағдайда) және бұрынғы зерттеулер мен анализдердің нәтижелерін ала келіңіз. Бала үшін туу туралы куәлік немесе баланың жеке куәлігі қажет.",
+        "en": "Please bring your ID card or passport, your voluntary insurance policy if you have one, a doctor's referral if you have one, and the results of previous examinations and tests. For a child, bring the birth certificate or the child's ID."
+      },
+      "service_ids": []
+    },
+    {
+      "id": "children",
+      "keywords": {"ru": ["ребён", "ребен", "детск", "несовершеннолетн", "подрост"], "kk": ["бала", "балам", "балалар", "кәмелетке толмаған", "жасөспірім"], "en": ["child", "children", "kid", "minor", "teenager", "my son", "my daughter"]},
+      "answer": {
+        "ru": "Детей принимает педиатр. Пациентов до 18 лет обязательно сопровождает родитель или законный представитель с удостоверением личности. Возьмите свидетельство о рождении ребёнка и его прививочный паспорт, если он есть.",
+        "kk": "Балаларды педиатр қабылдайды. 18 жасқа толмаған науқастармен бірге міндетті түрде жеке куәлігі бар ата-анасы немесе заңды өкілі келуі тиіс. Баланың туу туралы куәлігін және болса егу төлқұжатын ала келіңіз.",
+        "en": "Children are seen by a pediatrician. Patients under 18 must be accompanied by a parent or legal representative with an ID card. Please bring the child's birth certificate and vaccination record if available."
+      },
+      "service_ids": ["ped-consult"]
+    },
+    {
+      "id": "prep_cbc",
+      "keywords": {"ru": ["анализ крови", "сдать кровь", "забор крови", "натощак", "подготовка к анализ"], "kk": ["қан анализ", "қан тапсыр", "қан алу", "аш қарынға"], "en": ["blood test", "blood count", "cbc", "fasting", "blood draw"]},
+      "answer": {
+        "ru": "Общий анализ крови обычно сдают утром натощак: после последнего приёма пищи должно пройти 8–12 часов, пить чистую воду можно. Накануне избегайте жирной пищи, алкоголя и интенсивных нагрузок, не курите за час до анализа. Если врач дал вам иные указания, следуйте им.",
+        "kk": "Жалпы қан анализі әдетте таңертең аш қарынға тапсырылады: соңғы тамақтанғаннан кейін 8–12 сағат өтуі керек, таза су ішуге болады. Алдыңғы күні майлы тағамнан, алкогольден және ауыр жүктемеден аулақ болыңыз, анализге бір сағат қалғанда темекі шекпеңіз. Дәрігер басқаша нұсқау берсе, соны орындаңыз.",
+        "en": "A complete blood count is usually taken in the morning on an empty stomach: 8 to 12 hours should pass after your last meal, and plain water is allowed. The day before, avoid fatty food, alcohol and intense exercise, and do not smoke for an hour before the test. If your doctor has given you different instructions, follow them."
+      },
+      "service_ids": ["ther-cbc"]
+    },
+    {
+      "id": "prep_gastro_us",
+      "keywords": {"ru": ["подготовка к узи брюш", "узи брюшн", "узи живота", "узи печен"], "kk": ["іш қуысының удз", "іш қуысы", "іштің удз", "бауыр удз"], "en": ["abdominal ultrasound", "ultrasound of the abdomen", "liver ultrasound", "prepare for ultrasound"]},
+      "answer": {
+        "ru": "УЗИ брюшной полости проводится натощак: не ешьте 6–8 часов перед исследованием. За 2–3 дня до УЗИ обычно рекомендуют ограничить продукты, вызывающие газообразование (капусту, бобовые, газированные напитки, чёрный хлеб). Следуйте указаниям врача, если он дал другие рекомендации.",
+        "kk": "Іш қуысының УДЗ-сы аш қарынға жүргізіледі: зерттеу алдында 6–8 сағат тамақ ішпеңіз. УДЗ-ға 2–3 күн қалғанда әдетте газ түзетін тағамдарды (қырыққабат, бұршақ тұқымдастар, газдалған сусындар, қара нан) шектеу ұсынылады. Дәрігер басқа ұсыныс берсе, соны орындаңыз.",
+        "en": "An abdominal ultrasound is done on an empty stomach, so do not eat for 6 to 8 hours before the scan. For 2 to 3 days beforehand it is usually recommended to limit gas-producing foods such as cabbage, beans, fizzy drinks and dark bread. Follow your doctor's instructions if they differ."
+      },
+      "service_ids": ["gastro-us"]
+    },
+    {
+      "id": "prep_gyn_us",
+      "keywords": {"ru": ["узи малого таза", "узи органов малого", "гинекологическ узи", "трансвагинал", "день цикла"], "kk": ["кіші жамбас", "жамбас ағзалары", "гинекологиялық удз", "цикл күні"], "en": ["pelvic ultrasound", "transvaginal", "gynecological ultrasound", "day of cycle"]},
+      "answer": {
+        "ru": "Подготовка к УЗИ органов малого таза зависит от способа исследования: для трансабдоминального УЗИ обычно нужен наполненный мочевой пузырь (выпить около литра воды за час до исследования), для трансвагинального, наоборот, мочевой пузырь опорожняют. День менструального цикла для исследования назначает врач. Уточните способ и сроки у своего врача и следуйте его указаниям.",
+        "kk": "Кіші жамбас ағзаларының УДЗ-сына дайындық зерттеу тәсіліне байланысты: трансабдоминальды УДЗ үшін әдетте қуық толы болуы керек (зерттеуге бір сағат қалғанда шамамен бір литр су ішу), ал трансвагинальды УДЗ алдында, керісінше, қуықты босатады. Зерттеуге етеккір циклінің қай күні келу керегін дәрігер белгілейді. Тәсілі мен мерзімін дәрігеріңізден нақтылап, оның нұсқауларын орындаңыз.",
+        "en": "Preparation for a pelvic ultrasound depends on the method: a transabdominal scan usually requires a full bladder (drink about a liter of water an hour before), while for a transvaginal scan the bladder should be emptied. The day of the menstrual cycle for the scan is set by the doctor. Please confirm the method and timing with your doctor and follow their instructions."
+      },
+      "service_ids": ["gyn-us"]
+    },
+    {
+      "id": "prep_ecg",
+      "keywords": {"ru": ["экг", "кардиограмм", "подготовка к экг"], "kk": ["экг", "кардиограмма", "экг-ға дайындық"], "en": ["ecg", "ekg", "electrocardiogram", "cardiogram"]},
+      "answer": {
+        "ru": "Специальной подготовки к ЭКГ обычно не требуется. За 1–2 часа до исследования не рекомендуется пить кофе, курить и выполнять физические нагрузки; перед процедурой отдохните 10–15 минут. Не наносите крем или лосьон на грудь и наденьте одежду, которую легко снять до пояса. Если вы принимаете лекарства, не отменяйте их без указания врача.",
+        "kk": "ЭКГ-ға әдетте арнайы дайындық қажет емес. Зерттеуге 1–2 сағат қалғанда кофе ішпеген, темекі шекпеген және дене жүктемесінен аулақ болған жөн; процедура алдында 10–15 минут демалыңыз. Кеудеңізге крем немесе лосьон жақпаңыз, белге дейін оңай шешілетін киім киіңіз. Дәрі қабылдасаңыз, дәрігердің нұсқауынсыз тоқтатпаңыз.",
+        "en": "An ECG usually needs no special preparation. For 1 to 2 hours beforehand it is best to avoid coffee, smoking and physical exertion, and to rest for 10 to 15 minutes before the procedure. Do not apply cream or lotion to your chest, and wear clothes that are easy to remove to the waist. If you take medication, do not stop it without your doctor's instructions."
+      },
+      "service_ids": ["card-ecg"]
+    },
+    {
+      "id": "prep_echo",
+      "keywords": {"ru": ["эхокг", "эхо кг", "узи сердца", "эхокардиограф"], "kk": ["эхокг", "жүрек удз", "жүректің удз", "эхокардиография"], "en": ["echocardiography", "echocardiogram", "heart ultrasound", "echo"]},
+      "answer": {
+        "ru": "Специальной подготовки к ЭхоКГ обычно не требуется, есть и пить можно как обычно. Возьмите с собой результаты предыдущих ЭКГ и ЭхоКГ, если они есть, и наденьте одежду, которую легко снять до пояса. Принимаемые лекарства не отменяйте без указания врача.",
+        "kk": "ЭхоКГ-ға әдетте арнайы дайындық қажет емес, әдеттегідей тамақтанып, су ішуге болады. Бұрынғы ЭКГ және ЭхоКГ нәтижелері болса, ала келіңіз және белге дейін оңай шешілетін киім киіңіз. Қабылдап жүрген дәрілерді дәрігердің нұсқауынсыз тоқтатпаңыз.",
+        "en": "Echocardiography usually needs no special preparation, and you can eat and drink as normal. Bring the results of any previous ECG or echocardiography and wear clothes that are easy to remove to the waist. Do not stop any medication without your doctor's instructions."
+      },
+      "service_ids": ["card-echo"]
+    },
+    {
+      "id": "prep_mri",
+      "keywords": {"ru": ["мрт", "томограф", "подготовка к мрт", "кардиостимулятор", "клаустрофоб", "имплант"], "kk": ["мрт", "томография", "кардиостимулятор", "клаустрофобия", "имплант"], "en": ["mri", "magnetic resonance", "pacemaker", "claustrophobia", "implant", "metal"]},
+      "answer": {
+        "ru": "МРТ проводится по направлению врача. Обязательно заранее сообщите врачу, если у вас есть кардиостимулятор, металлические импланты, протезы, скобы или осколки, а также о клаустрофобии или беременности. Перед исследованием нужно снять все металлические предметы: украшения, часы, ремень, заколки. Возьмите направление и результаты прошлых исследований и следуйте указаниям врача.",
+        "kk": "МРТ дәрігердің жолдамасымен жүргізіледі. Кардиостимулятор, металл импланттар, протездер, қапсырмалар немесе сынықтар болса, сондай-ақ клаустрофобия немесе жүктілік туралы дәрігерге алдын ала міндетті түрде айтыңыз. Зерттеу алдында барлық металл заттарды шешу керек: әшекейлер, сағат, белдік, шаш қыстырғыштары. Жолдаманы және бұрынғы зерттеулердің нәтижелерін ала келіп, дәрігердің нұсқауларын орындаңыз.",
+        "en": "An MRI is done with a doctor's referral. Be sure to tell the doctor in advance if you have a pacemaker, metal implants, prostheses, clips or fragments, and also if you have claustrophobia or may be pregnant. Before the scan you will need to remove all metal items such as jewelry, watches, belts and hairpins. Bring your referral and previous results, and follow your doctor's instructions."
+      },
+      "service_ids": ["neuro-mri"]
+    },
+    {
+      "id": "results",
+      "keywords": {"ru": ["результат", "когда будут готов", "заключени", "получить анализ", "готовы ли"], "kk": ["нәтиже", "қашан дайын", "қорытынды", "анализді алу"], "en": ["results", "test results", "results ready", "get my results", "scan report"]},
+      "answer": {
+        "ru": "Результат общего анализа крови обычно готов в тот же день. Заключение по УЗИ, ЭКГ и ЭхоКГ выдаётся сразу после исследования, по МРТ — в течение 1–2 рабочих дней. Результаты можно получить на ресепшене с удостоверением личности или по электронной почте по вашему запросу. Объяснить результаты может только врач на приёме.",
+        "kk": "Жалпы қан анализінің нәтижесі әдетте сол күні дайын болады. УДЗ, ЭКГ және ЭхоКГ қорытындысы зерттеуден кейін бірден беріледі, МРТ қорытындысы 1–2 жұмыс күні ішінде дайын болады. Нәтижелерді тіркеу орнынан жеке куәлікпен немесе сұрауыңыз бойынша электрондық пошта арқылы алуға болады. Нәтижелерді тек дәрігер қабылдауда түсіндіре алады.",
+        "en": "Complete blood count results are usually ready the same day. Ultrasound, ECG and echocardiography reports are given right after the examination, and MRI reports within 1 to 2 working days. You can collect results at the reception desk with your ID or receive them by email on request. Only a doctor can explain your results during a visit."
+      },
+      "service_ids": ["ther-cbc", "gastro-us", "gyn-us", "card-ecg", "card-echo", "neuro-mri"]
+    },
+    {
+      "id": "home_visit",
+      "keywords": {"ru": ["на дом", "вызов врача", "вызвать врача", "выезд", "домой"], "kk": ["үйге", "үйге шақыр", "дәрігерді шақыр", "үйге келу"], "en": ["home visit", "house call", "come to my home", "visit at home"]},
+      "answer": {
+        "ru": "К сожалению, MedHub Clinic не выполняет выезды на дом. Чтобы подобрать удобный вариант, свяжитесь с оператором контакт-центра по номеру +7 (7172) 55-00-00. При угрозе жизни звоните 103.",
+        "kk": "Өкінішке қарай, MedHub Clinic үйге барып қызмет көрсетпейді. Ыңғайлы нұсқаны таңдау үшін +7 (7172) 55-00-00 нөмірі бойынша байланыс орталығының операторына хабарласыңыз. Өмірге қауіп төнсе, 103 нөміріне қоңырау шалыңыз.",
+        "en": "Unfortunately, MedHub Clinic does not offer home visits. To find a convenient option, please contact the operator at +7 (7172) 55-00-00. In a life-threatening situation, call 103."
+      },
+      "service_ids": []
+    },
+    {
+      "id": "languages",
+      "keywords": {"ru": ["на каком языке", "языке", "по-казахски", "по-английски", "казахском"], "kk": ["қай тілде", "тілде", "қазақша", "орысша", "ағылшынша"], "en": ["language", "english", "speak english", "kazakh", "russian"]},
+      "answer": {
+        "ru": "Этот чат и контакт-центр работают на русском, казахском и английском языках. Большинство врачей ведут приём на русском и казахском; если вам нужен приём на английском, сообщите об этом при записи.",
+        "kk": "Бұл чат пен байланыс орталығы орыс, қазақ және ағылшын тілдерінде жұмыс істейді. Дәрігерлердің көбі орыс және қазақ тілдерінде қабылдайды; ағылшын тілінде қабылдау қажет болса, жазылу кезінде айтыңыз.",
+        "en": "This chat and the contact center work in Russian, Kazakh and English. Most doctors consult in Russian and Kazakh; if you need a consultation in English, please mention it when booking."
+      },
+      "service_ids": []
+    },
+    {
+      "id": "privacy",
+      "keywords": {"ru": ["персональн", "конфиденциальн", "мои данные", "безопасн данн", "врачебная тайна"], "kk": ["жеке дерек", "құпия", "менің деректерім", "дәрігерлік құпия"], "en": ["personal data", "privacy", "my data", "confidential", "data protection"]},
+      "answer": {
+        "ru": "Ваши персональные и медицинские данные хранятся внутри клиники и используются только для записи и оказания помощи. Этот чат не передаёт ваши данные третьим лицам. Клиника соблюдает законодательство Республики Казахстан о персональных данных и врачебную тайну.",
+        "kk": "Сіздің жеке және медициналық деректеріңіз клиника ішінде сақталады және тек жазылу мен көмек көрсету үшін пайдаланылады. Бұл чат деректеріңізді үшінші тұлғаларға бермейді. Клиника Қазақстан Республикасының дербес деректер туралы заңнамасын және дәрігерлік құпияны сақтайды.",
+        "en": "Your personal and medical data are stored within the clinic and used only for booking and providing care. This chat does not share your data with third parties. The clinic complies with the personal data laws of the Republic of Kazakhstan and medical confidentiality."
+      },
+      "service_ids": []
+    },
+    {
+      "id": "certificates",
+      "keywords": {"ru": ["справк", "больничн", "лист нетрудоспособ", "выписк", "направлени"], "kk": ["анықтама", "еңбекке жарамсыздық", "ауру парағы", "үзінді", "жолдама"], "en": ["certificate", "sick leave", "sick note", "medical note", "referral"]},
+      "answer": {
+        "ru": "Справки, выписки, направления и листы временной нетрудоспособности выдаёт врач на приёме, если для этого есть медицинские основания. Чат не оформляет эти документы. Если вам нужен определённый документ, скажите об этом врачу в начале приёма.",
+        "kk": "Анықтамаларды, үзінділерді, жолдамаларды және уақытша еңбекке жарамсыздық парақтарын медициналық негіз болса, дәрігер қабылдау кезінде береді. Чат бұл құжаттарды рәсімдемейді. Белгілі бір құжат керек болса, қабылдаудың басында дәрігерге айтыңыз.",
+        "en": "Certificates, medical summaries, referrals and sick leave notes are issued by the doctor during the visit when there are medical grounds for them. The chat cannot issue these documents. If you need a particular document, tell the doctor at the start of the visit."
+      },
+      "service_ids": []
+    },
+    {
+      "id": "bot_scope",
+      "keywords": {"ru": ["что ты умеешь", "что умеет", "ты бот", "поставь диагноз", "какое лекарство", "чем лечить"], "kk": ["не істей аласың", "сен ботсың", "диагноз қой", "қандай дәрі", "немен емдеу"], "en": ["what can you do", "are you a bot", "diagnose", "what medicine", "how to treat", "prescribe"]},
+      "answer": {
+        "ru": "Я помогаю подобрать врача и услугу, показываю свободное время и цены, записываю на приём и отвечаю на вопросы о работе клиники. Я не ставлю диагнозы и не назначаю лечение или лекарства — это может сделать только врач на приёме. При угрозе жизни звоните 103.",
+        "kk": "Мен дәрігер мен қызметті таңдауға көмектесемін, бос уақыт пен бағаларды көрсетемін, қабылдауға жазамын және клиника жұмысы туралы сұрақтарға жауап беремін. Мен диагноз қоймаймын, ем немесе дәрі тағайындамаймын — мұны тек дәрігер қабылдауда жасай алады. Өмірге қауіп төнсе, 103 нөміріне қоңырау шалыңыз.",
+        "en": "I can help you choose a doctor and a service, show available times and prices, book an appointment and answer questions about the clinic. I do not diagnose or prescribe treatment or medication; only a doctor can do that during a visit. In a life-threatening situation, call 103."
+      },
+      "service_ids": []
+    },
+    {
+      "id": "emergency",
+      "keywords": {"ru": ["скорая", "экстренн", "срочно", "неотложн", "103"], "kk": ["жедел жәрдем", "шұғыл", "тез арада", "103"], "en": ["emergency", "ambulance", "urgent", "103"]},
+      "answer": {
+        "ru": "MedHub Clinic не оказывает экстренную помощь. При угрозе жизни — сильной боли в груди, затруднённом дыхании, потере сознания, признаках инсульта, сильном кровотечении — немедленно звоните в скорую помощь по номеру 103 или 112.",
+        "kk": "MedHub Clinic шұғыл көмек көрсетпейді. Өмірге қауіп төнсе — кеудеде қатты ауырсыну, тыныс алудың қиындауы, есінен тану, инсульт белгілері, қатты қан кету болса — дереу 103 немесе 112 нөміріне жедел жәрдем шақырыңыз.",
+        "en": "MedHub Clinic does not provide emergency care. In a life-threatening situation, such as severe chest pain, difficulty breathing, loss of consciousness, signs of a stroke or heavy bleeding, call an ambulance immediately at 103 or 112."
+      },
+      "service_ids": []
+    }
+  ]
+}
