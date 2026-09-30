@@ -1,5 +1,5 @@
 {
-  "_comment": "Демо-данные MedHub Clinic (вымышленная клиника, Астана): адрес, часы, контакты и инструкции условные, цены хранятся только в catalog.json.",
+  "_comment": "Демо-данные AnaCare (вымышленная клиника, Астана): адрес, часы, контакты и инструкции условные, цены хранятся только в catalog.json. Записи preg_* (беременность) — общая справочная информация без диагнозов и препаратов; перед реальным использованием их должен проверить акушер-гинеколог команды.",
   "entries": [
     {
       "id": "address",
@@ -32,9 +32,9 @@
         ]
       },
       "answer": {
-        "ru": "MedHub Clinic находится по адресу: г. Астана, проспект Кабанбай батыра, 40, первый этаж. Рядом остановка «Кабанбай батыра», сюда идут автобусы 10, 21 и 40. Вход с улицы, у входа есть вывеска MedHub Clinic.",
-        "kk": "MedHub Clinic мекенжайы: Астана қаласы, Қабанбай батыр даңғылы, 40, бірінші қабат. Жақын жерде «Қабанбай батыр» аялдамасы бар, оған 10, 21 және 40 автобустары барады. Кіреберіс көше жақта, есік үстінде MedHub Clinic маңдайшасы бар.",
-        "en": "MedHub Clinic is located at 40 Kabanbay Batyr Avenue, ground floor, Astana. The nearest stop is Kabanbay Batyr, served by buses 10, 21 and 40. The entrance is from the street, marked with a MedHub Clinic sign."
+        "ru": "AnaCare находится по адресу: г. Астана, проспект Кабанбай батыра, 40, первый этаж. Рядом остановка «Кабанбай батыра», сюда идут автобусы 10, 21 и 40. Вход с улицы, у входа есть вывеска AnaCare.",
+        "kk": "AnaCare мекенжайы: Астана қаласы, Қабанбай батыр даңғылы, 40, бірінші қабат. Жақын жерде «Қабанбай батыр» аялдамасы бар, оған 10, 21 және 40 автобустары барады. Кіреберіс көше жақта, есік үстінде AnaCare маңдайшасы бар.",
+        "en": "AnaCare is located at 40 Kabanbay Batyr Avenue, ground floor, Astana. The nearest stop is Kabanbay Batyr, served by buses 10, 21 and 40. The entrance is from the street, marked with a AnaCare sign."
       },
       "service_ids": []
     },
@@ -99,9 +99,9 @@
         ]
       },
       "answer": {
-        "ru": "Контакт-центр MedHub Clinic: +7 (7172) 55-00-00, работает ежедневно с 8:00 до 21:00. Электронная почта: info@medhub-clinic.kz. Операторы отвечают на русском, казахском и английском языках.",
-        "kk": "MedHub Clinic байланыс орталығы: +7 (7172) 55-00-00, күн сайын 8:00-ден 21:00-ге дейін жұмыс істейді. Электрондық пошта: info@medhub-clinic.kz. Операторлар орыс, қазақ және ағылшын тілдерінде жауап береді.",
-        "en": "MedHub Clinic contact center: +7 (7172) 55-00-00, open daily from 8:00 to 21:00. Email: info@medhub-clinic.kz. Operators speak Russian, Kazakh and English."
+        "ru": "Контакт-центр AnaCare: +7 (7172) 55-00-00, работает ежедневно с 8:00 до 21:00. Электронная почта: info@medhub-clinic.kz. Операторы отвечают на русском, казахском и английском языках.",
+        "kk": "AnaCare байланыс орталығы: +7 (7172) 55-00-00, күн сайын 8:00-ден 21:00-ге дейін жұмыс істейді. Электрондық пошта: info@medhub-clinic.kz. Операторлар орыс, қазақ және ағылшын тілдерінде жауап береді.",
+        "en": "AnaCare contact center: +7 (7172) 55-00-00, open daily from 8:00 to 21:00. Email: info@medhub-clinic.kz. Operators speak Russian, Kazakh and English."
       },
       "service_ids": []
     },
@@ -675,9 +675,9 @@
         ]
       },
       "answer": {
-        "ru": "К сожалению, MedHub Clinic не выполняет выезды на дом. Чтобы подобрать удобный вариант, свяжитесь с оператором контакт-центра по номеру +7 (7172) 55-00-00. При угрозе жизни звоните 103.",
-        "kk": "Өкінішке қарай, MedHub Clinic үйге барып қызмет көрсетпейді. Ыңғайлы нұсқаны таңдау үшін +7 (7172) 55-00-00 нөмірі бойынша байланыс орталығының операторына хабарласыңыз. Өмірге қауіп төнсе, 103 нөміріне қоңырау шалыңыз.",
-        "en": "Unfortunately, MedHub Clinic does not offer home visits. To find a convenient option, please contact the operator at +7 (7172) 55-00-00. In a life-threatening situation, call 103."
+        "ru": "К сожалению, AnaCare не выполняет выезды на дом. Чтобы подобрать удобный вариант, свяжитесь с оператором контакт-центра по номеру +7 (7172) 55-00-00. При угрозе жизни звоните 103.",
+        "kk": "Өкінішке қарай, AnaCare үйге барып қызмет көрсетпейді. Ыңғайлы нұсқаны таңдау үшін +7 (7172) 55-00-00 нөмірі бойынша байланыс орталығының операторына хабарласыңыз. Өмірге қауіп төнсе, 103 нөміріне қоңырау шалыңыз.",
+        "en": "Unfortunately, AnaCare does not offer home visits. To find a convenient option, please contact the operator at +7 (7172) 55-00-00. In a life-threatening situation, call 103."
       },
       "service_ids": []
     },
@@ -834,11 +834,467 @@
         ]
       },
       "answer": {
-        "ru": "MedHub Clinic не оказывает экстренную помощь. При угрозе жизни — сильной боли в груди, затруднённом дыхании, потере сознания, признаках инсульта, сильном кровотечении — немедленно звоните в скорую помощь по номеру 103.",
-        "kk": "MedHub Clinic шұғыл көмек көрсетпейді. Өмірге қауіп төнсе — кеудеде қатты ауырсыну, тыныс алудың қиындауы, есінен тану, инсульт белгілері, қатты қан кету болса — дереу 103 нөміріне жедел жәрдем шақырыңыз.",
-        "en": "MedHub Clinic does not provide emergency care. In a life-threatening situation, such as severe chest pain, difficulty breathing, loss of consciousness, signs of a stroke or heavy bleeding, call an ambulance immediately at 103."
+        "ru": "AnaCare не оказывает экстренную помощь. При угрозе жизни — сильной боли в груди, затруднённом дыхании, потере сознания, признаках инсульта, сильном кровотечении — немедленно звоните в скорую помощь по номеру 103.",
+        "kk": "AnaCare шұғыл көмек көрсетпейді. Өмірге қауіп төнсе — кеудеде қатты ауырсыну, тыныс алудың қиындауы, есінен тану, инсульт белгілері, қатты қан кету болса — дереу 103 нөміріне жедел жәрдем шақырыңыз.",
+        "en": "AnaCare does not provide emergency care. In a life-threatening situation, such as severe chest pain, difficulty breathing, loss of consciousness, signs of a stroke or heavy bleeding, call an ambulance immediately at 103."
       },
       "service_ids": []
+    },
+    {
+      "id": "preg_screenings",
+      "keywords": {
+        "ru": [
+          "беремен",
+          "скрининг",
+          "узи при беремен",
+          "узи беремен",
+          "триместр",
+          "плановое узи",
+          "встать на учет",
+          "анализы при беремен"
+        ],
+        "kk": [
+          "жүкті",
+          "жүктілік кезіндегі удз",
+          "жоспарлы удз",
+          "есепке тұр"
+        ],
+        "en": [
+          "pregnan",
+          "screening",
+          "trimester",
+          "prenatal",
+          "antenatal"
+        ]
+      },
+      "answer": {
+        "ru": "Во время беременности обычно проводят плановые УЗИ и скрининги в каждом триместре, а также регулярные осмотры и анализы; точные сроки и объём обследований определяет ваш акушер-гинеколог с учётом течения беременности. Если появились кровянистые выделения, боль в животе, подтекание вод, сильная головная боль или изменились шевеления ребёнка, не ждите планового визита и звоните 103. Чтобы встать на учёт и получить индивидуальный план обследований, обратитесь к акушеру-гинекологу — запишитесь на консультацию.",
+        "kk": "Жүктілік кезінде әдетте әр триместрде жоспарлы УДЗ мен скрининг, сондай-ақ тұрақты тексеру мен анализдер жүргізіледі; нақты мерзімдер мен тексеру көлемін жүктіліктің барысына қарай акушер-гинекологыңыз белгілейді. Қан аралас бөлінді, іштің ауыруы, қағанақ суының ағуы, бастың қатты ауыруы немесе бала қимылының өзгеруі байқалса, жоспарлы қабылдауды күтпей, 103 нөміріне қоңырау шалыңыз. Есепке тұрып, жеке тексеру жоспарын алу үшін акушер-гинекологқа жүгініп, кеңеске жазылыңыз.",
+        "en": "During pregnancy, routine ultrasounds and screening tests are usually done in each trimester, along with regular check-ups and lab tests; the exact timing and scope are set by your obstetrician-gynecologist based on how your pregnancy is going. If you notice bloody discharge, abdominal pain, leaking fluid, a severe headache or a change in your baby's movements, do not wait for a scheduled visit and call 103. To register your pregnancy and get a personal examination plan, please book a consultation with an obstetrician-gynecologist."
+      },
+      "service_ids": [
+        "ob-consult",
+        "ob-us-fetal",
+        "gyn-consult"
+      ]
+    },
+    {
+      "id": "preg_legs",
+      "keywords": {
+        "ru": [
+          "отек ног",
+          "отеки ног",
+          "отекают ног",
+          "ноги отек",
+          "болят ноги",
+          "ноги болят",
+          "боль в ногах",
+          "сводит ног",
+          "сводит икр",
+          "судороги в ног",
+          "судорога в ног",
+          "беремен"
+        ],
+        "kk": [
+          "аяғым ісі",
+          "аяқ ісі",
+          "аяғым сырқыра",
+          "аяғым қақса",
+          "аяқ сырқыра",
+          "аяқ қақса",
+          "балтыр",
+          "аяғым тартып",
+          "аяқ ауыр",
+          "жүкті"
+        ],
+        "en": [
+          "swollen legs",
+          "swollen feet",
+          "leg swelling",
+          "swelling in my legs",
+          "leg cramps",
+          "leg pain",
+          "legs hurt",
+          "calf",
+          "pregnan"
+        ]
+      },
+      "answer": {
+        "ru": "Во второй половине беременности ноги нередко отекают к вечеру и ноют, а по ночам может сводить икры; обычно помогают отдых с приподнятыми ногами и удобная обувь. Срочно звоните 103, если отёк появился резко, отекли лицо и руки, одна нога стала красной, горячей и болезненной, или отёк сопровождается сильной головной болью и мушками перед глазами. В остальных случаях обратитесь к акушеру-гинекологу — запишитесь на консультацию, чтобы врач осмотрел вас и проверил давление.",
+        "kk": "Жүктіліктің екінші жартысында аяқтың кешке қарай ісінуі мен сырқырауы, түнде балтырдың тартылуы жиі кездеседі; аяқты биіктетіп демалу мен ыңғайлы аяқкиім әдетте жеңілдетеді. Ісік кенеттен пайда болса, бет пен қол ісінсе, бір аяқ қызарып, ысып, қатты ауырса немесе ісікпен бірге бас қатты ауырып, көз алды бұлдыраса, дереу 103 нөміріне қоңырау шалыңыз. Басқа жағдайларда акушер-гинекологқа жүгініңіз: дәрігер қарап, қан қысымыңызды тексеруі үшін кеңеске жазылыңыз.",
+        "en": "Swollen feet and legs by evening, aching legs and night-time calf cramps are common in the second half of pregnancy; resting with your legs raised and wearing comfortable shoes usually helps. Call 103 at once if the swelling appears suddenly, your face and hands swell, one leg becomes red, hot and painful, or the swelling comes with a severe headache or blurred vision. Otherwise, please book a consultation with an obstetrician-gynecologist so the doctor can examine you and check your blood pressure."
+      },
+      "service_ids": [
+        "ob-consult",
+        "gyn-consult"
+      ]
+    },
+    {
+      "id": "preg_gastritis",
+      "keywords": {
+        "ru": [
+          "гастрит",
+          "изжога при беремен",
+          "изжога во время беремен",
+          "изжога беремен",
+          "изжоги при беремен",
+          "изжогой при беремен",
+          "беремен"
+        ],
+        "kk": [
+          "қыжыл",
+          "жүкті"
+        ],
+        "en": [
+          "gastritis",
+          "heartburn",
+          "acid reflux",
+          "pregnan"
+        ]
+      },
+      "answer": {
+        "ru": "Изжога и обострение гастрита во время беременности встречаются часто: помогают частое питание небольшими порциями, отказ от жирного и острого и привычка не ложиться сразу после еды. Лекарства от изжоги и гастрита при беременности подбирает только врач, не принимайте их самостоятельно. Срочно звоните 103 при сильной боли в животе, рвоте с кровью или цвета кофейной гущи, чёрном стуле. Для подбора лечения обратитесь к акушеру-гинекологу — запишитесь на консультацию.",
+        "kk": "Жүктілік кезінде қыжыл мен гастриттің өршуі жиі кездеседі: тамақты аз-аздан жиі ішу, майлы және ащы тағамды жемеу, тамақтан кейін бірден жатпау көмектеседі. Жүктілік кезінде қыжыл мен гастритке қарсы дәріні тек дәрігер таңдайды, оны өз бетіңізше ішпеңіз. Іш қатты ауырса, қан аралас немесе қара-қоңыр түсті құсық болса, нәжіс қара түсті болса, дереу 103 нөміріне қоңырау шалыңыз. Емді таңдау үшін акушер-гинекологқа жүгініп, кеңеске жазылыңыз.",
+        "en": "Heartburn and gastritis flare-ups are common in pregnancy; small frequent meals, avoiding fatty and spicy food and not lying down right after eating usually help. Any medicine for heartburn or gastritis in pregnancy should be chosen only by a doctor, so please do not take it on your own. Call 103 at once if you have severe abdominal pain, vomit blood or material that looks like coffee grounds, or have black stools. To choose treatment, please book a consultation with an obstetrician-gynecologist."
+      },
+      "service_ids": [
+        "ob-consult",
+        "gyn-consult"
+      ]
+    },
+    {
+      "id": "preg_nausea",
+      "keywords": {
+        "ru": [
+          "токсикоз",
+          "тошн",
+          "беремен"
+        ],
+        "kk": [
+          "жүрегім айни",
+          "жүрек айну",
+          "жүкті"
+        ],
+        "en": [
+          "morning sickness",
+          "nausea",
+          "nauseous",
+          "pregnan"
+        ]
+      },
+      "answer": {
+        "ru": "Тошнота и рвота, особенно по утрам, часто бывают в первом триместре и обычно ослабевают к началу второго; помогают дробное питание, частое питьё небольшими глотками и отдых. Срочно звоните 103, если рвота повторяется много раз и не удерживается даже вода, вы мало мочитесь, сильно ослабли, кружится голова или в рвоте есть кровь. Обратитесь к акушеру-гинекологу, чтобы оценить состояние и подобрать помощь, — запишитесь на консультацию.",
+        "kk": "Жүрек айнуы мен құсу, әсіресе таңертең, бірінші триместрде жиі болады және әдетте екінші триместрдің басында басылады; тамақты аз-аздан жиі ішу, суды аз-аздан жиі ұрттау және демалу көмектеседі. Құсу қайта-қайта қайталанып, ішкен су да тұрмаса, зәр аз шықса, қатты әлсіресеңіз, басыңыз айналса немесе құсықта қан болса, дереу 103 нөміріне қоңырау шалыңыз. Жағдайыңызды бағалап, көмек таңдау үшін акушер-гинекологқа жүгініп, кеңеске жазылыңыз.",
+        "en": "Nausea and vomiting, especially in the morning, are common in the first trimester and usually ease by the start of the second; small frequent meals, sipping fluids often and rest can help. Call 103 at once if you vomit many times and cannot keep even water down, pass very little urine, feel very weak or dizzy, or see blood in the vomit. Please book a consultation with an obstetrician-gynecologist to assess your condition and choose the right help."
+      },
+      "service_ids": [
+        "ob-consult",
+        "gyn-consult"
+      ]
+    },
+    {
+      "id": "preg_back",
+      "keywords": {
+        "ru": [
+          "поясниц",
+          "болит спина",
+          "боль в спине",
+          "спина болит",
+          "болит низ спины",
+          "беремен"
+        ],
+        "kk": [
+          "бел ауыр",
+          "белім ауыр",
+          "белім сырқыра",
+          "белім қақса",
+          "арқам ауыр",
+          "арқа ауыр",
+          "жүкті"
+        ],
+        "en": [
+          "back pain",
+          "lower back",
+          "backache",
+          "my back hurts",
+          "pregnan"
+        ]
+      },
+      "answer": {
+        "ru": "Боль в спине и пояснице при беременности бывает часто из-за растущего живота и смены осанки; обычно помогают удобная обувь без каблука, отдых и умеренная активность. Срочно звоните 103, если боль в пояснице схваткообразная или повторяется регулярно, сопровождается кровянистыми выделениями, подтеканием вод, температурой или болезненным мочеиспусканием. Чтобы исключить другие причины, обратитесь к акушеру-гинекологу — запишитесь на консультацию.",
+        "kk": "Жүктілік кезінде іштің өсуі мен дене қалпының өзгеруіне байланысты арқа мен бел жиі ауырады; өкшесіз ыңғайлы аяқкиім, демалыс пен орташа қозғалыс әдетте көмектеседі. Бел толғақ сияқты толқындап немесе белгілі бір аралықпен қайталанып ауырса, қан аралас бөлінді, қағанақ суының ағуы, қызу немесе зәр шығарғанда ауырсыну болса, дереу 103 нөміріне қоңырау шалыңыз. Басқа себептерді жоққа шығару үшін акушер-гинекологқа жүгініп, кеңеске жазылыңыз.",
+        "en": "Back and lower back pain are common in pregnancy because of the growing belly and changes in posture; flat comfortable shoes, rest and moderate activity usually help. Call 103 at once if the pain comes in waves or at regular intervals, or comes with bloody discharge, leaking fluid, fever or painful urination. To rule out other causes, please book a consultation with an obstetrician-gynecologist."
+      },
+      "service_ids": [
+        "ob-consult",
+        "gyn-consult"
+      ]
+    },
+    {
+      "id": "preg_headache",
+      "keywords": {
+        "ru": [
+          "болит голова",
+          "голова болит",
+          "головная боль",
+          "головные боли",
+          "давление при беремен",
+          "давление беремен",
+          "беремен"
+        ],
+        "kk": [
+          "басым ауыр",
+          "бас ауыр",
+          "бас ауруы",
+          "жүкті"
+        ],
+        "en": [
+          "headache",
+          "pressure in pregnancy",
+          "pressure during pregnancy",
+          "pregnan"
+        ]
+      },
+      "answer": {
+        "ru": "Головная боль при беременности бывает из-за усталости, недосыпа или нехватки жидкости, но во второй половине беременности важно следить за давлением. Срочно звоните 103, если головная боль сильная и не проходит, давление 140/90 и выше, появились мушки или пелена перед глазами, отёки лица и рук, боль под рёбрами справа или судороги. Не принимайте обезболивающие без назначения врача и обратитесь к акушеру-гинекологу — запишитесь на консультацию.",
+        "kk": "Жүктілік кезінде бас ауруы шаршаудан, ұйқының жетіспеуінен немесе су аз ішуден болуы мүмкін, бірақ жүктіліктің екінші жартысында қан қысымын бақылап отыру маңызды. Бас қатты ауырып, басылмаса, қан қысымы 140/90 және одан жоғары болса, көз алды бұлдыраса немесе көз алдында нүктелер жыпылықтаса, бет пен қол ісінсе, оң жақ қабырға астында ауырсыну немесе құрысу пайда болса, дереу 103 нөміріне қоңырау шалыңыз. Дәрігер тағайындамаған ауырсынуды басатын дәрі ішпеңіз, акушер-гинекологқа жүгініп, кеңеске жазылыңыз.",
+        "en": "Headaches in pregnancy can come from tiredness, lack of sleep or not drinking enough, but in the second half of pregnancy it is important to keep an eye on your blood pressure. Call 103 at once if the headache is severe and does not go away, your blood pressure is 140/90 or higher, you see spots or blurred vision, your face and hands swell, or you have pain under the right ribs or seizures. Do not take painkillers unless a doctor has prescribed them, and please book a consultation with an obstetrician-gynecologist."
+      },
+      "service_ids": [
+        "ob-consult",
+        "gyn-consult"
+      ]
+    },
+    {
+      "id": "preg_movements",
+      "keywords": {
+        "ru": [
+          "шевел",
+          "шевелит",
+          "шевелени",
+          "мало шевел",
+          "не шевел",
+          "редко шевел",
+          "толчк",
+          "толкает",
+          "движения плода",
+          "движений плода"
+        ],
+        "kk": [
+          "қимыл",
+          "баланың қимыл",
+          "бала қимыл",
+          "қимылы аз",
+          "қимылдамай",
+          "тепкіле",
+          "қозғалма",
+          "жүкті"
+        ],
+        "en": [
+          "fetal movement",
+          "baby movement",
+          "baby moving",
+          "baby is moving",
+          "kicks",
+          "kick count",
+          "pregnan"
+        ]
+      },
+      "answer": {
+        "ru": "Первые шевеления обычно ощущаются примерно с 18–20 недели, при повторной беременности бывает раньше, а в третьем триместре важно, чтобы ребёнок шевелился каждый день в своём привычном ритме; как именно следить за движениями, подскажет ваш врач. Если шевеления стали заметно реже или слабее обычного, пропали или их характер резко изменился, не ждите до следующего дня — срочно звоните 103 или езжайте в роддом. При любых сомнениях обратитесь к акушеру-гинекологу — запишитесь на консультацию, врач может назначить КТГ или УЗИ плода.",
+        "kk": "Алғашқы қимылдар әдетте шамамен 18–20-аптадан бастап сезіледі, қайталама жүктілікте ертерек болуы мүмкін, ал үшінші триместрде бала күн сайын өзіне тән ырғақпен қимылдауы маңызды; қимылдарды қалай бақылау керегін дәрігеріңіз түсіндіреді. Қимылдар әдеттегіден айтарлықтай сиреп не әлсіреп кетсе, мүлде тоқтаса немесе сипаты күрт өзгерсе, келесі күнді күтпей, дереу 103 нөміріне қоңырау шалыңыз немесе перзентханаға барыңыз. Кез келген күмән болса, акушер-гинекологқа жүгініп, кеңеске жазылыңыз, дәрігер КТГ немесе ұрықтың УДЗ-сын тағайындауы мүмкін.",
+        "en": "First movements are usually felt from about 18–20 weeks, sometimes earlier in a second pregnancy, and in the third trimester it matters that your baby moves every day in its usual pattern; your doctor will explain how to keep track. If movements become noticeably fewer or weaker than usual, stop, or change sharply in character, do not wait until the next day: call 103 or go to the maternity hospital at once. Whenever in doubt, please book a consultation with an obstetrician-gynecologist; the doctor may order a CTG or a fetal ultrasound."
+      },
+      "service_ids": [
+        "ob-consult",
+        "ob-us-fetal",
+        "gyn-consult"
+      ]
+    },
+    {
+      "id": "preg_discharge",
+      "keywords": {
+        "ru": [
+          "выделени",
+          "мажет",
+          "подтекани",
+          "подтекают",
+          "беремен"
+        ],
+        "kk": [
+          "бөлінді",
+          "жүкті"
+        ],
+        "en": [
+          "discharge",
+          "spotting",
+          "pregnan"
+        ]
+      },
+      "answer": {
+        "ru": "Во время беременности выделений обычно становится больше: светлые или белёсые выделения без резкого запаха и зуда, как правило, считаются нормой. Срочно звоните 103 или езжайте в роддом при кровянистых или ярко-красных выделениях, обильных водянистых выделениях или подтекании вод, а также если выделения сопровождаются болью в животе. Если выделения изменили цвет, появились неприятный запах, зуд или жжение, обратитесь к акушеру-гинекологу — запишитесь на консультацию.",
+        "kk": "Жүктілік кезінде бөлінді әдетте көбейеді: түссіз немесе ақшыл, өткір иіссіз әрі қышымасыз бөлінді көбіне қалыпты саналады. Қан аралас немесе қып-қызыл бөлінді, көп мөлшерде сулы бөлінді не қағанақ суының ағуы байқалса, сондай-ақ бөлінді іш ауыруымен қатар жүрсе, дереу 103 нөміріне қоңырау шалыңыз немесе перзентханаға барыңыз. Бөліндінің түсі өзгерсе, жағымсыз иіс, қышу немесе ашып-күйдіру пайда болса, акушер-гинекологқа жүгініп, кеңеске жазылыңыз.",
+        "en": "Discharge usually increases during pregnancy: clear or whitish discharge without a strong smell or itching is generally considered normal. Call 103 or go to the maternity hospital at once if the discharge is bloody or bright red, if there is a lot of watery discharge or leaking fluid, or if it comes with abdominal pain. If the discharge changes colour or you notice an unpleasant smell, itching or burning, please book a consultation with an obstetrician-gynecologist."
+      },
+      "service_ids": [
+        "ob-consult",
+        "gyn-consult"
+      ]
+    },
+    {
+      "id": "preg_cold",
+      "keywords": {
+        "ru": [
+          "простуд",
+          "температура при беремен",
+          "температура беремен",
+          "орви при беремен",
+          "насморк при беремен",
+          "кашель при беремен",
+          "беремен"
+        ],
+        "kk": [
+          "суық ти",
+          "жүктілік кезінде қызу",
+          "жүктілік кезінде тұмау",
+          "жүкті"
+        ],
+        "en": [
+          "a cold",
+          "fever in pregnancy",
+          "fever during pregnancy",
+          "cold in pregnancy",
+          "cold during pregnancy",
+          "pregnan"
+        ]
+      },
+      "answer": {
+        "ru": "Простуда во время беременности встречается часто; обычно советуют больше отдыхать, пить тёплую жидкость и проветривать помещение, а любые лекарства, в том числе жаропонижающие, капли и травы, принимать только по назначению врача. Срочно звоните 103, если высокая температура не снижается, трудно дышать, появилась боль в груди, сильная слабость или спутанность сознания, либо вместе с температурой изменились шевеления ребёнка, появились боль в животе или выделения. Обратитесь к акушеру-гинекологу — запишитесь на консультацию, при необходимости врач направит к терапевту.",
+        "kk": "Жүктілік кезінде суық тию жиі кездеседі; әдетте көбірек демалу, жылы сусын ішу және бөлмені желдету ұсынылады, ал кез келген дәріні, соның ішінде қызу түсіретін дәріні, тамшыны және шөп шайын тек дәрігер тағайындаса ғана қабылдаңыз. Жоғары қызу түспесе, тыныс алу қиындаса, кеуде ауырса, қатты әлсіздік немесе сананың шатасуы пайда болса, не қызумен бірге бала қимылы өзгерсе, іш ауырса немесе бөлінді пайда болса, дереу 103 нөміріне қоңырау шалыңыз. Акушер-гинекологқа жүгініп, кеңеске жазылыңыз, қажет болса, дәрігер терапевтке жолдайды.",
+        "en": "Colds are common during pregnancy; rest, warm drinks and fresh air are usually recommended, and any medicine, including fever reducers, nasal drops and herbal remedies, should be taken only if a doctor prescribes it. Call 103 at once if a high temperature does not come down, you find it hard to breathe, have chest pain, severe weakness or confusion, or if the fever comes with changes in your baby's movements, abdominal pain or discharge. Please book a consultation with an obstetrician-gynecologist; if needed, the doctor will refer you to a general practitioner."
+      },
+      "service_ids": [
+        "ob-consult",
+        "gyn-consult",
+        "ther-consult"
+      ]
+    },
+    {
+      "id": "preg_medicines",
+      "keywords": {
+        "ru": [
+          "таблетк",
+          "лекарств",
+          "препарат",
+          "самолечени",
+          "беремен"
+        ],
+        "kk": [
+          "дәрі іш",
+          "дәрі қабылда",
+          "дәрі-дәрмек",
+          "жүкті"
+        ],
+        "en": [
+          "medicine",
+          "medication",
+          "pills",
+          "tablets",
+          "painkiller",
+          "pregnan"
+        ]
+      },
+      "answer": {
+        "ru": "Во время беременности многие привычные средства, включая обезболивающие, средства от простуды, травы и биодобавки, могут быть нежелательны, поэтому не занимайтесь самолечением и принимайте только то, что назначил врач, знающий о вашей беременности. Если после приёма какого-либо средства появились сыпь, отёк лица, затруднённое дыхание, сильная боль в животе или кровотечение, срочно звоните 103. Чтобы подобрать безопасное лечение, обратитесь к акушеру-гинекологу — запишитесь на консультацию и расскажите врачу обо всём, что вы уже принимали.",
+        "kk": "Жүктілік кезінде көп таныс дәрілер, соның ішінде ауырсынуды басатын және суық тиюге қарсы дәрілер, шөптер мен биоқоспалар қалаусыз болуы мүмкін, сондықтан өз бетіңізше емделмеңіз және жүкті екеніңізді білетін дәрігер тағайындаған дәріні ғана қабылдаңыз. Қандай да бір дәрі ішкеннен кейін бөртпе шықса, бет ісінсе, тыныс алу қиындаса, іш қатты ауырса немесе қан кетсе, дереу 103 нөміріне қоңырау шалыңыз. Қауіпсіз емді таңдау үшін акушер-гинекологқа жүгініп, кеңеске жазылыңыз және бұған дейін ішкен дәрілеріңіздің бәрін дәрігерге айтыңыз.",
+        "en": "During pregnancy many familiar remedies, including painkillers, cold medicines, herbs and supplements, may be unsuitable, so please do not self-medicate and take only what a doctor who knows about your pregnancy has prescribed. If after taking anything you develop a rash, facial swelling, difficulty breathing, severe abdominal pain or bleeding, call 103 at once. To choose safe treatment, please book a consultation with an obstetrician-gynecologist and tell the doctor about everything you have already taken."
+      },
+      "service_ids": [
+        "ob-consult",
+        "gyn-consult"
+      ]
+    },
+    {
+      "id": "preg_nutrition",
+      "keywords": {
+        "ru": [
+          "витамин",
+          "питание при беремен",
+          "питание беремен",
+          "питаться при беремен",
+          "что можно есть",
+          "что нельзя есть",
+          "беремен"
+        ],
+        "kk": [
+          "дәрумен",
+          "жүктілік кезінде тамақтану",
+          "не жеуге",
+          "жүкті"
+        ],
+        "en": [
+          "vitamin",
+          "nutrition in pregnancy",
+          "diet in pregnancy",
+          "what can i eat",
+          "what to eat",
+          "pregnan"
+        ]
+      },
+      "answer": {
+        "ru": "При беременности важно регулярное разнообразное питание: овощи, фрукты, крупы, белковые продукты и достаточно воды; лучше отказаться от алкоголя, сырого мяса и рыбы, непастеризованных продуктов и ограничить кофе. Витамины и добавки не подбирайте самостоятельно, принимайте только то, что назначил врач по результатам осмотра и анализов. Срочно звоните 103, если после отравления или из-за питания возникли многократная рвота, сильная слабость или головокружение. По питанию и витаминам обратитесь к акушеру-гинекологу — запишитесь на консультацию.",
+        "kk": "Жүктілік кезінде тұрақты әрі әртүрлі тамақтану маңызды: көкөніс, жеміс, жарма, ақуызды тағамдар және жеткілікті мөлшерде су; алкогольден, шикі ет пен балықтан, пастерленбеген өнімдерден бас тартып, кофені шектеген дұрыс. Дәрумендер мен қоспаларды өз бетіңізше таңдамаңыз, дәрігер тексеру мен анализ нәтижесі бойынша тағайындағанын ғана қабылдаңыз. Уланғаннан кейін немесе тамақтануға байланысты құсу жиі қайталанса, қатты әлсіздік не бас айналу пайда болса, дереу 103 нөміріне қоңырау шалыңыз. Тамақтану мен дәрумендер бойынша акушер-гинекологқа жүгініп, кеңеске жазылыңыз.",
+        "en": "A regular, varied diet matters in pregnancy: vegetables, fruit, grains, protein foods and enough water; it is best to avoid alcohol, raw meat and fish and unpasteurised products, and to limit coffee. Do not choose vitamins or supplements on your own; take only what a doctor prescribes based on your examination and test results. Call 103 at once if food poisoning or eating problems lead to repeated vomiting, severe weakness or dizziness. For advice on diet and vitamins, please book a consultation with an obstetrician-gynecologist."
+      },
+      "service_ids": [
+        "ob-consult",
+        "gyn-consult"
+      ]
+    },
+    {
+      "id": "preg_urgent",
+      "keywords": {
+        "ru": [
+          "срочно к врач",
+          "срочно обращ",
+          "когда обращат",
+          "опасные симптом",
+          "тревожные признак",
+          "кровотечени",
+          "кровянист",
+          "отошли воды",
+          "воды отош",
+          "схватк",
+          "беремен"
+        ],
+        "kk": [
+          "қан кет",
+          "қағанақ су",
+          "толғақ",
+          "қауіпті белгі",
+          "қашан дәрігерге",
+          "жүкті"
+        ],
+        "en": [
+          "bleeding",
+          "waters broke",
+          "water broke",
+          "water has broken",
+          "contractions",
+          "warning signs",
+          "danger signs",
+          "pregnan"
+        ]
+      },
+      "answer": {
+        "ru": "Во время беременности есть признаки, при которых нельзя ждать планового приёма. Срочно звоните 103 при кровотечении или кровянистых выделениях, подтекании или излитии вод, сильной или схваткообразной боли в животе до срока, если ребёнок перестал шевелиться или шевелится заметно меньше, при сильной головной боли с мушками перед глазами, отёках лица и рук, судорогах, высокой температуре, обмороке или затруднённом дыхании. Во всех остальных случаях, если что-то беспокоит, обратитесь к акушеру-гинекологу — запишитесь на консультацию.",
+        "kk": "Жүктілік кезінде жоспарлы қабылдауды күтуге болмайтын белгілер бар. Қан кетсе немесе қан аралас бөлінді болса, қағанақ суы ақса не кетсе, мерзімінен бұрын іш қатты немесе толғақ сияқты ауырса, бала қимылдамай қалса не айтарлықтай сирек қимылдаса, бас қатты ауырып, көз алды бұлдыраса, бет пен қол ісінсе, құрысу, жоғары қызу, талып қалу немесе тыныс алудың қиындауы болса, дереу 103 нөміріне қоңырау шалыңыз. Басқа жағдайларда бірдеңе мазаласа, акушер-гинекологқа жүгініп, кеңеске жазылыңыз.",
+        "en": "In pregnancy there are signs that should never wait for a scheduled visit. Call 103 at once if you have bleeding or bloody discharge, leaking or gushing fluid, severe or cramping abdominal pain before your due date, if your baby stops moving or moves much less, or if you have a severe headache with blurred vision, swelling of the face and hands, seizures, a high fever, fainting or difficulty breathing. For anything else that worries you, please book a consultation with an obstetrician-gynecologist."
+      },
+      "service_ids": [
+        "ob-consult",
+        "gyn-consult"
+      ]
     }
   ]
 }
