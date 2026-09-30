@@ -3,6 +3,35 @@
     height: 56px;
     padding: 0 16px;
   }
+  .patient-site-header {
+    height: auto;
+    min-height: 56px;
+    flex-wrap: wrap;
+    row-gap: 6px;
+    padding-top: 8px;
+    padding-bottom: 8px;
+  }
+  .patient-site-header .clinic-brand {
+    flex: 0 0 auto;
+    white-space: nowrap;
+  }
+  .patient-site-header .header-tools {
+    min-width: 0;
+    gap: 6px;
+  }
+  .patient-site-header:has(.urgency-chip) .header-tools {
+    flex: 1 0 100%;
+    justify-content: space-between;
+  }
+  .patient-site-header .urgency-chip {
+    min-width: 0;
+    max-width: calc(100vw - 170px);
+    white-space: normal;
+    line-height: 1.25;
+  }
+  .patient-site-header .language-switch {
+    flex: 0 0 auto;
+  }
   .patient-content {
     width: 100%;
     margin: 0 auto;

@@ -9,6 +9,48 @@
   font-size: 16px;
   line-height: 1.55;
 }
+.welcome-content {
+  align-self: flex-start;
+  width: min(100%, 560px);
+  display: grid;
+  gap: 12px;
+}
+.welcome-examples {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.welcome-examples > span {
+  flex-basis: 100%;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+.welcome-examples button {
+  min-height: 40px;
+  max-width: 100%;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--text);
+  font-size: 13px;
+  line-height: 1.35;
+  text-align: left;
+  transition: background 120ms ease, border-color 120ms ease;
+}
+.welcome-examples button:hover:not(:disabled) {
+  border-color: var(--primary);
+  background: var(--primary-soft);
+}
+.welcome-examples button:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+.welcome-examples button:disabled {
+  color: var(--text-muted);
+  cursor: wait;
+}
 .chat-message {
   max-width: 88%;
   display: flex;
