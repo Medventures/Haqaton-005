@@ -4,7 +4,8 @@ info:
   version: 0.1.0
   description: |
     Чат-бот подбора услуг клиники. Порядок обработки сообщения пациента:
-    1) детерминированный триаж red (triage_rules.json) — без LLM;
+    1) детерминированный триаж red (triage_rules.json) — без LLM, по ВСЕМ сообщениям пациента;
+       при флаге беременности добавляются правила red_if_pregnant;
     2) LLM-извлечение (language, intent, specialty_id, urgency, ...);
     3) уточнения (макс. 2 на диалог);
     4) подбор услуг и врачей из каталога;
@@ -56,7 +57,7 @@ paths:
         "404": {description: Диалог не найден или чужой}
   /api/chat/operator:
     post:
-      summary: Пациент нажал «Связаться с оператором»
+      summary: Кнопки «Связаться с оператором» (contact_operator) и «Срочно связаться с оператором» (urgent_operator)
       requestBody:
         required: true
         content:
@@ -72,6 +73,7 @@ paths:
                 properties:
                   ticket_id: {type: integer}
                   status: {type: string}
+                  urgent: {type: boolean, description: true — диалог red (кнопка «Срочно связаться с оператором»)}
                   reply: {$ref: "#/components/schemas/Message"}
   /api/dialogs/{id}:
     get:
@@ -152,7 +154,10 @@ components:
           description: Для сообщений бота
           properties:
             urgency: {$ref: "#/components/schemas/Urgency"}
-            actions: {type: array, items: {type: string, enum: [call_103, contact_operator]}}
+            actions:
+              type: array
+              description: "call_103 — кнопка tel:103; contact_operator — «Связаться с оператором»; urgent_operator — «Срочно связаться с оператором» (red у беременной). Обе операторские кнопки вызывают POST /api/chat/operator."
+              items: {type: string, enum: [call_103, contact_operator, urgent_operator]}
             services: {type: array, items: {$ref: "#/components/schemas/Service"}}
             doctors: {type: array, items: {$ref: "#/components/schemas/Doctor"}}
         created_at: {type: string, format: date-time}
@@ -167,6 +172,9 @@ components:
         urgency_reason: {type: string}
         clarifications: {type: integer, maximum: 2}
         summary: {type: string}
+        pregnant: {type: boolean, description: "Флаг беременности: ставится кодом по фразам или LLM, никогда не снимается"}
+        gestation_weeks: {type: integer, nullable: true}
+        pregnancy_asked: {type: boolean, description: Вопрос о беременности уже задан}
         created_at: {type: string, format: date-time}
     Ticket:
       type: object
@@ -178,6 +186,8 @@ components:
         status: {type: string, enum: [open, closed]}
         urgency: {$ref: "#/components/schemas/Urgency"}
         language: {type: string}
+        pregnant: {type: boolean}
+        gestation_weeks: {type: integer, nullable: true}
         last_message: {type: string}
         created_at: {type: string, format: date-time}
         updated_at: {type: string, format: date-time}
@@ -190,7 +200,7 @@ components:
         urgency_reason: {type: string}
         language: {type: string, enum: [ru, kk]}
         reply: {allOf: [{$ref: "#/components/schemas/Message"}], nullable: true, description: null — диалог у оператора, бот молчит}
-        actions: {type: array, items: {type: string, enum: [call_103, contact_operator]}}
+        actions: {type: array, items: {type: string, enum: [call_103, contact_operator, urgent_operator]}}
         services: {type: array, items: {$ref: "#/components/schemas/Service"}}
         doctors: {type: array, items: {$ref: "#/components/schemas/Doctor"}}
         ticket_id: {type: integer, nullable: true}
