@@ -42,6 +42,7 @@ _Пока нет._
 | `LLM_BASE_URL` | `http://host.docker.internal:1234/v1` | OpenAI-совместимый API (LM Studio) |
 | `LLM_MODEL` | — | id модели в LM Studio |
 | `JWT_SECRET` | `change-me-hackathon` | секрет подписи JWT |
+| `STATIC_DIR` | — | (опц.) папка собранного фронтенда: бэкенд раздаёт его сам, без nginx |
 
 На Linux доступ из контейнера к хосту обеспечивает `extra_hosts: host.docker.internal:host-gateway` в `docker-compose.yml`. LM Studio должен слушать не только `127.0.0.1` (в настройках сервера — «Serve on Local Network»).
 

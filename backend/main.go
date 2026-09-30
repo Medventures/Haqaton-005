@@ -7,6 +7,8 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"path/filepath"
+	"strings"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -82,6 +84,22 @@ func (a *App) routes() http.Handler {
 	r.With(a.auth("patient", "operator")).Get("/api/dialogs/{id}", a.getDialogHandler)
 	r.With(a.auth("operator")).Get("/api/operator/queue", a.queue)
 	r.With(a.auth("operator")).Post("/api/operator/reply", a.operatorReply)
+
+	// Optional: serve the built frontend (SPA) from the same process, e.g. STATIC_DIR=../frontend/dist.
+	if dir := os.Getenv("STATIC_DIR"); dir != "" {
+		files := http.FileServer(http.Dir(dir))
+		r.NotFound(func(w http.ResponseWriter, r *http.Request) {
+			if strings.HasPrefix(r.URL.Path, "/api/") {
+				writeErr(w, 404, "not found")
+				return
+			}
+			if _, err := os.Stat(filepath.Join(dir, filepath.Clean(r.URL.Path))); err != nil {
+				http.ServeFile(w, r, filepath.Join(dir, "index.html")) // SPA routes like /operator
+				return
+			}
+			files.ServeHTTP(w, r)
+		})
+	}
 
 	return r
 }
