@@ -1,0 +1,10 @@
+export type Urgency = 'green' | 'yellow' | 'red'
+export type Language = 'ru' | 'kk'
+export type Service = { id: string; specialty_id?: string; name: string; price: number; description: string }
+export type Doctor = { id: string; name: string; specialty_id?: string; slots: string[] }
+export type MessageData = { urgency?: Urgency; actions?: string[]; services?: Service[]; doctors?: Doctor[] }
+export type Message = { id?: number; role: 'patient' | 'bot' | 'operator'; author?: string; content: string; data?: MessageData; created_at?: string }
+export type Dialog = { id: string; status: 'bot' | 'operator'; language: Language; urgency: Urgency; urgency_reason?: string; summary?: string; created_at?: string }
+export type Ticket = { id: number; dialog_id: string; reason: string; summary: string; status: 'open' | 'closed'; urgency: Urgency; language?: Language; last_message?: string; created_at?: string; updated_at?: string }
+export type DialogResponse = { dialog: Dialog; messages: Message[]; tickets?: Ticket[] }
+export type ChatResponse = { dialog_id: string; status: 'bot' | 'operator'; urgency: Urgency; urgency_reason?: string; language: Language; reply: Message | null; actions: string[]; services: Service[]; doctors: Doctor[]; ticket_id?: number | null }
