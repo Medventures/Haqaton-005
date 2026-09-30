@@ -1,0 +1,187 @@
+.operator-login-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  padding: 42px 16px;
+}
+.operator-login-page > .clinic-brand {
+  margin-bottom: 42px;
+}
+.login-card {
+  width: min(100%, 390px);
+  padding: 28px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+.login-card h1 {
+  font-size: 22px;
+  margin: 8px 0 22px;
+}
+.login-card label {
+  display: block;
+  font-size: 13px;
+  color: var(--text-muted);
+  margin: 14px 0;
+}
+.login-card input {
+  display: block;
+  width: 100%;
+  height: 44px;
+  margin-top: 6px;
+  padding: 0 11px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  outline: 0;
+  color: var(--text);
+}
+.login-card input:focus {
+  border-color: var(--primary);
+}
+.primary-button {
+  height: 44px;
+  width: 100%;
+  background: var(--primary);
+  color: white;
+  border: 0;
+  border-radius: 8px;
+  font-weight: 600;
+}
+.form-error {
+  font-size: 13px;
+  color: var(--red);
+}
+.operator-site-header {
+  padding: 0 22px;
+}
+.operator-heading {
+  margin-left: auto;
+  margin-right: 22px;
+  font-size: 14px;
+  color: var(--text-muted);
+}
+.back-patient {
+  text-decoration: none;
+  color: var(--primary);
+  font-size: 13px;
+}
+.operator-layout {
+  height: calc(100vh - 64px);
+  min-height: 440px;
+  display: grid;
+  grid-template-columns: 360px minmax(0, 1fr);
+  max-width: 1500px;
+  margin: auto;
+  background: var(--surface);
+  border-left: 1px solid var(--border);
+  border-right: 1px solid var(--border);
+}
+.queue-pane {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  border-right: 1px solid var(--border);
+}
+.queue-title {
+  height: 76px;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.queue-title h1 {
+  font-size: 20px;
+  margin: 0;
+}
+.queue-title p {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin: 4px 0 0;
+}
+.queue-title > span {
+  min-width: 26px;
+  padding: 5px 7px;
+  background: var(--surface-2);
+  border-radius: 6px;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 600;
+}
+.ticket-list {
+  overflow: auto;
+}
+.ticket-row {
+  width: 100%;
+  text-align: left;
+  background: var(--surface);
+  border: 0;
+  border-bottom: 1px solid var(--border);
+  border-left: 3px solid transparent;
+  padding: 12px 13px;
+  transition: background 120ms ease;
+}
+.ticket-row:hover,
+.ticket-row.selected {
+  background: var(--surface-2);
+}
+.ticket-row.selected {
+  border-left-color: var(--primary);
+}
+.urgency-border-red {
+  border-left-color: var(--red);
+}
+.urgency-border-yellow {
+  border-left-color: var(--yellow);
+}
+.urgency-border-green {
+  border-left-color: var(--green);
+}
+.ticket-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 7px;
+}
+.urgency-text {
+  font-size: 12px;
+  font-weight: 600;
+}
+.urgency-text-red {
+  color: var(--red);
+}
+.urgency-text-yellow {
+  color: var(--yellow);
+}
+.urgency-text-green {
+  color: var(--green);
+}
+.ticket-meta time {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+.ticket-row > strong {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ticket-row > p {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin: 5px 0 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.queue-empty,
+.conversation-empty {
+  margin: auto;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 14px;
+}

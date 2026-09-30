@@ -1,0 +1,111 @@
+@media (max-width: 700px) {
+  .site-header {
+    height: 56px;
+    padding: 0 16px;
+  }
+  .patient-content {
+    width: 100%;
+    margin: 0 auto;
+    padding: 24px 16px 10px;
+  }
+  .patient-intro {
+    margin-bottom: 17px;
+  }
+  .patient-intro h1 {
+    font-size: 25px;
+  }
+  .chat-panel {
+    min-height: calc(100dvh - 205px);
+    height: calc(100dvh - 205px);
+  }
+  .chat-messages {
+    min-height: 0;
+    max-height: none;
+    padding: 16px 12px;
+  }
+  .chat-message {
+    max-width: 94%;
+  }
+  .message-bubble {
+    font-size: 15px;
+    padding: 10px 12px;
+  }
+  .message-form {
+    margin: 0 9px 9px;
+  }
+  .patient-footer {
+    padding: 0 16px 8px;
+    font-size: 11px;
+  }
+  .operator-site-header {
+    height: 56px;
+    padding: 0 13px;
+  }
+  .operator-heading {
+    margin-right: 0;
+    font-size: 12px;
+  }
+  .back-patient {
+    display: none;
+  }
+  .operator-layout {
+    height: calc(100dvh - 56px);
+    min-height: 0;
+    display: block;
+    position: relative;
+  }
+  .queue-pane,
+  .conversation-pane {
+    position: absolute;
+    inset: 0;
+  }
+  .queue-pane.mobile-hide {
+    display: none;
+  }
+  .conversation-pane:not(.mobile-show) {
+    display: none;
+  }
+  .mobile-back {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    border: 0;
+    background: none;
+    color: var(--primary);
+    font-size: 12px;
+  }
+  .conversation-header {
+    height: 54px;
+    flex-basis: 54px;
+    padding: 0 11px;
+    gap: 8px;
+  }
+  .conversation-head-copy strong {
+    font-size: 12px;
+  }
+  .summary-panel {
+    padding: 10px 13px;
+  }
+  .conversation-messages {
+    padding: 12px;
+  }
+  .conversation-message {
+    max-width: 90%;
+  }
+  .reply-form {
+    padding: 8px;
+    gap: 6px;
+  }
+  .reply-form button {
+    padding: 0 10px;
+  }
+  .reply-form button span {
+    display: none;
+  }
+  .queue-title {
+    height: 64px;
+  }
+  .operator-login-page {
+    padding-top: 30px;
+  }
+}

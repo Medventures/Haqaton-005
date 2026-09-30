@@ -1,0 +1,63 @@
+.patient-content {
+  width: min(100% - 32px, 720px);
+  margin: 52px auto 30px;
+}
+.patient-intro {
+  margin-bottom: 24px;
+}
+.eyebrow {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-weight: 600;
+  letter-spacing: 0.9px;
+}
+.patient-intro h1 {
+  font-size: 28px;
+  line-height: 1.25;
+  letter-spacing: -0.7px;
+  margin: 9px 0 8px;
+}
+.patient-intro p {
+  font-size: 14px;
+  color: var(--text-muted);
+  margin: 0;
+  line-height: 1.6;
+}
+.chat-panel {
+  border: 1px solid var(--border);
+  background: var(--surface);
+  border-radius: 8px;
+  min-height: 490px;
+  display: flex;
+  flex-direction: column;
+}
+.chat-toolbar {
+  height: 53px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 0 18px;
+  font-size: 14px;
+  font-weight: 600;
+}
+.online-indicator {
+  width: 8px;
+  height: 8px;
+  background: var(--green);
+  border-radius: 50%;
+}
+.chat-toolbar-sub {
+  font-weight: 400;
+  color: var(--text-muted);
+}
+.chat-messages {
+  padding: 20px 18px;
+  flex: 1;
+  min-height: 310px;
+  max-height: min(58vh, 590px);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}

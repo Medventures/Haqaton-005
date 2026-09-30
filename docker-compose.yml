@@ -29,5 +29,13 @@ services:
     depends_on:
       db: {condition: service_healthy}
 
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        VITE_USE_MOCK: ${VITE_USE_MOCK:-false}
+    ports: ["127.0.0.1:5180:80"]
+    depends_on: [backend]
+
 volumes:
   pgdata:
