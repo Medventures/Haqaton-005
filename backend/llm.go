@@ -66,6 +66,9 @@ type Extraction struct {
 	ClarifyingQuestion *string `json:"clarifying_question"`
 	Urgency            string  `json:"urgency"`
 	UrgencyReason      string  `json:"urgency_reason"`
+	Pregnant           *bool   `json:"pregnant"`
+	GestationWeeks     *int    `json:"gestation_weeks"`
+	AskPregnancy       bool    `json:"ask_pregnancy"`
 	Summary            string  `json:"summary"`
 }
 
@@ -85,14 +88,17 @@ func extractionSchema(c *Catalog) map[string]any {
 			"clarifying_question": map[string]any{"type": []string{"string", "null"}},
 			"urgency":             map[string]any{"type": "string", "enum": []string{"green", "yellow"}},
 			"urgency_reason":      map[string]any{"type": "string"},
+			"pregnant":            map[string]any{"type": []string{"boolean", "null"}},
+			"gestation_weeks":     map[string]any{"type": []string{"integer", "null"}},
+			"ask_pregnancy":       map[string]any{"type": "boolean"},
 			"summary":             map[string]any{"type": "string"},
 		},
 		"additionalProperties": false,
-		"required":             []string{"language", "intent", "specialty_id", "need_clarification", "clarifying_question", "urgency", "urgency_reason", "summary"},
+		"required":             []string{"language", "intent", "specialty_id", "need_clarification", "clarifying_question", "urgency", "urgency_reason", "pregnant", "gestation_weeks", "ask_pregnancy", "summary"},
 	}
 }
 
-func extractionPrompt(c *Catalog, t *TriageRules, clarLeft int) string {
+func extractionPrompt(c *Catalog, t *TriageRules, clarLeft int, d *Dialog) string {
 	var sb strings.Builder
 	sb.WriteString(`Ты — модуль разбора сообщений пациента медицинской клиники. Верни ТОЛЬКО JSON по схеме.
 Поля:
@@ -103,7 +109,10 @@ func extractionPrompt(c *Catalog, t *TriageRules, clarLeft int) string {
 - clarifying_question: один короткий вопрос о симптомах (что беспокоит, где, как давно) на языке пациента, или null. Никогда не спрашивай про диагноз или заболевание. Не спрашивай то, что уже известно.
 - urgency: "yellow", если стоит обратиться за помощью в ближайшее время (сутки-двое): сильная или нарастающая боль, высокая температура, кровь, травма, беременность, ребёнок с температурой; иначе "green".
 - urgency_reason: коротко почему (на русском).
-- summary: 1-2 предложения на русском для оператора: что хочет пациент и что выяснено.
+- pregnant: true, если из диалога следует, что пациентка беременна; false, если она сказала, что не беременна; иначе null.
+- gestation_weeks: срок беременности в неделях, если назван; иначе null.
+- ask_pregnancy: true, если пациентка (женщина) описывает боль внизу живота, кровянистые выделения, тошноту или задержку менструации, а про беременность в диалоге ничего не сказано. Иначе false.
+- summary: 1-2 предложения на русском для оператора: что хочет пациент и что выяснено (укажи беременность и срок, если известны).
 Не ставь диагноз.
 
 Специальности (id — название: описание; жалобы):
@@ -113,6 +122,17 @@ func extractionPrompt(c *Catalog, t *TriageRules, clarLeft int) string {
 	}
 	sb.WriteString("\nОриентиры для urgency=yellow (ru): " + strings.Join(t.Yellow["ru"], ", "))
 	sb.WriteString("\nОриентиры для urgency=yellow (kk): " + strings.Join(t.Yellow["kk"], ", "))
+	if d.Pregnant {
+		sb.WriteString("\n\nИЗВЕСТНО: пациентка беременна")
+		if d.GestationWeeks != nil {
+			fmt.Fprintf(&sb, " (срок %d нед.)", *d.GestationWeeks)
+		}
+		sb.WriteString(". pregnant=true, ask_pregnancy=false. При беременности urgency=yellow и для таких жалоб (ru): " + strings.Join(t.YellowIfPregnant["ru"], ", "))
+		sb.WriteString("; (kk): " + strings.Join(t.YellowIfPregnant["kk"], ", "))
+		sb.WriteString(". Гинекологические жалобы при беременности — specialty_id=gynecologist.")
+	} else if d.PregnancyAsked {
+		sb.WriteString("\n\nВопрос о беременности уже задан: ask_pregnancy=false.")
+	}
 	if clarLeft <= 0 {
 		sb.WriteString("\n\nЛимит уточнений исчерпан: need_clarification=false, выбери наиболее подходящую специальность или null.")
 	}

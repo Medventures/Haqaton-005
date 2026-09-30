@@ -21,6 +21,9 @@ create table if not exists dialogs (
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
+alter table dialogs add column if not exists pregnant boolean not null default false;  -- set once, never cleared
+alter table dialogs add column if not exists gestation_weeks int;
+alter table dialogs add column if not exists pregnancy_asked boolean not null default false;
 create table if not exists messages (
   id bigserial primary key,
   dialog_id uuid not null references dialogs(id) on delete cascade,
@@ -67,6 +70,9 @@ type Dialog struct {
 	UrgencyReason  string    `json:"urgency_reason"`
 	Clarifications int       `json:"clarifications"`
 	Summary        string    `json:"summary"`
+	Pregnant       bool      `json:"pregnant"`
+	GestationWeeks *int      `json:"gestation_weeks"`
+	PregnancyAsked bool      `json:"pregnancy_asked"`
 	CreatedAt      time.Time `json:"created_at"`
 }
 
@@ -87,6 +93,8 @@ type Ticket struct {
 	Status    string    `json:"status"`
 	Urgency   string    `json:"urgency"`
 	Language  string    `json:"language"`
+	Pregnant  bool      `json:"pregnant"`
+	Weeks     *int      `json:"gestation_weeks"`
 	LastMsg   string    `json:"last_message"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
@@ -94,14 +102,16 @@ type Ticket struct {
 
 func (a *App) getDialog(ctx context.Context, id string) (*Dialog, error) {
 	d := &Dialog{}
-	err := a.db.QueryRow(ctx, `select id, patient_id, status, language, urgency, urgency_reason, clarifications, summary, created_at
-		from dialogs where id=$1`, id).Scan(&d.ID, &d.PatientID, &d.Status, &d.Language, &d.Urgency, &d.UrgencyReason, &d.Clarifications, &d.Summary, &d.CreatedAt)
+	err := a.db.QueryRow(ctx, `select id, patient_id, status, language, urgency, urgency_reason, clarifications, summary, pregnant, gestation_weeks, pregnancy_asked, created_at
+		from dialogs where id=$1`, id).Scan(&d.ID, &d.PatientID, &d.Status, &d.Language, &d.Urgency, &d.UrgencyReason, &d.Clarifications, &d.Summary,
+		&d.Pregnant, &d.GestationWeeks, &d.PregnancyAsked, &d.CreatedAt)
 	return d, err
 }
 
 func (a *App) saveDialog(ctx context.Context, d *Dialog) error {
-	_, err := a.db.Exec(ctx, `update dialogs set status=$2, language=$3, urgency=$4, urgency_reason=$5, clarifications=$6, summary=$7, updated_at=now()
-		where id=$1`, d.ID, d.Status, d.Language, d.Urgency, d.UrgencyReason, d.Clarifications, d.Summary)
+	_, err := a.db.Exec(ctx, `update dialogs set status=$2, language=$3, urgency=$4, urgency_reason=$5, clarifications=$6, summary=$7,
+		pregnant = pregnant or $8, gestation_weeks=coalesce($9, gestation_weeks), pregnancy_asked = pregnancy_asked or $10, updated_at=now()
+		where id=$1`, d.ID, d.Status, d.Language, d.Urgency, d.UrgencyReason, d.Clarifications, d.Summary, d.Pregnant, d.GestationWeeks, d.PregnancyAsked)
 	return err
 }
 
@@ -153,7 +163,7 @@ func (a *App) handoff(ctx context.Context, d *Dialog, reason string) (int64, err
 	return id, err
 }
 
-const ticketCols = `t.id, t.dialog_id, t.reason, t.summary, t.status, d.urgency, d.language,
+const ticketCols = `t.id, t.dialog_id, t.reason, t.summary, t.status, d.urgency, d.language, d.pregnant, d.gestation_weeks,
 	coalesce((select content from messages m where m.dialog_id=t.dialog_id order by id desc limit 1), ''), t.created_at, t.updated_at`
 
 func scanTickets(rows interface {
@@ -166,7 +176,7 @@ func scanTickets(rows interface {
 	out := []Ticket{}
 	for rows.Next() {
 		var t Ticket
-		if err := rows.Scan(&t.ID, &t.DialogID, &t.Reason, &t.Summary, &t.Status, &t.Urgency, &t.Language, &t.LastMsg, &t.CreatedAt, &t.UpdatedAt); err != nil {
+		if err := rows.Scan(&t.ID, &t.DialogID, &t.Reason, &t.Summary, &t.Status, &t.Urgency, &t.Language, &t.Pregnant, &t.Weeks, &t.LastMsg, &t.CreatedAt, &t.UpdatedAt); err != nil {
 			return nil, err
 		}
 		out = append(out, t)
