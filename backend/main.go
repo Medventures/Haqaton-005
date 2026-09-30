@@ -69,6 +69,9 @@ func main() {
 		llm: llm, askFirst: env("ASK_FIRST", "true") != "false",
 		secret: secretFromEnv()}
 	operators = loadOperators()
+	if err := a.hideBookedSlots(context.Background()); err != nil {
+		log.Fatalf("appointments: %v", err)
+	}
 	log.Printf("catalog: %d specialties, %d services, %d doctors; %d red rules; model %s, kk answers %q",
 		len(cat.Specialties), len(cat.Services), len(cat.Doctors), len(tr.Red), a.llm.Model, a.llm.ModelKK)
 	log.Printf("knowledge base: %d entries", len(kb.Entries))
@@ -87,7 +90,7 @@ func (a *App) routes() http.Handler {
 		w.Header().Set("Content-Type", "application/yaml")
 		w.Write(openapiSpec)
 	})
-	r.Get("/api/catalog", func(w http.ResponseWriter, r *http.Request) { writeJSON(w, 200, a.cat) })
+	r.Get("/api/catalog", a.catalogHandler)
 	r.Post("/api/auth/patient", a.patientToken)
 	r.Post("/api/auth/login", a.login)
 	r.With(a.auth("patient")).Post("/api/chat", a.chat)
@@ -95,6 +98,9 @@ func (a *App) routes() http.Handler {
 	r.With(a.auth("patient", "operator")).Get("/api/dialogs/{id}", a.getDialogHandler)
 	r.With(a.auth("operator")).Get("/api/operator/queue", a.queue)
 	r.With(a.auth("operator")).Post("/api/operator/reply", a.operatorReply)
+	r.With(a.auth("patient")).Post("/api/appointments", a.createAppointment)
+	r.With(a.auth("patient", "operator")).Get("/api/appointments", a.listAppointments)
+	r.With(a.auth("patient", "operator")).Post("/api/appointments/{id}/cancel", a.cancelAppointment)
 
 	// Optional: serve the built frontend (SPA) from the same process, e.g. STATIC_DIR=../frontend/dist.
 	if dir := os.Getenv("STATIC_DIR"); dir != "" {

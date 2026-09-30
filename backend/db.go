@@ -46,6 +46,22 @@ create table if not exists tickets (
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
+create table if not exists appointments (
+  id uuid primary key default gen_random_uuid(),
+  dialog_id uuid references dialogs(id) on delete set null,
+  patient_id text not null,
+  doctor_id text not null,
+  service_id text not null,
+  slot text not null,                          -- "YYYY-MM-DDTHH:MM", clinic local time
+  patient_name text not null,
+  phone text not null,
+  status text not null default 'booked',       -- booked | cancelled
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+create unique index if not exists appointments_slot_booked on appointments(doctor_id, slot) where status='booked';
+create index if not exists appointments_patient on appointments(patient_id, created_at);
+create index if not exists appointments_updated on appointments(updated_at);
 `
 
 func connectDB(ctx context.Context, url string) (*pgxpool.Pool, error) {
