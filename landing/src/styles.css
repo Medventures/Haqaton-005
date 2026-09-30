@@ -216,6 +216,7 @@ a { color: inherit; }
 .path { font: 500 14px/1.6 var(--mono); white-space: nowrap; }
 
 .foot { width: var(--page); margin: 0 auto; padding: 40px 0 56px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; gap: 24px; flex-wrap: wrap; }
+.tagline { flex-basis: 100%; font-size: 17px; font-weight: 600; }
 .safety { max-width: 44em; font-size: 15px; }
 .stack { font-size: 14px; color: var(--text-muted); }
 

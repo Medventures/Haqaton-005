@@ -30,7 +30,7 @@ e-mail → `[EMAIL]`, карта (13–19 цифр, группы по 4) → `[�
 JSONL, одна строка — один диалог (формат OpenAI / LLaMA chat):
 
 ```json
-{"messages":[{"role":"system","content":"Ты — ассистент контакт-центра клиники MedHub..."},
+{"messages":[{"role":"system","content":"Ты — ассистент контакт-центра клиники AnaCare..."},
  {"role":"user","content":"болит зуб"},{"role":"assistant","content":"Запишу вас к стоматологу-терапевту..."}]}
 ```
 
@@ -55,12 +55,12 @@ python train.py   # FastLanguageModel.from_pretrained("unsloth/Qwen2.5-7B-Instru
 
 ```bash
 # unsloth: слить адаптер и сразу в GGUF
-model.save_pretrained_gguf("medhub-qwen7b", tokenizer, quantization_method="q4_k_m")
+model.save_pretrained_gguf("anacare-qwen7b", tokenizer, quantization_method="q4_k_m")
 # или llama.cpp:
-python llama.cpp/convert_lora_to_gguf.py lora_out --base Qwen2.5-7B-Instruct --outfile medhub-lora.gguf
+python llama.cpp/convert_lora_to_gguf.py lora_out --base Qwen2.5-7B-Instruct --outfile anacare-lora.gguf
 ```
 
-Готовый `.gguf` положить в `~/.lmstudio/models/medhub/medhub-qwen7b/`, загрузить в LM Studio и указать его id в `LLM_MODEL` (или `LLM_MODEL_KK`). Бэкенд менять не нужно: API тот же, JSON-схема с `strict: true` по-прежнему ограничивает вывод.
+Готовый `.gguf` положить в `~/.lmstudio/models/anacare/anacare-qwen7b/`, загрузить в LM Studio и указать его id в `LLM_MODEL` (или `LLM_MODEL_KK`). Бэкенд менять не нужно: API тот же, JSON-схема с `strict: true` по-прежнему ограничивает вывод.
 
 ## 5. Оценка
 
