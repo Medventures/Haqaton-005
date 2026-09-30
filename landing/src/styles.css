@@ -42,8 +42,9 @@ a { color: inherit; }
   background: var(--bg);
   border-bottom: 1px solid var(--border);
 }
-.brand { display: flex; align-items: center; gap: 10px; font: 600 17px/1 var(--display); text-decoration: none; }
-.brand-dots { display: inline-flex; gap: 3px; }
+.brand { display: flex; align-items: center; font: 600 17px/1 var(--display); text-decoration: none; }
+.brand img { flex: none; margin-right: 10px; }
+.brand span { color: var(--text-muted); font-weight: 400; }
 .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; }
 .dot-green { background: var(--green); }
 .dot-yellow { background: var(--yellow-mid); }
