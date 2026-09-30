@@ -1,0 +1,416 @@
+package main
+
+// Chat pipeline tests: real Postgres (TEST_DATABASE_URL, default = compose db on :55433,
+// database clinic_test) + a fake OpenAI-compatible LLM server with scripted replies.
+// Skipped if Postgres is not reachable: run `docker compose up -d db` first.
+
+import (
+	"bytes"
+	"context"
+	"encoding/json"
+	"net/http"
+	"net/http/httptest"
+	"strings"
+	"sync"
+	"testing"
+	"time"
+
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
+)
+
+// fakeLLM answers /chat/completions: extraction requests (with response_format) pop from
+// extractions, answer requests get a fixed text.
+type fakeLLM struct {
+	mu          sync.Mutex
+	extractions []string
+	extractN    int
+	answerN     int
+}
+
+func (f *fakeLLM) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	var body map[string]any
+	json.NewDecoder(r.Body).Decode(&body)
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	content := "Рекомендуем обратиться к специалисту."
+	if _, ok := body["response_format"]; ok {
+		f.extractN++
+		content = "not json"
+		if len(f.extractions) > 0 {
+			content, f.extractions = f.extractions[0], f.extractions[1:]
+		}
+	} else {
+		f.answerN++
+	}
+	json.NewEncoder(w).Encode(map[string]any{"choices": []any{map[string]any{"message": map[string]string{"role": "assistant", "content": content}}}})
+}
+
+func (f *fakeLLM) calls() (int, int) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	return f.extractN, f.answerN
+}
+
+// ex builds an extraction JSON; spec "" means null.
+func ex(intent, spec string, clarify bool, question, urgency string) string {
+	m := map[string]any{"language": "ru", "intent": intent, "specialty_id": nil, "need_clarification": clarify,
+		"clarifying_question": nil, "urgency": urgency, "urgency_reason": "тест", "summary": "summary: " + intent}
+	if spec != "" {
+		m["specialty_id"] = spec
+	}
+	if question != "" {
+		m["clarifying_question"] = question
+	}
+	b, _ := json.Marshal(m)
+	return string(b)
+}
+
+type testEnv struct {
+	t   *testing.T
+	a   *App
+	llm *fakeLLM
+	srv *httptest.Server
+}
+
+func setup(t *testing.T, extractions ...string) *testEnv {
+	t.Helper()
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+	admin := env("TEST_ADMIN_URL", "postgres://clinic:clinic@localhost:55433/clinic?sslmode=disable")
+	conn, err := pgx.Connect(ctx, admin)
+	if err != nil {
+		t.Skipf("postgres not reachable (%v): run `docker compose up -d db`", err)
+	}
+	conn.Exec(ctx, "create database clinic_test") // error = already exists
+	conn.Close(ctx)
+
+	db, err := pgxpool.New(ctx, env("TEST_DATABASE_URL", "postgres://clinic:clinic@localhost:55433/clinic_test?sslmode=disable"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := db.Exec(ctx, schema+"; truncate dialogs cascade;"); err != nil {
+		t.Fatal(err)
+	}
+	cat, err := LoadCatalog("../catalog.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	tr, err := LoadTriage("../triage_rules.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	f := &fakeLLM{extractions: extractions}
+	llmSrv := httptest.NewServer(f)
+	a := &App{db: db, cat: cat, triage: tr, llm: NewLLM(llmSrv.URL, "fake"), secret: []byte("test")}
+	srv := httptest.NewServer(a.routes())
+	t.Cleanup(func() { srv.Close(); llmSrv.Close(); db.Close() })
+	return &testEnv{t, a, f, srv}
+}
+
+func (e *testEnv) do(method, path, tok string, body any, out any) int {
+	e.t.Helper()
+	var rd *bytes.Reader
+	if body != nil {
+		b, _ := json.Marshal(body)
+		rd = bytes.NewReader(b)
+	} else {
+		rd = bytes.NewReader(nil)
+	}
+	req, _ := http.NewRequest(method, e.srv.URL+path, rd)
+	if tok != "" {
+		req.Header.Set("Authorization", "Bearer "+tok)
+	}
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		e.t.Fatal(err)
+	}
+	defer resp.Body.Close()
+	if out != nil {
+		json.NewDecoder(resp.Body).Decode(out)
+	}
+	return resp.StatusCode
+}
+
+func (e *testEnv) patient() string { return e.a.issue("p-"+e.t.Name()+time.Now().String(), "patient") }
+func (e *testEnv) operator() string {
+	return e.a.issue("operator1", "operator")
+}
+
+func (e *testEnv) chat(tok, dialogID, msg string) ChatResponse {
+	e.t.Helper()
+	var r ChatResponse
+	if code := e.do("POST", "/api/chat", tok, ChatRequest{dialogID, msg}, &r); code != 200 {
+		e.t.Fatalf("chat %q: status %d", msg, code)
+	}
+	return r
+}
+
+func (e *testEnv) openTickets(dialogID string) int {
+	var n int
+	e.a.db.QueryRow(context.Background(), `select count(*) from tickets where dialog_id=$1 and status='open'`, dialogID).Scan(&n)
+	return n
+}
+
+func has(list []string, v string) bool {
+	for _, x := range list {
+		if x == v {
+			return true
+		}
+	}
+	return false
+}
+
+func TestRedFlagSkipsLLMAndGoesToOperator(t *testing.T) {
+	e := setup(t)
+	tok := e.patient()
+	r := e.chat(tok, "", "У меня сильная боль в груди")
+	if n, m := e.llm.calls(); n+m != 0 {
+		t.Fatalf("LLM must not be called on red, got %d+%d calls", n, m)
+	}
+	if r.Urgency != "red" || r.Status != "operator" || !has(r.Actions, "call_103") || !strings.Contains(r.Reply.Content, "103") {
+		t.Fatalf("unexpected red response: %+v", r)
+	}
+	if len(r.Services) != 0 || r.TicketID == nil || e.openTickets(r.DialogID) != 1 {
+		t.Fatalf("red must stop matching and create one ticket: %+v", r)
+	}
+}
+
+func TestRedFlagInKazakhAnswersInKazakh(t *testing.T) {
+	e := setup(t)
+	r := e.chat(e.patient(), "", "Кеудем қатты ауырып тұр")
+	if r.Urgency != "red" || r.Language != "kk" || !strings.Contains(r.Reply.Content, "103-ке") {
+		t.Fatalf("kk red: %+v", r)
+	}
+}
+
+func TestRedFlagOnClarificationAnswer(t *testing.T) {
+	e := setup(t, ex("find_service", "", true, "Что беспокоит?", "green"))
+	tok := e.patient()
+	r1 := e.chat(tok, "", "Мне плохо")
+	if r1.Reply.Content != "Что беспокоит?" || r1.Urgency != "green" {
+		t.Fatalf("expected clarification: %+v", r1)
+	}
+	r2 := e.chat(tok, r1.DialogID, "стало трудно дышать")
+	if r2.Urgency != "red" || !has(r2.Actions, "call_103") {
+		t.Fatalf("red must fire on clarification answer: %+v", r2)
+	}
+	if n, _ := e.llm.calls(); n != 1 {
+		t.Fatalf("second message must not reach LLM, extraction calls = %d", n)
+	}
+}
+
+func TestSpecialtyReturnsCatalogServicesAndDoctorsWithSlots(t *testing.T) {
+	e := setup(t, ex("find_service", "ophthalmologist", false, "", "green"))
+	r := e.chat(e.patient(), "", "плохо вижу вдаль")
+	if r.Status != "bot" || r.Urgency != "green" || len(r.Services) == 0 {
+		t.Fatalf("expected services: %+v", r)
+	}
+	for _, s := range r.Services {
+		if s.SpecialtyID != "ophthalmologist" {
+			t.Fatalf("foreign service %+v", s)
+		}
+	}
+	// the only ophthalmologist in catalog.json has no free slots
+	if len(r.Doctors) != 0 {
+		t.Fatalf("doctors without slots must be hidden: %+v", r.Doctors)
+	}
+	if _, m := e.llm.calls(); m != 1 {
+		t.Fatalf("answer must be phrased by LLM once, got %d", m)
+	}
+	var data botData
+	json.Unmarshal(r.Reply.Data, &data)
+	if len(data.Services) != len(r.Services) {
+		t.Fatalf("cards must be stored in message data for history: %s", r.Reply.Data)
+	}
+}
+
+func TestUnknownSpecialtyIsIgnored(t *testing.T) {
+	e := setup(t, ex("find_service", "surgeon", false, "", "green"))
+	r := e.chat(e.patient(), "", "нужен хирург")
+	if len(r.Services) != 0 {
+		t.Fatalf("specialty outside catalog must not produce services: %+v", r.Services)
+	}
+}
+
+func TestMaxTwoClarificationsThenHandoff(t *testing.T) {
+	q := ex("find_service", "", true, "Уточните?", "green")
+	e := setup(t, q, q, q)
+	tok := e.patient()
+	r := e.chat(tok, "", "плохо")
+	r = e.chat(tok, r.DialogID, "очень плохо")
+	if r.Reply.Content != "Уточните?" || r.Status != "bot" {
+		t.Fatalf("second clarification expected: %+v", r)
+	}
+	r = e.chat(tok, r.DialogID, "не знаю")
+	if r.Status != "operator" || r.TicketID == nil {
+		t.Fatalf("after 2 clarifications without specialty must hand off: %+v", r)
+	}
+	d, _ := e.a.getDialog(context.Background(), r.DialogID)
+	if d.Clarifications != 2 {
+		t.Fatalf("clarifications = %d", d.Clarifications)
+	}
+}
+
+func TestClarificationLimitThenPicksSpecialty(t *testing.T) {
+	e := setup(t,
+		ex("find_service", "", true, "Где болит?", "green"),
+		ex("find_service", "", true, "Как давно?", "green"),
+		ex("find_service", "gastroenterologist", true, "Ещё вопрос?", "green"))
+	tok := e.patient()
+	r := e.chat(tok, "", "болит")
+	r = e.chat(tok, r.DialogID, "живот")
+	r = e.chat(tok, r.DialogID, "неделю")
+	if r.Status != "bot" || len(r.Services) == 0 || r.Services[0].SpecialtyID != "gastroenterologist" {
+		t.Fatalf("third turn must pick specialty, not ask again: %+v", r)
+	}
+}
+
+func TestInvalidJSONRetriesOnceThenSafeFallback(t *testing.T) {
+	e := setup(t, "not json", "{broken")
+	r := e.chat(e.patient(), "", "болит горло")
+	if n, m := e.llm.calls(); n != 2 || m != 0 {
+		t.Fatalf("expected exactly 2 extraction attempts and no answer call, got %d/%d", n, m)
+	}
+	if r.Urgency != "yellow" || r.Status != "operator" || r.TicketID == nil {
+		t.Fatalf("fallback must be yellow + operator: %+v", r)
+	}
+}
+
+func TestRetrySucceedsOnSecondAttempt(t *testing.T) {
+	e := setup(t, "oops", ex("find_service", "ent", false, "", "green"))
+	r := e.chat(e.patient(), "", "болит горло")
+	if r.Status != "bot" || len(r.Services) == 0 {
+		t.Fatalf("second attempt should be used: %+v", r)
+	}
+}
+
+func TestYellowOffersOperatorAndShowsServices(t *testing.T) {
+	e := setup(t, ex("find_service", "therapist", false, "", "yellow"))
+	r := e.chat(e.patient(), "", "температура 39 третий день")
+	if r.Urgency != "yellow" || !has(r.Actions, "contact_operator") || len(r.Services) == 0 {
+		t.Fatalf("yellow: %+v", r)
+	}
+	if !strings.HasPrefix(r.Reply.Content, texts["yellow"]["ru"]) {
+		t.Fatalf("yellow warning must come first: %q", r.Reply.Content)
+	}
+}
+
+func TestUrgencyNeverGoesDown(t *testing.T) {
+	e := setup(t, ex("find_service", "therapist", false, "", "yellow"), ex("find_service", "therapist", false, "", "green"))
+	tok := e.patient()
+	r := e.chat(tok, "", "температура 39")
+	r = e.chat(tok, r.DialogID, "а сколько стоит анализ крови?")
+	if r.Urgency != "yellow" {
+		t.Fatalf("urgency went down to %q", r.Urgency)
+	}
+}
+
+func TestOperatorIntentHandsOffWithSummary(t *testing.T) {
+	e := setup(t, ex("operator", "", false, "", "green"))
+	r := e.chat(e.patient(), "", "соедините с человеком")
+	if r.Status != "operator" || r.TicketID == nil {
+		t.Fatalf("operator intent: %+v", r)
+	}
+	var q []Ticket
+	e.do("GET", "/api/operator/queue", e.operator(), nil, &q)
+	if len(q) != 1 || q[0].Summary != "summary: operator" || q[0].Reason == "" {
+		t.Fatalf("ticket must carry summary and reason: %+v", q)
+	}
+}
+
+func TestBotSilentWhileWithOperator(t *testing.T) {
+	e := setup(t, ex("operator", "", false, "", "green"))
+	tok := e.patient()
+	r := e.chat(tok, "", "оператора")
+	r = e.chat(tok, r.DialogID, "алло?")
+	if r.Reply != nil {
+		t.Fatalf("bot must be silent while operator handles dialog: %+v", r.Reply)
+	}
+	if n, _ := e.llm.calls(); n != 1 {
+		t.Fatalf("LLM must not be called while with operator, extraction calls = %d", n)
+	}
+	if e.openTickets(r.DialogID) != 1 {
+		t.Fatal("must keep a single open ticket")
+	}
+}
+
+func TestQueueOrderRedYellowGreen(t *testing.T) {
+	e := setup(t, ex("operator", "", false, "", "green"), ex("operator", "", false, "", "yellow"))
+	e.chat(e.patient(), "", "позовите оператора")    // green
+	e.chat(e.patient(), "", "оператора, пожалуйста") // yellow
+	e.chat(e.patient(), "", "потерял сознание")      // red, created last
+	var q []Ticket
+	e.do("GET", "/api/operator/queue", e.operator(), nil, &q)
+	got := []string{}
+	for _, t := range q {
+		got = append(got, t.Urgency)
+	}
+	if strings.Join(got, ",") != "red,yellow,green" {
+		t.Fatalf("queue order = %v", got)
+	}
+}
+
+func TestAccessControl(t *testing.T) {
+	e := setup(t, ex("find_service", "ent", false, "", "green"))
+	owner, other, op := e.patient(), e.patient(), e.operator()
+	r := e.chat(owner, "", "болит горло")
+
+	if code := e.do("GET", "/api/dialogs/"+r.DialogID, owner, nil, nil); code != 200 {
+		t.Fatalf("owner: %d", code)
+	}
+	if code := e.do("GET", "/api/dialogs/"+r.DialogID, other, nil, nil); code != 404 {
+		t.Fatalf("other patient must not see dialog: %d", code)
+	}
+	if code := e.do("POST", "/api/chat", other, ChatRequest{r.DialogID, "привет"}, nil); code != 404 {
+		t.Fatalf("other patient must not write into dialog: %d", code)
+	}
+	if code := e.do("GET", "/api/dialogs/"+r.DialogID, op, nil, nil); code != 404 {
+		t.Fatalf("operator must not see a dialog that was not handed off: %d", code)
+	}
+	if code := e.do("GET", "/api/operator/queue", owner, nil, nil); code != 403 {
+		t.Fatalf("patient must not read queue: %d", code)
+	}
+	if code := e.do("POST", "/api/chat", "", ChatRequest{"", "x"}, nil); code != 401 {
+		t.Fatalf("no token: %d", code)
+	}
+	if code := e.do("POST", "/api/chat", owner, ChatRequest{"", "   "}, nil); code != 400 {
+		t.Fatalf("empty message: %d", code)
+	}
+}
+
+func TestOperatorReplyAndClose(t *testing.T) {
+	e := setup(t, ex("operator", "", false, "", "yellow"))
+	tok, op := e.patient(), e.operator()
+	r := e.chat(tok, "", "оператор")
+
+	var out map[string]any
+	if code := e.do("POST", "/api/operator/reply", op, map[string]any{"dialog_id": r.DialogID, "message": "Здравствуйте!", "close": true}, &out); code != 200 {
+		t.Fatalf("reply: %d", code)
+	}
+	var d struct {
+		Dialog   Dialog    `json:"dialog"`
+		Messages []Message `json:"messages"`
+	}
+	e.do("GET", "/api/dialogs/"+r.DialogID, tok, nil, &d)
+	last := d.Messages[len(d.Messages)-1]
+	if last.Role != "operator" || last.Content != "Здравствуйте!" {
+		t.Fatalf("patient must see operator reply: %+v", last)
+	}
+	if d.Dialog.Status != "bot" || d.Dialog.Urgency != "yellow" || e.openTickets(r.DialogID) != 0 {
+		t.Fatalf("close: back to bot, ticket closed, urgency kept: %+v", d.Dialog)
+	}
+}
+
+func TestContactOperatorButton(t *testing.T) {
+	e := setup(t, ex("find_service", "therapist", false, "", "yellow"))
+	tok := e.patient()
+	r := e.chat(tok, "", "температура 39")
+	var out map[string]any
+	if code := e.do("POST", "/api/chat/operator", tok, map[string]string{"dialog_id": r.DialogID}, &out); code != 200 {
+		t.Fatalf("contact operator: %d", code)
+	}
+	if out["status"] != "operator" || e.openTickets(r.DialogID) != 1 {
+		t.Fatalf("button must create a ticket: %+v", out)
+	}
+}
